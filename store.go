@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/stainless-sdks/dedalus-go/internal/requestconfig"
-	"github.com/stainless-sdks/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
+	"github.com/dedalus-labs/dedalus-go/option"
 )
 
 // StoreService contains methods and other services that help with interacting with

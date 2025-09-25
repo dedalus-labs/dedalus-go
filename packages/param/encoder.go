@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"time"
 
-	shimjson "github.com/stainless-sdks/dedalus-go/internal/encoding/json"
+	shimjson "github.com/dedalus-labs/dedalus-go/internal/encoding/json"
 
 	"github.com/tidwall/sjson"
 )

@@ -2,7 +2,7 @@ package apijson
 
 import (
 	"errors"
-	"github.com/stainless-sdks/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
 	"reflect"
 
 	"github.com/tidwall/gjson"

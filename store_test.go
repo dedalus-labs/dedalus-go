@@ -8,9 +8,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stainless-sdks/dedalus-go"
-	"github.com/stainless-sdks/dedalus-go/internal/testutil"
-	"github.com/stainless-sdks/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go"
+	"github.com/dedalus-labs/dedalus-go/internal/testutil"
+	"github.com/dedalus-labs/dedalus-go/option"
 )
 
 func TestStoreListInventory(t *testing.T) {

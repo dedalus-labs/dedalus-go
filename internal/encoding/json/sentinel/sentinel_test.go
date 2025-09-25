@@ -1,8 +1,8 @@
 package sentinel_test
 
 import (
-	"github.com/stainless-sdks/dedalus-go/internal/encoding/json/sentinel"
-	"github.com/stainless-sdks/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/internal/encoding/json/sentinel"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
 	"reflect"
 	"slices"
 	"testing"

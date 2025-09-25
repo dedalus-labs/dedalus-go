@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stainless-sdks/dedalus-go"
-	"github.com/stainless-sdks/dedalus-go/internal"
-	"github.com/stainless-sdks/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go"
+	"github.com/dedalus-labs/dedalus-go/internal"
+	"github.com/dedalus-labs/dedalus-go/option"
 )
 
 type closureTransport struct {

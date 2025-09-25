@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/stainless-sdks/dedalus-go/internal/apijson"
-	"github.com/stainless-sdks/dedalus-go/packages/param"
-	"github.com/stainless-sdks/dedalus-go/packages/respjson"
+	"github.com/dedalus-labs/dedalus-go/internal/apijson"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // aliased to make [param.APIUnion] private when embedding

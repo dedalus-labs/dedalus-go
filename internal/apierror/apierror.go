@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/http/httputil"
 
-	"github.com/stainless-sdks/dedalus-go/internal/apijson"
-	"github.com/stainless-sdks/dedalus-go/packages/respjson"
+	"github.com/dedalus-labs/dedalus-go/internal/apijson"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // Error represents an error that originates from the API, i.e. when a request is

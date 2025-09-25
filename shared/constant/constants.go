@@ -3,7 +3,7 @@
 package constant
 
 import (
-	shimjson "github.com/stainless-sdks/dedalus-go/internal/encoding/json"
+	shimjson "github.com/dedalus-labs/dedalus-go/internal/encoding/json"
 )
 
 type Constant[T any] interface {

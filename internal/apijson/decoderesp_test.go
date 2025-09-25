@@ -2,8 +2,8 @@ package apijson_test
 
 import (
 	"encoding/json"
-	"github.com/stainless-sdks/dedalus-go/internal/apijson"
-	"github.com/stainless-sdks/dedalus-go/packages/respjson"
+	"github.com/dedalus-labs/dedalus-go/internal/apijson"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 	"testing"
 )
 

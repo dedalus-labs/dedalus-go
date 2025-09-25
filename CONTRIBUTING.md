@@ -41,7 +41,7 @@ To use a local version of this library from source in another project, edit the 
 directive. This can be done through the CLI with the following:
 
 ```sh
-$ go mod edit -replace github.com/stainless-sdks/dedalus-go=/path/to/dedalus-go
+$ go mod edit -replace github.com/dedalus-labs/dedalus-go=/path/to/dedalus-go
 ```
 
 ## Running tests

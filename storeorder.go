@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"slices"
 
-	shimjson "github.com/stainless-sdks/dedalus-go/internal/encoding/json"
-	"github.com/stainless-sdks/dedalus-go/internal/requestconfig"
-	"github.com/stainless-sdks/dedalus-go/option"
-	"github.com/stainless-sdks/dedalus-go/shared"
+	shimjson "github.com/dedalus-labs/dedalus-go/internal/encoding/json"
+	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
+	"github.com/dedalus-labs/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go/shared"
 )
 
 // StoreOrderService contains methods and other services that help with interacting
