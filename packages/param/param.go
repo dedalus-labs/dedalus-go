@@ -2,7 +2,7 @@ package param
 
 import (
 	"encoding/json"
-	"github.com/stainless-sdks/dedalus-go/internal/encoding/json/sentinel"
+	"github.com/dedalus-labs/dedalus-go/internal/encoding/json/sentinel"
 	"reflect"
 )
 

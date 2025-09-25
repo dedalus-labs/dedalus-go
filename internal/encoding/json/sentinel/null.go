@@ -1,7 +1,7 @@
 package sentinel
 
 import (
-	"github.com/stainless-sdks/dedalus-go/internal/encoding/json/shims"
+	"github.com/dedalus-labs/dedalus-go/internal/encoding/json/shims"
 	"reflect"
 	"sync"
 )

@@ -11,13 +11,13 @@ import (
 	"net/url"
 	"slices"
 
-	"github.com/stainless-sdks/dedalus-go/internal/apijson"
-	"github.com/stainless-sdks/dedalus-go/internal/apiquery"
-	shimjson "github.com/stainless-sdks/dedalus-go/internal/encoding/json"
-	"github.com/stainless-sdks/dedalus-go/internal/requestconfig"
-	"github.com/stainless-sdks/dedalus-go/option"
-	"github.com/stainless-sdks/dedalus-go/packages/param"
-	"github.com/stainless-sdks/dedalus-go/packages/respjson"
+	"github.com/dedalus-labs/dedalus-go/internal/apijson"
+	"github.com/dedalus-labs/dedalus-go/internal/apiquery"
+	shimjson "github.com/dedalus-labs/dedalus-go/internal/encoding/json"
+	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
+	"github.com/dedalus-labs/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // UserService contains methods and other services that help with interacting with

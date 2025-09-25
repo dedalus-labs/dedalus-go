@@ -18,10 +18,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stainless-sdks/dedalus-go/internal"
-	"github.com/stainless-sdks/dedalus-go/internal/apierror"
-	"github.com/stainless-sdks/dedalus-go/internal/apiform"
-	"github.com/stainless-sdks/dedalus-go/internal/apiquery"
+	"github.com/dedalus-labs/dedalus-go/internal"
+	"github.com/dedalus-labs/dedalus-go/internal/apierror"
+	"github.com/dedalus-labs/dedalus-go/internal/apiform"
+	"github.com/dedalus-labs/dedalus-go/internal/apiquery"
 )
 
 func getDefaultHeaders() map[string]string {

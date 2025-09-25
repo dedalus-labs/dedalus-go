@@ -1,4 +1,4 @@
-module github.com/stainless-sdks/dedalus-go
+module github.com/dedalus-labs/dedalus-go
 
 go 1.22
 
