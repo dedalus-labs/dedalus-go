@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package dedalus_test
+package dedalusgo_test
 
 import (
 	"bytes"
@@ -24,28 +24,28 @@ func TestPetNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Pets.New(context.TODO(), dedalus.PetNewParams{
-		Pet: dedalus.PetParam{
+	_, err := client.Pets.New(context.TODO(), dedalusgo.PetNewParams{
+		Pet: dedalusgo.PetParam{
 			Name:      "doggie",
 			PhotoURLs: []string{"string"},
-			ID:        dedalus.Int(10),
-			Category: dedalus.CategoryParam{
-				ID:   dedalus.Int(1),
-				Name: dedalus.String("Dogs"),
+			ID:        dedalusgo.Int(10),
+			Category: dedalusgo.CategoryParam{
+				ID:   dedalusgo.Int(1),
+				Name: dedalusgo.String("Dogs"),
 			},
-			Status: dedalus.PetStatusAvailable,
-			Tags: []dedalus.PetTagParam{{
-				ID:   dedalus.Int(0),
-				Name: dedalus.String("name"),
+			Status: dedalusgo.PetStatusAvailable,
+			Tags: []dedalusgo.PetTagParam{{
+				ID:   dedalusgo.Int(0),
+				Name: dedalusgo.String("name"),
 			}},
 		},
 	})
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -62,13 +62,13 @@ func TestPetGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Pets.Get(context.TODO(), 0)
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -85,28 +85,28 @@ func TestPetUpdateWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Pets.Update(context.TODO(), dedalus.PetUpdateParams{
-		Pet: dedalus.PetParam{
+	_, err := client.Pets.Update(context.TODO(), dedalusgo.PetUpdateParams{
+		Pet: dedalusgo.PetParam{
 			Name:      "doggie",
 			PhotoURLs: []string{"string"},
-			ID:        dedalus.Int(10),
-			Category: dedalus.CategoryParam{
-				ID:   dedalus.Int(1),
-				Name: dedalus.String("Dogs"),
+			ID:        dedalusgo.Int(10),
+			Category: dedalusgo.CategoryParam{
+				ID:   dedalusgo.Int(1),
+				Name: dedalusgo.String("Dogs"),
 			},
-			Status: dedalus.PetStatusAvailable,
-			Tags: []dedalus.PetTagParam{{
-				ID:   dedalus.Int(0),
-				Name: dedalus.String("name"),
+			Status: dedalusgo.PetStatusAvailable,
+			Tags: []dedalusgo.PetTagParam{{
+				ID:   dedalusgo.Int(0),
+				Name: dedalusgo.String("name"),
 			}},
 		},
 	})
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -123,13 +123,13 @@ func TestPetDelete(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.Pets.Delete(context.TODO(), 0)
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -146,15 +146,15 @@ func TestPetFindByStatusWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Pets.FindByStatus(context.TODO(), dedalus.PetFindByStatusParams{
-		Status: dedalus.PetFindByStatusParamsStatusAvailable,
+	_, err := client.Pets.FindByStatus(context.TODO(), dedalusgo.PetFindByStatusParams{
+		Status: dedalusgo.PetFindByStatusParamsStatusAvailable,
 	})
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -171,15 +171,15 @@ func TestPetFindByTagsWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Pets.FindByTags(context.TODO(), dedalus.PetFindByTagsParams{
+	_, err := client.Pets.FindByTags(context.TODO(), dedalusgo.PetFindByTagsParams{
 		Tags: []string{"string"},
 	})
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -196,20 +196,20 @@ func TestPetUpdateByIDWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.Pets.UpdateByID(
 		context.TODO(),
 		0,
-		dedalus.PetUpdateByIDParams{
-			Name:   dedalus.String("name"),
-			Status: dedalus.String("status"),
+		dedalusgo.PetUpdateByIDParams{
+			Name:   dedalusgo.String("name"),
+			Status: dedalusgo.String("status"),
 		},
 	)
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -226,7 +226,7 @@ func TestPetUploadImageWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
@@ -234,12 +234,12 @@ func TestPetUploadImageWithOptionalParams(t *testing.T) {
 		context.TODO(),
 		0,
 		io.Reader(bytes.NewBuffer([]byte("some file contents"))),
-		dedalus.PetUploadImageParams{
-			AdditionalMetadata: dedalus.String("additionalMetadata"),
+		dedalusgo.PetUploadImageParams{
+			AdditionalMetadata: dedalusgo.String("additionalMetadata"),
 		},
 	)
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

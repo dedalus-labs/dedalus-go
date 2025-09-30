@@ -17,7 +17,7 @@ It is generated with [Stainless](https://www.stainless.com/).
 
 ```go
 import (
-	"github.com/dedalus-labs/dedalus-go" // imported as dedalus
+	"github.com/dedalus-labs/dedalus-go" // imported as dedalusgo
 )
 ```
 
@@ -53,10 +53,10 @@ import (
 )
 
 func main() {
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("PETSTORE_API_KEY")
 	)
-	order, err := client.Store.Orders.New(context.TODO(), dedalus.StoreOrderNewParams{})
+	order, err := client.Store.Orders.New(context.TODO(), dedalusgo.StoreOrderNewParams{})
 	if err != nil {
 		panic(err.Error())
 	}
@@ -67,13 +67,13 @@ func main() {
 
 ### Request fields
 
-The dedalus library uses the [`omitzero`](https://tip.golang.org/doc/go1.24#encodingjsonpkgencodingjson)
+The dedalusgo library uses the [`omitzero`](https://tip.golang.org/doc/go1.24#encodingjsonpkgencodingjson)
 semantics from the Go 1.24+ `encoding/json` release for request fields.
 
 Required primitive fields (`int64`, `string`, etc.) feature the tag <code>\`json:"...,required"\`</code>. These
 fields are always serialized, even their zero values.
 
-Optional primitive types are wrapped in a `param.Opt[T]`. These fields can be set with the provided constructors, `dedalus.String(string)`, `dedalus.Int(int64)`, etc.
+Optional primitive types are wrapped in a `param.Opt[T]`. These fields can be set with the provided constructors, `dedalusgo.String(string)`, `dedalusgo.Int(int64)`, etc.
 
 Any `param.Opt[T]`, map, slice, struct or string enum uses the
 tag <code>\`json:"...,omitzero"\`</code>. Its zero value is considered omitted.
@@ -81,17 +81,17 @@ tag <code>\`json:"...,omitzero"\`</code>. Its zero value is considered omitted.
 The `param.IsOmitted(any)` function can confirm the presence of any `omitzero` field.
 
 ```go
-p := dedalus.ExampleParams{
-	ID:   "id_xxx",              // required property
-	Name: dedalus.String("..."), // optional property
+p := dedalusgo.ExampleParams{
+	ID:   "id_xxx",                // required property
+	Name: dedalusgo.String("..."), // optional property
 
-	Point: dedalus.Point{
-		X: 0,              // required field will serialize as 0
-		Y: dedalus.Int(1), // optional field will serialize as 1
+	Point: dedalusgo.Point{
+		X: 0,                // required field will serialize as 0
+		Y: dedalusgo.Int(1), // optional field will serialize as 1
 		// ... omitted non-required fields will not be serialized
 	},
 
-	Origin: dedalus.Origin{}, // the zero value of [Origin] is considered omitted
+	Origin: dedalusgo.Origin{}, // the zero value of [Origin] is considered omitted
 }
 ```
 
@@ -120,7 +120,7 @@ p.SetExtraFields(map[string]any{
 })
 
 // Send a number instead of an object
-custom := param.Override[dedalus.FooParams](12)
+custom := param.Override[dedalusgo.FooParams](12)
 ```
 
 ### Request unions
@@ -261,7 +261,7 @@ This library uses the functional options pattern. Functions defined in the
 requests. For example:
 
 ```go
-client := dedalus.NewClient(
+client := dedalusgo.NewClient(
 	// Adds a header to every request made by the client
 	option.WithHeader("X-Some-Header", "custom_header_info"),
 )
@@ -290,7 +290,7 @@ with additional helper methods like `.GetNextPage()`, e.g.:
 ### Errors
 
 When the API returns a non-success status code, we return an error with type
-`*dedalus.Error`. This contains the `StatusCode`, `*http.Request`, and
+`*dedalusgo.Error`. This contains the `StatusCode`, `*http.Request`, and
 `*http.Response` values of the request, as well as the JSON of the error body
 (much like other response objects in the SDK).
 
@@ -299,7 +299,7 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 ```go
 _, err := client.Store.ListInventory(context.TODO())
 if err != nil {
-	var apierr *dedalus.Error
+	var apierr *dedalusgo.Error
 	if errors.As(err, &apierr) {
 		println(string(apierr.DumpRequest(true)))  // Prints the serialized HTTP request
 		println(string(apierr.DumpResponse(true))) // Prints the serialized HTTP response
@@ -339,7 +339,7 @@ The file name and content-type can be customized by implementing `Name() string`
 string` on the run-time type of `io.Reader`. Note that `os.File` implements `Name() string`, so a
 file returned by `os.Open` will be sent with the file name on disk.
 
-We also provide a helper `dedalus.File(reader io.Reader, filename string, contentType string)`
+We also provide a helper `dedalusgo.File(reader io.Reader, filename string, contentType string)`
 which can be used to wrap any `io.Reader` with the appropriate file name and content type.
 
 ### Retries
@@ -352,7 +352,7 @@ You can use the `WithMaxRetries` option to configure or disable this:
 
 ```go
 // Configure the default for all requests:
-client := dedalus.NewClient(
+client := dedalusgo.NewClient(
 	option.WithMaxRetries(0), // default is 2
 )
 
@@ -413,7 +413,7 @@ or the `option.WithJSONSet()` methods.
 params := FooNewParams{
     ID:   "id_xxxx",
     Data: FooNewParamsData{
-        FirstName: dedalus.String("John"),
+        FirstName: dedalusgo.String("John"),
     },
 }
 client.Foo.New(context.Background(), params, option.WithJSONSet("data.last_name", "Doe"))
@@ -448,7 +448,7 @@ func Logger(req *http.Request, next option.MiddlewareNext) (res *http.Response, 
     return res, err
 }
 
-client := dedalus.NewClient(
+client := dedalusgo.NewClient(
 	option.WithMiddleware(Logger),
 )
 ```

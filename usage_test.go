@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package dedalus_test
+package dedalusgo_test
 
 import (
 	"context"
@@ -20,11 +20,11 @@ func TestUsage(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	order, err := client.Store.Orders.New(context.TODO(), dedalus.StoreOrderNewParams{})
+	order, err := client.Store.Orders.New(context.TODO(), dedalusgo.StoreOrderNewParams{})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
