@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package dedalus_test
+package dedalusgo_test
 
 import (
 	"context"
@@ -24,22 +24,22 @@ func TestStoreOrderNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Store.Orders.New(context.TODO(), dedalus.StoreOrderNewParams{
+	_, err := client.Store.Orders.New(context.TODO(), dedalusgo.StoreOrderNewParams{
 		Order: shared.OrderParam{
-			ID:       dedalus.Int(10),
-			Complete: dedalus.Bool(true),
-			PetID:    dedalus.Int(198772),
-			Quantity: dedalus.Int(7),
-			ShipDate: dedalus.Time(time.Now()),
+			ID:       dedalusgo.Int(10),
+			Complete: dedalusgo.Bool(true),
+			PetID:    dedalusgo.Int(198772),
+			Quantity: dedalusgo.Int(7),
+			ShipDate: dedalusgo.Time(time.Now()),
 			Status:   shared.OrderStatusApproved,
 		},
 	})
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -56,13 +56,13 @@ func TestStoreOrderGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Store.Orders.Get(context.TODO(), 0)
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -79,13 +79,13 @@ func TestStoreOrderDelete(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.Store.Orders.Delete(context.TODO(), 0)
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

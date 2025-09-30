@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package dedalus_test
+package dedalusgo_test
 
 import (
 	"context"
@@ -22,24 +22,24 @@ func TestUserNewWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Users.New(context.TODO(), dedalus.UserNewParams{
-		User: dedalus.UserParam{
-			ID:         dedalus.Int(10),
-			Email:      dedalus.String("john@email.com"),
-			FirstName:  dedalus.String("John"),
-			LastName:   dedalus.String("James"),
-			Password:   dedalus.String("12345"),
-			Phone:      dedalus.String("12345"),
-			Username:   dedalus.String("theUser"),
-			UserStatus: dedalus.Int(1),
+	_, err := client.Users.New(context.TODO(), dedalusgo.UserNewParams{
+		User: dedalusgo.UserParam{
+			ID:         dedalusgo.Int(10),
+			Email:      dedalusgo.String("john@email.com"),
+			FirstName:  dedalusgo.String("John"),
+			LastName:   dedalusgo.String("James"),
+			Password:   dedalusgo.String("12345"),
+			Phone:      dedalusgo.String("12345"),
+			Username:   dedalusgo.String("theUser"),
+			UserStatus: dedalusgo.Int(1),
 		},
 	})
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -56,13 +56,13 @@ func TestUserGet(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Users.Get(context.TODO(), "username")
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -79,28 +79,28 @@ func TestUserUpdateWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.Users.Update(
 		context.TODO(),
 		"username",
-		dedalus.UserUpdateParams{
-			User: dedalus.UserParam{
-				ID:         dedalus.Int(10),
-				Email:      dedalus.String("john@email.com"),
-				FirstName:  dedalus.String("John"),
-				LastName:   dedalus.String("James"),
-				Password:   dedalus.String("12345"),
-				Phone:      dedalus.String("12345"),
-				Username:   dedalus.String("theUser"),
-				UserStatus: dedalus.Int(1),
+		dedalusgo.UserUpdateParams{
+			User: dedalusgo.UserParam{
+				ID:         dedalusgo.Int(10),
+				Email:      dedalusgo.String("john@email.com"),
+				FirstName:  dedalusgo.String("John"),
+				LastName:   dedalusgo.String("James"),
+				Password:   dedalusgo.String("12345"),
+				Phone:      dedalusgo.String("12345"),
+				Username:   dedalusgo.String("theUser"),
+				UserStatus: dedalusgo.Int(1),
 			},
 		},
 	)
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -117,13 +117,13 @@ func TestUserDelete(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.Users.Delete(context.TODO(), "username")
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -140,24 +140,24 @@ func TestUserNewWithListWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Users.NewWithList(context.TODO(), dedalus.UserNewWithListParams{
-		Items: []dedalus.UserParam{{
-			ID:         dedalus.Int(10),
-			Email:      dedalus.String("john@email.com"),
-			FirstName:  dedalus.String("John"),
-			LastName:   dedalus.String("James"),
-			Password:   dedalus.String("12345"),
-			Phone:      dedalus.String("12345"),
-			Username:   dedalus.String("theUser"),
-			UserStatus: dedalus.Int(1),
+	_, err := client.Users.NewWithList(context.TODO(), dedalusgo.UserNewWithListParams{
+		Items: []dedalusgo.UserParam{{
+			ID:         dedalusgo.Int(10),
+			Email:      dedalusgo.String("john@email.com"),
+			FirstName:  dedalusgo.String("John"),
+			LastName:   dedalusgo.String("James"),
+			Password:   dedalusgo.String("12345"),
+			Phone:      dedalusgo.String("12345"),
+			Username:   dedalusgo.String("theUser"),
+			UserStatus: dedalusgo.Int(1),
 		}},
 	})
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -174,16 +174,16 @@ func TestUserLoginWithOptionalParams(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Users.Login(context.TODO(), dedalus.UserLoginParams{
-		Password: dedalus.String("password"),
-		Username: dedalus.String("username"),
+	_, err := client.Users.Login(context.TODO(), dedalusgo.UserLoginParams{
+		Password: dedalusgo.String("password"),
+		Username: dedalusgo.String("username"),
 	})
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}
@@ -200,13 +200,13 @@ func TestUserLogout(t *testing.T) {
 	if !testutil.CheckTestServer(t, baseURL) {
 		return
 	}
-	client := dedalus.NewClient(
+	client := dedalusgo.NewClient(
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
 	err := client.Users.Logout(context.TODO())
 	if err != nil {
-		var apierr *dedalus.Error
+		var apierr *dedalusgo.Error
 		if errors.As(err, &apierr) {
 			t.Log(string(apierr.DumpRequest(true)))
 		}

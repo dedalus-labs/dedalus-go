@@ -1,6 +1,6 @@
 // File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
-package dedalus
+package dedalusgo
 
 import (
 	"github.com/dedalus-labs/dedalus-go/internal/apierror"
