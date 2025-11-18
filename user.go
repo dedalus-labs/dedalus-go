@@ -62,7 +62,7 @@ func (r *UserService) Get(ctx context.Context, username string, opts ...option.R
 // This can only be done by the logged in user.
 func (r *UserService) Update(ctx context.Context, existingUsername string, body UserUpdateParams, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("Accept", "")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	if existingUsername == "" {
 		err = errors.New("missing required existingUsername parameter")
 		return
@@ -75,7 +75,7 @@ func (r *UserService) Update(ctx context.Context, existingUsername string, body 
 // This can only be done by the logged in user.
 func (r *UserService) Delete(ctx context.Context, username string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("Accept", "")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	if username == "" {
 		err = errors.New("missing required username parameter")
 		return
@@ -104,7 +104,7 @@ func (r *UserService) Login(ctx context.Context, query UserLoginParams, opts ...
 // Logs out current logged in user session
 func (r *UserService) Logout(ctx context.Context, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("Accept", "")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	path := "user/logout"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, nil, opts...)
 	return
