@@ -69,7 +69,7 @@ func (r *PetService) Update(ctx context.Context, body PetUpdateParams, opts ...o
 // delete a pet
 func (r *PetService) Delete(ctx context.Context, petID int64, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("Accept", "")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	path := fmt.Sprintf("pet/%v", petID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return
@@ -95,7 +95,7 @@ func (r *PetService) FindByTags(ctx context.Context, query PetFindByTagsParams, 
 // Updates a pet in the store with form data
 func (r *PetService) UpdateByID(ctx context.Context, petID int64, body PetUpdateByIDParams, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("Accept", "")}, opts...)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	path := fmt.Sprintf("pet/%v", petID)
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, nil, opts...)
 	return
