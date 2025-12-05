@@ -102,7 +102,7 @@ func (r *PetService) UpdateByID(ctx context.Context, petID int64, body PetUpdate
 }
 
 // uploads an image
-func (r *PetService) UploadImage(ctx context.Context, petID int64, image io.Reader, body PetUploadImageParams, opts ...option.RequestOption) (res *PetUploadImageResponse, err error) {
+func (r *PetService) UploadImage(ctx context.Context, petID int64, image io.Reader, params PetUploadImageParams, opts ...option.RequestOption) (res *PetUploadImageResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithRequestBody("application/octet-stream", image)}, opts...)
 	path := fmt.Sprintf("pet/%v/uploadImage", petID)
