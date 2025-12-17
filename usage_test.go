@@ -24,6 +24,7 @@ func TestUsage(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
+	t.Skip("Prism tests are disabled")
 	order, err := client.Store.Orders.New(context.TODO(), dedalusgo.StoreOrderNewParams{})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
