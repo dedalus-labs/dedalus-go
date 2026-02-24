@@ -152,8 +152,8 @@ func (r *CategoryParam) UnmarshalJSON(data []byte) error {
 }
 
 type Pet struct {
-	Name      string   `json:"name,required"`
-	PhotoURLs []string `json:"photoUrls,required"`
+	Name      string   `json:"name" api:"required"`
+	PhotoURLs []string `json:"photoUrls" api:"required"`
 	ID        int64    `json:"id"`
 	Category  Category `json:"category"`
 	// pet status in the store
@@ -218,8 +218,8 @@ func (r *PetTag) UnmarshalJSON(data []byte) error {
 
 // The properties Name, PhotoURLs are required.
 type PetParam struct {
-	Name      string           `json:"name,required"`
-	PhotoURLs []string         `json:"photoUrls,omitzero,required"`
+	Name      string           `json:"name" api:"required"`
+	PhotoURLs []string         `json:"photoUrls,omitzero" api:"required"`
 	ID        param.Opt[int64] `json:"id,omitzero"`
 	Category  CategoryParam    `json:"category,omitzero"`
 	// pet status in the store
