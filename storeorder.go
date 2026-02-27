@@ -15,6 +15,8 @@ import (
 	"github.com/dedalus-labs/dedalus-go/shared"
 )
 
+// Access to Petstore orders
+//
 // StoreOrderService contains methods and other services that help with interacting
 // with the dedalus API.
 //

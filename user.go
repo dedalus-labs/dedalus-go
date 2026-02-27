@@ -20,6 +20,8 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
+// Operations about user
+//
 // UserService contains methods and other services that help with interacting with
 // the dedalus API.
 //
