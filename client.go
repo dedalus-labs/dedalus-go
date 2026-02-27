@@ -17,9 +17,12 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options []option.RequestOption
-	Pets    PetService
-	Store   StoreService
-	Users   UserService
+	// Everything about your Pets
+	Pets PetService
+	// Access to Petstore orders
+	Store StoreService
+	// Operations about user
+	Users UserService
 }
 
 // DefaultClientOptions read from the environment (PETSTORE_API_KEY,

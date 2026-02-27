@@ -11,6 +11,8 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
+// Access to Petstore orders
+//
 // StoreService contains methods and other services that help with interacting with
 // the dedalus API.
 //
@@ -19,7 +21,8 @@ import (
 // the [NewStoreService] method instead.
 type StoreService struct {
 	Options []option.RequestOption
-	Orders  StoreOrderService
+	// Access to Petstore orders
+	Orders StoreOrderService
 }
 
 // NewStoreService generates a new service that applies the given options to each

@@ -23,6 +23,8 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
+// Everything about your Pets
+//
 // PetService contains methods and other services that help with interacting with
 // the dedalus API.
 //
