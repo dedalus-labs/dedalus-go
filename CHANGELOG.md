@@ -1,0 +1,47 @@
+# Changelog
+
+## 0.1.0 (2026-03-05)
+
+Full Changelog: [v0.0.1...v0.1.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.1...v0.1.0)
+
+### Features
+
+* **api:** config update for dedalus-ai/dev ([efb7cd4](https://github.com/dedalus-labs/dedalus-go/commit/efb7cd447555b5843cb0ca09b527c487d648a445))
+* **client:** add a convenient param.SetJSON helper ([320a14a](https://github.com/dedalus-labs/dedalus-go/commit/320a14a2596de8e00a963d9f6eae99d7f480c1f2))
+* **encoder:** support bracket encoding form-data object members ([efe15cb](https://github.com/dedalus-labs/dedalus-go/commit/efe15cb0999a864413fe24070af36a119a251258))
+
+
+### Bug Fixes
+
+* allow canceling a request while it is waiting to retry ([127e012](https://github.com/dedalus-labs/dedalus-go/commit/127e012c1ab252eb9d34593e03f59bd19460e2c7))
+* bugfix for setting JSON keys with special characters ([08eea40](https://github.com/dedalus-labs/dedalus-go/commit/08eea40b01dc984c6fa049caed18201d61ab1f84))
+* **client:** correctly specify Accept header with */* instead of empty ([f5c0379](https://github.com/dedalus-labs/dedalus-go/commit/f5c0379bfd745bfb7d3297fedb3e89484ddaed7e))
+* **docs:** add missing pointer prefix to api.md return types ([ed51631](https://github.com/dedalus-labs/dedalus-go/commit/ed516312f3a47756e0067a31848f572e925171c7))
+* **docs:** fix mcp installation instructions for remote servers ([a8278fb](https://github.com/dedalus-labs/dedalus-go/commit/a8278fb807ab106f815c108cb48802e44d0313f6))
+* **encoder:** correctly serialize NullStruct ([f17f3cb](https://github.com/dedalus-labs/dedalus-go/commit/f17f3cb1659b0652553f87ec736316ee0532d477))
+* fix request delays for retrying to be more respectful of high requested delays ([aa84cfa](https://github.com/dedalus-labs/dedalus-go/commit/aa84cfaa6b89d78332e5a4b8b93c5a42c368802a))
+* **mcp:** correct code tool API endpoint ([80fb27b](https://github.com/dedalus-labs/dedalus-go/commit/80fb27bfb28f390202d005b231a6aa8a53cf8df1))
+* rename param to avoid collision ([1fb7da1](https://github.com/dedalus-labs/dedalus-go/commit/1fb7da10556985335542581a31eac5a90c308857))
+* skip usage tests that don't work with Prism ([aed2ecd](https://github.com/dedalus-labs/dedalus-go/commit/aed2ecd3c72ac3c80744e59d974d8af60089707c))
+
+
+### Chores
+
+* add float64 to valid types for RegisterFieldValidator ([53fb6de](https://github.com/dedalus-labs/dedalus-go/commit/53fb6de7fa499b0646e4d9920893be583fbcdff3))
+* bump gjson version ([f5a2dd8](https://github.com/dedalus-labs/dedalus-go/commit/f5a2dd8e4ea6fbf1e63121636fb4c7d80adcc890))
+* **ci:** add build step ([07af61f](https://github.com/dedalus-labs/dedalus-go/commit/07af61f2c458064711e34c77d390fbbf90b26da1))
+* **docs:** add missing descriptions ([823effe](https://github.com/dedalus-labs/dedalus-go/commit/823effe108ba4324fd67ee0a465b131e9d878e4a))
+* elide duplicate aliases ([53b49ac](https://github.com/dedalus-labs/dedalus-go/commit/53b49ac116aa55c94c65b1b67005bd8b1f46a8d3))
+* **internal:** codegen related update ([65de220](https://github.com/dedalus-labs/dedalus-go/commit/65de220ffec39712ed95f844dbbf9307f3a4f40e))
+* **internal:** codegen related update ([60dc5cf](https://github.com/dedalus-labs/dedalus-go/commit/60dc5cfb9ea894cec3f77d37642ba50cc20275c6))
+* **internal:** grammar fix (it's -&gt; its) ([33780b1](https://github.com/dedalus-labs/dedalus-go/commit/33780b1eb6304a52de6af841711c94deed6e3f71))
+* **internal:** move custom custom `json` tags to `api` ([2e71ce5](https://github.com/dedalus-labs/dedalus-go/commit/2e71ce58b0f6da528a63501077a476100aaafee7))
+* **internal:** remove mock server code ([407fd7e](https://github.com/dedalus-labs/dedalus-go/commit/407fd7e94e36924020e5f45205f710415c095b94))
+* **internal:** update `actions/checkout` version ([5de9dde](https://github.com/dedalus-labs/dedalus-go/commit/5de9ddebe612319feff93f9a8d719617f6a29bb9))
+* update mock server docs ([87edf2e](https://github.com/dedalus-labs/dedalus-go/commit/87edf2e08d8d70b1ea4e3122ad7f5de159a235c6))
+* update SDK settings ([5fd47f5](https://github.com/dedalus-labs/dedalus-go/commit/5fd47f54bbb7e62e334a322e096ed750d6062b3d))
+
+
+### Documentation
+
+* prominently feature MCP server setup in root SDK readmes ([e95906b](https://github.com/dedalus-labs/dedalus-go/commit/e95906b60f27d9cbc1ea121a174264fe529d8e18))
