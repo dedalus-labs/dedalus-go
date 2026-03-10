@@ -12,7 +12,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestUsage(t *testing.T) {
+func TestAutoPagination(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -24,16 +24,13 @@ func TestUsage(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	workspace, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
-		CreateParams: dedalus.CreateParams{
-			CPUs:         0,
-			ImageVersion: "image_version",
-			MemoryMiB:    0,
-			StorageGiB:   0,
-		},
-	})
-	if err != nil {
+	iter := client.Workspaces.ListAutoPaging(context.TODO(), dedalus.WorkspaceListParams{})
+	// The mock server isn't going to give us real pagination
+	for i := 0; i < 3 && iter.Next(); i++ {
+		workspace := iter.Current()
+		t.Logf("%+v\n", workspace.WorkspaceID)
+	}
+	if err := iter.Err(); err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
-	t.Logf("%+v\n", workspace.WorkspaceID)
 }

@@ -1,4 +1,4 @@
-package dedalusgo
+package dedalus
 
 import (
 	"github.com/dedalus-labs/dedalus-go/packages/param"
