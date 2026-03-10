@@ -6,7 +6,7 @@
 
 <!-- x-release-please-end -->
 
-The Dedalus Go library provides convenient access to the Dedalus REST API
+The Dedalus Go library provides convenient access to the [Dedalus REST API](https://docs.dedaluslabs.ai)
 from applications written in Go.
 
 It is generated with [Stainless](https://www.stainless.com/).
@@ -15,8 +15,8 @@ It is generated with [Stainless](https://www.stainless.com/).
 
 Use the Dedalus MCP Server to enable AI assistants to interact with this API, allowing them to explore endpoints, make test requests, and use documentation to help integrate this SDK into your application.
 
-[![Add to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=dedalus-mcp&config=eyJuYW1lIjoiZGVkYWx1cy1tY3AiLCJ0cmFuc3BvcnQiOiJodHRwIiwidXJsIjoiaHR0cHM6Ly9kZWRhbHVzLnN0bG1jcC5jb20iLCJoZWFkZXJzIjp7ImFwaV9rZXkiOiJNeSBBUEkgS2V5In19)
-[![Install in VS Code](https://img.shields.io/badge/_-Add_to_VS_Code-blue?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZmlsbD0iI0VFRSIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMzAuMjM1IDM5Ljg4NGEyLjQ5MSAyLjQ5MSAwIDAgMS0xLjc4MS0uNzNMMTIuNyAyNC43OGwtMy40NiAyLjYyNC0zLjQwNiAyLjU4MmExLjY2NSAxLjY2NSAwIDAgMS0xLjA4Mi4zMzggMS42NjQgMS42NjQgMCAwIDEtMS4wNDYtLjQzMWwtMi4yLTJhMS42NjYgMS42NjYgMCAwIDEgMC0yLjQ2M0w3LjQ1OCAyMCA0LjY3IDE3LjQ1MyAxLjUwNyAxNC41N2ExLjY2NSAxLjY2NSAwIDAgMSAwLTIuNDYzbDIuMi0yYTEuNjY1IDEuNjY1IDAgMCAxIDIuMTMtLjA5N2w2Ljg2MyA1LjIwOUwyOC40NTIuODQ0YTIuNDg4IDIuNDg4IDAgMCAxIDEuODQxLS43MjljLjM1MS4wMDkuNjk5LjA5MSAxLjAxOS4yNDVsOC4yMzYgMy45NjFhMi41IDIuNSAwIDAgMSAxLjQxNSAyLjI1M3YuMDk5LS4wNDVWMzMuMzd2LS4wNDUuMDk1YTIuNTAxIDIuNTAxIDAgMCAxLTEuNDE2IDIuMjU3bC04LjIzNSAzLjk2MWEyLjQ5MiAyLjQ5MiAwIDAgMS0xLjA3Ny4yNDZabS43MTYtMjguOTQ3LTExLjk0OCA5LjA2MiAxMS45NTIgOS4wNjUtLjAwNC0xOC4xMjdaIi8+PC9zdmc+)](https://vscode.stainless.com/mcp/%7B%22name%22%3A%22dedalus-mcp%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fdedalus.stlmcp.com%22%2C%22headers%22%3A%7B%22api_key%22%3A%22My%20API%20Key%22%7D%7D)
+[![Add to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=dedalus-mcp&config=eyJuYW1lIjoiZGVkYWx1cy1tY3AiLCJ0cmFuc3BvcnQiOiJodHRwIiwidXJsIjoiaHR0cHM6Ly9kZWRhbHVzLnN0bG1jcC5jb20iLCJoZWFkZXJzIjp7IngtYXBpLWtleSI6Ik15IFggQVBJIEtleSIsIngtZGVkYWx1cy1hcGkta2V5IjoiTXkgQVBJIEtleSJ9fQ)
+[![Install in VS Code](https://img.shields.io/badge/_-Add_to_VS_Code-blue?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHBhdGggZmlsbD0iI0VFRSIgZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMzAuMjM1IDM5Ljg4NGEyLjQ5MSAyLjQ5MSAwIDAgMS0xLjc4MS0uNzNMMTIuNyAyNC43OGwtMy40NiAyLjYyNC0zLjQwNiAyLjU4MmExLjY2NSAxLjY2NSAwIDAgMS0xLjA4Mi4zMzggMS42NjQgMS42NjQgMCAwIDEtMS4wNDYtLjQzMWwtMi4yLTJhMS42NjYgMS42NjYgMCAwIDEgMC0yLjQ2M0w3LjQ1OCAyMCA0LjY3IDE3LjQ1MyAxLjUwNyAxNC41N2ExLjY2NSAxLjY2NSAwIDAgMSAwLTIuNDYzbDIuMi0yYTEuNjY1IDEuNjY1IDAgMCAxIDIuMTMtLjA5N2w2Ljg2MyA1LjIwOUwyOC40NTIuODQ0YTIuNDg4IDIuNDg4IDAgMCAxIDEuODQxLS43MjljLjM1MS4wMDkuNjk5LjA5MSAxLjAxOS4yNDVsOC4yMzYgMy45NjFhMi41IDIuNSAwIDAgMSAxLjQxNSAyLjI1M3YuMDk5LS4wNDVWMzMuMzd2LS4wNDUuMDk1YTIuNTAxIDIuNTAxIDAgMCAxLTEuNDE2IDIuMjU3bC04LjIzNSAzLjk2MWEyLjQ5MiAyLjQ5MiAwIDAgMS0xLjA3Ny4yNDZabS43MTYtMjguOTQ3LTExLjk0OCA5LjA2MiAxMS45NTIgOS4wNjUtLjAwNC0xOC4xMjdaIi8+PC9zdmc+)](https://vscode.stainless.com/mcp/%7B%22name%22%3A%22dedalus-mcp%22%2C%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fdedalus.stlmcp.com%22%2C%22headers%22%3A%7B%22x-api-key%22%3A%22My%20X%20API%20Key%22%2C%22x-dedalus-api-key%22%3A%22My%20API%20Key%22%7D%7D)
 
 > Note: You may need to set environment variables in your MCP client.
 
@@ -26,7 +26,7 @@ Use the Dedalus MCP Server to enable AI assistants to interact with this API, al
 
 ```go
 import (
-	"github.com/dedalus-labs/dedalus-go" // imported as dedalusgo
+	"github.com/dedalus-labs/dedalus-go" // imported as dedalus
 )
 ```
 
@@ -62,27 +62,34 @@ import (
 )
 
 func main() {
-	client := dedalusgo.NewClient(
-		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("PETSTORE_API_KEY")
+	client := dedalus.NewClient(
+		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("DEDALUS_API_KEY")
 	)
-	order, err := client.Store.Orders.New(context.TODO(), dedalusgo.StoreOrderNewParams{})
+	workspace, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			CPUs:         0,
+			ImageVersion: "image_version",
+			MemoryMiB:    0,
+			StorageGiB:   0,
+		},
+	})
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Printf("%+v\n", order.ID)
+	fmt.Printf("%+v\n", workspace.WorkspaceID)
 }
 
 ```
 
 ### Request fields
 
-The dedalusgo library uses the [`omitzero`](https://tip.golang.org/doc/go1.24#encodingjsonpkgencodingjson)
+The dedalus library uses the [`omitzero`](https://tip.golang.org/doc/go1.24#encodingjsonpkgencodingjson)
 semantics from the Go 1.24+ `encoding/json` release for request fields.
 
 Required primitive fields (`int64`, `string`, etc.) feature the tag <code>\`json:"...,required"\`</code>. These
 fields are always serialized, even their zero values.
 
-Optional primitive types are wrapped in a `param.Opt[T]`. These fields can be set with the provided constructors, `dedalusgo.String(string)`, `dedalusgo.Int(int64)`, etc.
+Optional primitive types are wrapped in a `param.Opt[T]`. These fields can be set with the provided constructors, `dedalus.String(string)`, `dedalus.Int(int64)`, etc.
 
 Any `param.Opt[T]`, map, slice, struct or string enum uses the
 tag <code>\`json:"...,omitzero"\`</code>. Its zero value is considered omitted.
@@ -90,17 +97,17 @@ tag <code>\`json:"...,omitzero"\`</code>. Its zero value is considered omitted.
 The `param.IsOmitted(any)` function can confirm the presence of any `omitzero` field.
 
 ```go
-p := dedalusgo.ExampleParams{
-	ID:   "id_xxx",                // required property
-	Name: dedalusgo.String("..."), // optional property
+p := dedalus.ExampleParams{
+	ID:   "id_xxx",              // required property
+	Name: dedalus.String("..."), // optional property
 
-	Point: dedalusgo.Point{
-		X: 0,                // required field will serialize as 0
-		Y: dedalusgo.Int(1), // optional field will serialize as 1
+	Point: dedalus.Point{
+		X: 0,              // required field will serialize as 0
+		Y: dedalus.Int(1), // optional field will serialize as 1
 		// ... omitted non-required fields will not be serialized
 	},
 
-	Origin: dedalusgo.Origin{}, // the zero value of [Origin] is considered omitted
+	Origin: dedalus.Origin{}, // the zero value of [Origin] is considered omitted
 }
 ```
 
@@ -129,7 +136,7 @@ p.SetExtraFields(map[string]any{
 })
 
 // Send a number instead of an object
-custom := param.Override[dedalusgo.FooParams](12)
+custom := param.Override[dedalus.FooParams](12)
 ```
 
 ### Request unions
@@ -270,12 +277,12 @@ This library uses the functional options pattern. Functions defined in the
 requests. For example:
 
 ```go
-client := dedalusgo.NewClient(
+client := dedalus.NewClient(
 	// Adds a header to every request made by the client
 	option.WithHeader("X-Some-Header", "custom_header_info"),
 )
 
-client.Store.ListInventory(context.TODO(), ...,
+client.Workspaces.New(context.TODO(), ...,
 	// Override the header
 	option.WithHeader("X-Some-Header", "some_other_custom_header_info"),
 	// Add an undocumented field to the request body, using sjson syntax
@@ -293,27 +300,62 @@ This library provides some conveniences for working with paginated list endpoint
 
 You can use `.ListAutoPaging()` methods to iterate through items across all pages:
 
+```go
+iter := client.Workspaces.ListAutoPaging(context.TODO(), dedalus.WorkspaceListParams{})
+// Automatically fetches more pages as needed.
+for iter.Next() {
+	workspace := iter.Current()
+	fmt.Printf("%+v\n", workspace)
+}
+if err := iter.Err(); err != nil {
+	panic(err.Error())
+}
+```
+
 Or you can use simple `.List()` methods to fetch a single page and receive a standard response object
 with additional helper methods like `.GetNextPage()`, e.g.:
+
+```go
+page, err := client.Workspaces.List(context.TODO(), dedalus.WorkspaceListParams{})
+for page != nil {
+	for _, workspace := range page.Items {
+		fmt.Printf("%+v\n", workspace)
+	}
+	page, err = page.GetNextPage()
+}
+if err != nil {
+	panic(err.Error())
+}
+```
 
 ### Errors
 
 When the API returns a non-success status code, we return an error with type
-`*dedalusgo.Error`. This contains the `StatusCode`, `*http.Request`, and
+`*dedalus.Error`. This contains the `StatusCode`, `*http.Request`, and
 `*http.Response` values of the request, as well as the JSON of the error body
 (much like other response objects in the SDK).
 
 To handle errors, we recommend that you use the `errors.As` pattern:
 
 ```go
-_, err := client.Store.ListInventory(context.TODO())
+_, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
+	CreateParams: dedalus.CreateParams{
+		CPUs:         0,
+		ImageVersion: "image_version",
+		MemoryMiB:    0,
+		StorageGiB:   0,
+	},
+})
 if err != nil {
-	var apierr *dedalusgo.Error
+	var apierr *dedalus.Error
 	if errors.As(err, &apierr) {
 		println(string(apierr.DumpRequest(true)))  // Prints the serialized HTTP request
 		println(string(apierr.DumpResponse(true))) // Prints the serialized HTTP response
+		println(apierr.ErrorCode)                  // IDEMPOTENCY_KEY_REUSED
+		println(apierr.Message)                    // idempotency key reused with different request parameters
+		println(apierr.Retryable)                  // false
 	}
-	panic(err.Error()) // GET "/store/inventory": 400 Bad Request { ... }
+	panic(err.Error()) // GET "/v1/workspaces": 400 Bad Request { ... }
 }
 ```
 
@@ -331,8 +373,16 @@ To set a per-retry timeout, use `option.WithRequestTimeout()`.
 // This sets the timeout for the request, including all the retries.
 ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 defer cancel()
-client.Store.ListInventory(
+client.Workspaces.New(
 	ctx,
+	dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			CPUs:         0,
+			ImageVersion: "image_version",
+			MemoryMiB:    0,
+			StorageGiB:   0,
+		},
+	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
 )
@@ -348,7 +398,7 @@ The file name and content-type can be customized by implementing `Name() string`
 string` on the run-time type of `io.Reader`. Note that `os.File` implements `Name() string`, so a
 file returned by `os.Open` will be sent with the file name on disk.
 
-We also provide a helper `dedalusgo.File(reader io.Reader, filename string, contentType string)`
+We also provide a helper `dedalus.File(reader io.Reader, filename string, contentType string)`
 which can be used to wrap any `io.Reader` with the appropriate file name and content type.
 
 ### Retries
@@ -361,12 +411,23 @@ You can use the `WithMaxRetries` option to configure or disable this:
 
 ```go
 // Configure the default for all requests:
-client := dedalusgo.NewClient(
+client := dedalus.NewClient(
 	option.WithMaxRetries(0), // default is 2
 )
 
 // Override per-request:
-client.Store.ListInventory(context.TODO(), option.WithMaxRetries(5))
+client.Workspaces.New(
+	context.TODO(),
+	dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			CPUs:         0,
+			ImageVersion: "image_version",
+			MemoryMiB:    0,
+			StorageGiB:   0,
+		},
+	},
+	option.WithMaxRetries(5),
+)
 ```
 
 ### Accessing raw response data (e.g. response headers)
@@ -377,11 +438,22 @@ you need to examine response headers, status codes, or other details.
 ```go
 // Create a variable to store the HTTP response
 var response *http.Response
-response, err := client.Store.ListInventory(context.TODO(), option.WithResponseInto(&response))
+workspace, err := client.Workspaces.New(
+	context.TODO(),
+	dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			CPUs:         0,
+			ImageVersion: "image_version",
+			MemoryMiB:    0,
+			StorageGiB:   0,
+		},
+	},
+	option.WithResponseInto(&response),
+)
 if err != nil {
 	// handle error
 }
-fmt.Printf("%+v\n", response)
+fmt.Printf("%+v\n", workspace)
 
 fmt.Printf("Status Code: %d\n", response.StatusCode)
 fmt.Printf("Headers: %+#v\n", response.Header)
@@ -422,7 +494,7 @@ or the `option.WithJSONSet()` methods.
 params := FooNewParams{
     ID:   "id_xxxx",
     Data: FooNewParamsData{
-        FirstName: dedalusgo.String("John"),
+        FirstName: dedalus.String("John"),
     },
 }
 client.Foo.New(context.Background(), params, option.WithJSONSet("data.last_name", "Doe"))
@@ -457,7 +529,7 @@ func Logger(req *http.Request, next option.MiddlewareNext) (res *http.Response, 
     return res, err
 }
 
-client := dedalusgo.NewClient(
+client := dedalus.NewClient(
 	option.WithMiddleware(Logger),
 )
 ```
