@@ -38,7 +38,7 @@ func TestUserAgentHeader(t *testing.T) {
 			},
 		}),
 	)
-	client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+	_, _ = client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
 			CPUs:         0,
 			ImageVersion: "image_version",
