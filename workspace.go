@@ -46,7 +46,7 @@ func (r *WorkspaceService) New(ctx context.Context, body WorkspaceNewParams, opt
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/workspaces"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
-	return
+	return res, err
 }
 
 // Get workspace
@@ -54,11 +54,11 @@ func (r *WorkspaceService) Get(ctx context.Context, workspaceID string, opts ...
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
 		err = errors.New("missing required workspace_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/workspaces/%s", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // Update workspace
@@ -69,11 +69,11 @@ func (r *WorkspaceService) Update(ctx context.Context, workspaceID string, param
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
 		err = errors.New("missing required workspace_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/workspaces/%s", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, params, &res, opts...)
-	return
+	return res, err
 }
 
 // List workspaces
@@ -107,11 +107,11 @@ func (r *WorkspaceService) Delete(ctx context.Context, workspaceID string, body 
 	opts = slices.Concat(r.Options, opts)
 	if workspaceID == "" {
 		err = errors.New("missing required workspace_id parameter")
-		return
+		return nil, err
 	}
 	path := fmt.Sprintf("v1/workspaces/%s", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
-	return
+	return res, err
 }
 
 // The properties CPUs, ImageVersion, MemoryMiB, StorageGiB are required.
