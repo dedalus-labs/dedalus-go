@@ -213,8 +213,6 @@ type Workspace struct {
 	// CPU in vCPUs.
 	VCPU        float64 `json:"vcpu" api:"required"`
 	WorkspaceID string  `json:"workspace_id" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema string `json:"$schema" format:"uri"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		DesiredState respjson.Field
@@ -223,7 +221,6 @@ type Workspace struct {
 		StorageGiB   respjson.Field
 		VCPU         respjson.Field
 		WorkspaceID  respjson.Field
-		Schema       respjson.Field
 		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
@@ -244,14 +241,11 @@ const (
 )
 
 type WorkspaceList struct {
-	Items []WorkspaceListItem `json:"items" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema     string `json:"$schema" format:"uri"`
-	NextCursor string `json:"next_cursor"`
+	Items      []WorkspaceListItem `json:"items" api:"required"`
+	NextCursor string              `json:"next_cursor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
-		Schema      respjson.Field
 		NextCursor  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
