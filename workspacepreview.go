@@ -70,7 +70,7 @@ func (r *WorkspacePreviewService) Get(ctx context.Context, previewID string, que
 }
 
 // List previews
-func (r *WorkspacePreviewService) List(ctx context.Context, workspaceID string, query WorkspacePreviewListParams, opts ...option.RequestOption) (res *pagination.PreviewList[Preview], err error) {
+func (r *WorkspacePreviewService) List(ctx context.Context, workspaceID string, query WorkspacePreviewListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Preview], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -92,8 +92,8 @@ func (r *WorkspacePreviewService) List(ctx context.Context, workspaceID string, 
 }
 
 // List previews
-func (r *WorkspacePreviewService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspacePreviewListParams, opts ...option.RequestOption) *pagination.PreviewListAutoPager[Preview] {
-	return pagination.NewPreviewListAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *WorkspacePreviewService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspacePreviewListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Preview] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Delete preview

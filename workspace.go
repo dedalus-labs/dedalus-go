@@ -87,7 +87,7 @@ func (r *WorkspaceService) Update(ctx context.Context, workspaceID string, param
 }
 
 // List workspaces
-func (r *WorkspaceService) List(ctx context.Context, query WorkspaceListParams, opts ...option.RequestOption) (res *pagination.WorkspaceList[WorkspaceListItem], err error) {
+func (r *WorkspaceService) List(ctx context.Context, query WorkspaceListParams, opts ...option.RequestOption) (res *pagination.CursorPage[WorkspaceListItem], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -105,8 +105,8 @@ func (r *WorkspaceService) List(ctx context.Context, query WorkspaceListParams, 
 }
 
 // List workspaces
-func (r *WorkspaceService) ListAutoPaging(ctx context.Context, query WorkspaceListParams, opts ...option.RequestOption) *pagination.WorkspaceListAutoPager[WorkspaceListItem] {
-	return pagination.NewWorkspaceListAutoPager(r.List(ctx, query, opts...))
+func (r *WorkspaceService) ListAutoPaging(ctx context.Context, query WorkspaceListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[WorkspaceListItem] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, query, opts...))
 }
 
 // Destroy workspace
