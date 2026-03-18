@@ -40,10 +40,10 @@ func TestUserAgentHeader(t *testing.T) {
 	)
 	_, _ = client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			CPUs:         0,
 			ImageVersion: "image_version",
 			MemoryMiB:    0,
 			StorageGiB:   0,
+			VCPU:         0,
 		},
 	})
 	if userAgent != fmt.Sprintf("Dedalus/Go %s", internal.PackageVersion) {
@@ -71,10 +71,10 @@ func TestRetryAfter(t *testing.T) {
 	)
 	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			CPUs:         0,
 			ImageVersion: "image_version",
 			MemoryMiB:    0,
 			StorageGiB:   0,
+			VCPU:         0,
 		},
 	})
 	if err == nil {
@@ -113,10 +113,10 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 	)
 	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			CPUs:         0,
 			ImageVersion: "image_version",
 			MemoryMiB:    0,
 			StorageGiB:   0,
+			VCPU:         0,
 		},
 	})
 	if err == nil {
@@ -150,10 +150,10 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 	)
 	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			CPUs:         0,
 			ImageVersion: "image_version",
 			MemoryMiB:    0,
 			StorageGiB:   0,
+			VCPU:         0,
 		},
 	})
 	if err == nil {
@@ -186,10 +186,10 @@ func TestRetryAfterMs(t *testing.T) {
 	)
 	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			CPUs:         0,
 			ImageVersion: "image_version",
 			MemoryMiB:    0,
 			StorageGiB:   0,
+			VCPU:         0,
 		},
 	})
 	if err == nil {
@@ -216,10 +216,10 @@ func TestContextCancel(t *testing.T) {
 	cancel()
 	_, err := client.Workspaces.New(cancelCtx, dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			CPUs:         0,
 			ImageVersion: "image_version",
 			MemoryMiB:    0,
 			StorageGiB:   0,
+			VCPU:         0,
 		},
 	})
 	if err == nil {
@@ -243,10 +243,10 @@ func TestContextCancelDelay(t *testing.T) {
 	defer cancel()
 	_, err := client.Workspaces.New(cancelCtx, dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			CPUs:         0,
 			ImageVersion: "image_version",
 			MemoryMiB:    0,
 			StorageGiB:   0,
+			VCPU:         0,
 		},
 	})
 	if err == nil {
@@ -276,10 +276,10 @@ func TestContextDeadline(t *testing.T) {
 		)
 		_, err := client.Workspaces.New(deadlineCtx, dedalus.WorkspaceNewParams{
 			CreateParams: dedalus.CreateParams{
-				CPUs:         0,
 				ImageVersion: "image_version",
 				MemoryMiB:    0,
 				StorageGiB:   0,
+				VCPU:         0,
 			},
 		})
 		if err == nil {

@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestWorkspaceNewWithOptionalParams(t *testing.T) {
+func TestWorkspaceExecutionNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,67 +25,21 @@ func TestWorkspaceNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
-		CreateParams: dedalus.CreateParams{
-			ImageVersion: "image_version",
-			MemoryMiB:    0,
-			StorageGiB:   0,
-			VCPU:         0,
-		},
-	})
-	if err != nil {
-		var apierr *dedalus.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestWorkspaceGet(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := dedalus.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Workspaces.Get(context.TODO(), "workspace_id")
-	if err != nil {
-		var apierr *dedalus.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestWorkspaceUpdateWithOptionalParams(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := dedalus.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Workspaces.Update(
+	_, err := client.Workspaces.Executions.New(
 		context.TODO(),
 		"workspace_id",
-		dedalus.WorkspaceUpdateParams{
-			UpdateParams: dedalus.UpdateParams{
-				MemoryMiB:  dedalus.Int(0),
-				StorageGiB: dedalus.Int(0),
-				VCPU:       dedalus.Float(0),
+		dedalus.WorkspaceExecutionNewParams{
+			ExecutionCreateParams: dedalus.ExecutionCreateParams{
+				Command:      []string{"string"},
+				CapturePaths: []string{"string"},
+				Cwd:          dedalus.String("cwd"),
+				Env: map[string]string{
+					"foo": "string",
+				},
+				Stdin:        dedalus.String("stdin"),
+				TimeoutMs:    dedalus.Int(0),
+				WakeIfNeeded: dedalus.Bool(true),
 			},
-			IfMatch: "If-Match",
 		},
 	)
 	if err != nil {
@@ -97,7 +51,7 @@ func TestWorkspaceUpdateWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceListWithOptionalParams(t *testing.T) {
+func TestWorkspaceExecutionGet(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -109,10 +63,13 @@ func TestWorkspaceListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.List(context.TODO(), dedalus.WorkspaceListParams{
-		Cursor: dedalus.String("cursor"),
-		Limit:  dedalus.Int(0),
-	})
+	_, err := client.Workspaces.Executions.Get(
+		context.TODO(),
+		"execution_id",
+		dedalus.WorkspaceExecutionGetParams{
+			WorkspaceID: "workspace_id",
+		},
+	)
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -122,7 +79,7 @@ func TestWorkspaceListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceDelete(t *testing.T) {
+func TestWorkspaceExecutionListWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -134,11 +91,98 @@ func TestWorkspaceDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Delete(
+	_, err := client.Workspaces.Executions.List(
 		context.TODO(),
 		"workspace_id",
-		dedalus.WorkspaceDeleteParams{
-			IfMatch: "If-Match",
+		dedalus.WorkspaceExecutionListParams{
+			Cursor: dedalus.String("cursor"),
+			Limit:  dedalus.Int(0),
+		},
+	)
+	if err != nil {
+		var apierr *dedalus.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkspaceExecutionDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := dedalus.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workspaces.Executions.Delete(
+		context.TODO(),
+		"execution_id",
+		dedalus.WorkspaceExecutionDeleteParams{
+			WorkspaceID: "workspace_id",
+		},
+	)
+	if err != nil {
+		var apierr *dedalus.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkspaceExecutionEventsWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := dedalus.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workspaces.Executions.Events(
+		context.TODO(),
+		"execution_id",
+		dedalus.WorkspaceExecutionEventsParams{
+			WorkspaceID: "workspace_id",
+			Cursor:      dedalus.String("cursor"),
+			Limit:       dedalus.Int(0),
+		},
+	)
+	if err != nil {
+		var apierr *dedalus.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkspaceExecutionOutput(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := dedalus.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workspaces.Executions.Output(
+		context.TODO(),
+		"execution_id",
+		dedalus.WorkspaceExecutionOutputParams{
+			WorkspaceID: "workspace_id",
 		},
 	)
 	if err != nil {
