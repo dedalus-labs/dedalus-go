@@ -104,8 +104,6 @@ type Artifact struct {
 	Name        string    `json:"name" api:"required"`
 	SizeBytes   int64     `json:"size_bytes" api:"required"`
 	WorkspaceID string    `json:"workspace_id" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema      string    `json:"$schema" format:"uri"`
 	DownloadURL string    `json:"download_url"`
 	ExecutionID string    `json:"execution_id"`
 	ExpiresAt   time.Time `json:"expires_at" format:"date-time"`
@@ -118,7 +116,6 @@ type Artifact struct {
 		Name        respjson.Field
 		SizeBytes   respjson.Field
 		WorkspaceID respjson.Field
-		Schema      respjson.Field
 		DownloadURL respjson.Field
 		ExecutionID respjson.Field
 		ExpiresAt   respjson.Field
@@ -136,14 +133,11 @@ func (r *Artifact) UnmarshalJSON(data []byte) error {
 }
 
 type ArtifactList struct {
-	Items []Artifact `json:"items" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema     string `json:"$schema" format:"uri"`
-	NextCursor string `json:"next_cursor"`
+	Items      []Artifact `json:"items" api:"required"`
+	NextCursor string     `json:"next_cursor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
-		Schema      respjson.Field
 		NextCursor  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string

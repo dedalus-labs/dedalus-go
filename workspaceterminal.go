@@ -116,15 +116,13 @@ type Terminal struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	Height    int64     `json:"height" api:"required"`
 	// Any of "wake_in_progress", "ready", "closed", "expired", "failed".
-	Status      TerminalStatus `json:"status" api:"required"`
-	TerminalID  string         `json:"terminal_id" api:"required"`
-	Width       int64          `json:"width" api:"required"`
-	WorkspaceID string         `json:"workspace_id" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema       string    `json:"$schema" format:"uri"`
-	ErrorCode    string    `json:"error_code"`
-	ErrorMessage string    `json:"error_message"`
-	ExpiresAt    time.Time `json:"expires_at" format:"date-time"`
+	Status       TerminalStatus `json:"status" api:"required"`
+	TerminalID   string         `json:"terminal_id" api:"required"`
+	Width        int64          `json:"width" api:"required"`
+	WorkspaceID  string         `json:"workspace_id" api:"required"`
+	ErrorCode    string         `json:"error_code"`
+	ErrorMessage string         `json:"error_message"`
+	ExpiresAt    time.Time      `json:"expires_at" format:"date-time"`
 	// Any of "websocket".
 	Protocol     TerminalProtocol `json:"protocol"`
 	ReadyAt      time.Time        `json:"ready_at" format:"date-time"`
@@ -138,7 +136,6 @@ type Terminal struct {
 		TerminalID   respjson.Field
 		Width        respjson.Field
 		WorkspaceID  respjson.Field
-		Schema       respjson.Field
 		ErrorCode    respjson.Field
 		ErrorMessage respjson.Field
 		ExpiresAt    respjson.Field
@@ -412,14 +409,11 @@ func (r *TerminalInputEventParam) UnmarshalJSON(data []byte) error {
 }
 
 type TerminalList struct {
-	Items []Terminal `json:"items" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema     string `json:"$schema" format:"uri"`
-	NextCursor string `json:"next_cursor"`
+	Items      []Terminal `json:"items" api:"required"`
+	NextCursor string     `json:"next_cursor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
-		Schema      respjson.Field
 		NextCursor  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string

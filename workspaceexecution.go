@@ -183,25 +183,23 @@ type Execution struct {
 	ExecutionID string    `json:"execution_id" api:"required"`
 	// Any of "wake_in_progress", "queued", "running", "succeeded", "failed",
 	// "cancelled", "expired".
-	Status      ExecutionStatus `json:"status" api:"required"`
-	WorkspaceID string          `json:"workspace_id" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema          string        `json:"$schema" format:"uri"`
-	Artifacts       []ArtifactRef `json:"artifacts" api:"nullable"`
-	CompletedAt     time.Time     `json:"completed_at" format:"date-time"`
-	Cwd             string        `json:"cwd"`
-	EnvKeys         []string      `json:"env_keys" api:"nullable"`
-	ErrorCode       string        `json:"error_code"`
-	ErrorMessage    string        `json:"error_message"`
-	ExitCode        int64         `json:"exit_code"`
-	ExpiresAt       time.Time     `json:"expires_at" format:"date-time"`
-	RetryAfterMs    int64         `json:"retry_after_ms"`
-	Signal          int64         `json:"signal"`
-	StartedAt       time.Time     `json:"started_at" format:"date-time"`
-	StderrBytes     int64         `json:"stderr_bytes"`
-	StderrTruncated bool          `json:"stderr_truncated"`
-	StdoutBytes     int64         `json:"stdout_bytes"`
-	StdoutTruncated bool          `json:"stdout_truncated"`
+	Status          ExecutionStatus `json:"status" api:"required"`
+	WorkspaceID     string          `json:"workspace_id" api:"required"`
+	Artifacts       []ArtifactRef   `json:"artifacts" api:"nullable"`
+	CompletedAt     time.Time       `json:"completed_at" format:"date-time"`
+	Cwd             string          `json:"cwd"`
+	EnvKeys         []string        `json:"env_keys" api:"nullable"`
+	ErrorCode       string          `json:"error_code"`
+	ErrorMessage    string          `json:"error_message"`
+	ExitCode        int64           `json:"exit_code"`
+	ExpiresAt       time.Time       `json:"expires_at" format:"date-time"`
+	RetryAfterMs    int64           `json:"retry_after_ms"`
+	Signal          int64           `json:"signal"`
+	StartedAt       time.Time       `json:"started_at" format:"date-time"`
+	StderrBytes     int64           `json:"stderr_bytes"`
+	StderrTruncated bool            `json:"stderr_truncated"`
+	StdoutBytes     int64           `json:"stdout_bytes"`
+	StdoutTruncated bool            `json:"stdout_truncated"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Command         respjson.Field
@@ -209,7 +207,6 @@ type Execution struct {
 		ExecutionID     respjson.Field
 		Status          respjson.Field
 		WorkspaceID     respjson.Field
-		Schema          respjson.Field
 		Artifacts       respjson.Field
 		CompletedAt     respjson.Field
 		Cwd             respjson.Field
@@ -323,14 +320,11 @@ const (
 )
 
 type ExecutionEvents struct {
-	Items []ExecutionEvent `json:"items" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema     string `json:"$schema" format:"uri"`
-	NextCursor string `json:"next_cursor"`
+	Items      []ExecutionEvent `json:"items" api:"required"`
+	NextCursor string           `json:"next_cursor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
-		Schema      respjson.Field
 		NextCursor  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -344,14 +338,11 @@ func (r *ExecutionEvents) UnmarshalJSON(data []byte) error {
 }
 
 type ExecutionList struct {
-	Items []Execution `json:"items" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema     string `json:"$schema" format:"uri"`
-	NextCursor string `json:"next_cursor"`
+	Items      []Execution `json:"items" api:"required"`
+	NextCursor string      `json:"next_cursor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
-		Schema      respjson.Field
 		NextCursor  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
@@ -365,9 +356,7 @@ func (r *ExecutionList) UnmarshalJSON(data []byte) error {
 }
 
 type ExecutionOutput struct {
-	ExecutionID string `json:"execution_id" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema          string `json:"$schema" format:"uri"`
+	ExecutionID     string `json:"execution_id" api:"required"`
 	Stderr          string `json:"stderr"`
 	StderrBytes     int64  `json:"stderr_bytes"`
 	StderrTruncated bool   `json:"stderr_truncated"`
@@ -377,7 +366,6 @@ type ExecutionOutput struct {
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ExecutionID     respjson.Field
-		Schema          respjson.Field
 		Stderr          respjson.Field
 		StderrBytes     respjson.Field
 		StderrTruncated respjson.Field

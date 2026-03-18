@@ -117,13 +117,11 @@ type Preview struct {
 	Port      int64     `json:"port" api:"required"`
 	PreviewID string    `json:"preview_id" api:"required"`
 	// Any of "wake_in_progress", "ready", "closed", "expired", "failed".
-	Status      PreviewStatus `json:"status" api:"required"`
-	WorkspaceID string        `json:"workspace_id" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema       string    `json:"$schema" format:"uri"`
-	ErrorCode    string    `json:"error_code"`
-	ErrorMessage string    `json:"error_message"`
-	ExpiresAt    time.Time `json:"expires_at" format:"date-time"`
+	Status       PreviewStatus `json:"status" api:"required"`
+	WorkspaceID  string        `json:"workspace_id" api:"required"`
+	ErrorCode    string        `json:"error_code"`
+	ErrorMessage string        `json:"error_message"`
+	ExpiresAt    time.Time     `json:"expires_at" format:"date-time"`
 	// Any of "http", "https".
 	Protocol     PreviewProtocol `json:"protocol"`
 	ReadyAt      time.Time       `json:"ready_at" format:"date-time"`
@@ -136,7 +134,6 @@ type Preview struct {
 		PreviewID    respjson.Field
 		Status       respjson.Field
 		WorkspaceID  respjson.Field
-		Schema       respjson.Field
 		ErrorCode    respjson.Field
 		ErrorMessage respjson.Field
 		ExpiresAt    respjson.Field
@@ -197,14 +194,11 @@ const (
 )
 
 type PreviewList struct {
-	Items []Preview `json:"items" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema     string `json:"$schema" format:"uri"`
-	NextCursor string `json:"next_cursor"`
+	Items      []Preview `json:"items" api:"required"`
+	NextCursor string    `json:"next_cursor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
-		Schema      respjson.Field
 		NextCursor  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
