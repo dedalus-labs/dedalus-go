@@ -70,7 +70,7 @@ func (r *WorkspaceSSHService) Get(ctx context.Context, sessionID string, query W
 }
 
 // List SSH sessions
-func (r *WorkspaceSSHService) List(ctx context.Context, workspaceID string, query WorkspaceSSHListParams, opts ...option.RequestOption) (res *pagination.SSHSessionList[SSHSession], err error) {
+func (r *WorkspaceSSHService) List(ctx context.Context, workspaceID string, query WorkspaceSSHListParams, opts ...option.RequestOption) (res *pagination.CursorPage[SSHSession], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -92,8 +92,8 @@ func (r *WorkspaceSSHService) List(ctx context.Context, workspaceID string, quer
 }
 
 // List SSH sessions
-func (r *WorkspaceSSHService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceSSHListParams, opts ...option.RequestOption) *pagination.SSHSessionListAutoPager[SSHSession] {
-	return pagination.NewSSHSessionListAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *WorkspaceSSHService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceSSHListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[SSHSession] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Delete SSH session
@@ -167,23 +167,20 @@ type SSHSession struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	SessionID string    `json:"session_id" api:"required"`
 	// Any of "wake_in_progress", "ready", "closed", "expired", "failed".
-	Status      SSHSessionStatus `json:"status" api:"required"`
-	WorkspaceID string           `json:"workspace_id" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema       string        `json:"$schema" format:"uri"`
-	Connection   SSHConnection `json:"connection"`
-	ErrorCode    string        `json:"error_code"`
-	ErrorMessage string        `json:"error_message"`
-	ExpiresAt    time.Time     `json:"expires_at" format:"date-time"`
-	ReadyAt      time.Time     `json:"ready_at" format:"date-time"`
-	RetryAfterMs int64         `json:"retry_after_ms"`
+	Status       SSHSessionStatus `json:"status" api:"required"`
+	WorkspaceID  string           `json:"workspace_id" api:"required"`
+	Connection   SSHConnection    `json:"connection"`
+	ErrorCode    string           `json:"error_code"`
+	ErrorMessage string           `json:"error_message"`
+	ExpiresAt    time.Time        `json:"expires_at" format:"date-time"`
+	ReadyAt      time.Time        `json:"ready_at" format:"date-time"`
+	RetryAfterMs int64            `json:"retry_after_ms"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CreatedAt    respjson.Field
 		SessionID    respjson.Field
 		Status       respjson.Field
 		WorkspaceID  respjson.Field
-		Schema       respjson.Field
 		Connection   respjson.Field
 		ErrorCode    respjson.Field
 		ErrorMessage respjson.Field
@@ -227,14 +224,11 @@ func (r *SSHSessionCreateParams) UnmarshalJSON(data []byte) error {
 }
 
 type SSHSessionList struct {
-	Items []SSHSession `json:"items" api:"required"`
-	// A URL to the JSON Schema for this object.
-	Schema     string `json:"$schema" format:"uri"`
-	NextCursor string `json:"next_cursor"`
+	Items      []SSHSession `json:"items" api:"required"`
+	NextCursor string       `json:"next_cursor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		Items       respjson.Field
-		Schema      respjson.Field
 		NextCursor  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
