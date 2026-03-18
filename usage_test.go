@@ -26,10 +26,9 @@ func TestUsage(t *testing.T) {
 	)
 	workspace, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			ImageVersion: "image_version",
-			MemoryMiB:    0,
-			StorageGiB:   0,
-			VCPU:         0,
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
 		},
 	})
 	if err != nil {
