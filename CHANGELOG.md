@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.0.2 (2026-03-18)
+
+Full Changelog: [v0.0.1...v0.0.2](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.1...v0.0.2)
+
+### Bug Fixes
+
+* **api:** consolidate pagination & disable websockets ([dc840eb](https://github.com/dedalus-labs/dedalus-go/commit/dc840ebddc4763dc2648c42ac4ad28b7f3fc1e2a))
+
+
+### Chores
+
+* **api:** update homebrew tap and code samples ([d2cc1e5](https://github.com/dedalus-labs/dedalus-go/commit/d2cc1e5993bf3ef0a767e342997f6baff6c66bf1))
+
 ## 0.0.1 (2026-03-18)
 
 Full Changelog: [v0.0.1...v0.0.1](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.1...v0.0.1)
