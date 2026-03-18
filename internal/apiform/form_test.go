@@ -2,7 +2,7 @@ package apiform
 
 import (
 	"bytes"
-	"github.com/stainless-sdks/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
 	"io"
 	"mime/multipart"
 	"strings"
@@ -48,18 +48,18 @@ type DateTime struct {
 
 type AdditionalProperties struct {
 	A      bool           `form:"a"`
-	Extras map[string]any `form:"-,extras"`
+	Extras map[string]any `form:"-" api:"extrafields"`
 }
 
 type TypedAdditionalProperties struct {
 	A      bool           `form:"a"`
-	Extras map[string]int `form:"-,extras"`
+	Extras map[string]int `form:"-" api:"extrafields"`
 }
 
 type EmbeddedStructs struct {
 	AdditionalProperties
 	A      *int           `form:"number2"`
-	Extras map[string]any `form:"-,extras"`
+	Extras map[string]any `form:"-" api:"extrafields"`
 }
 
 type Recursive struct {
@@ -121,6 +121,18 @@ type StructUnion struct {
 	OfA      UnionStructA         `form:",omitzero,inline"`
 	OfB      UnionStructB         `form:",omitzero,inline"`
 	param.APIUnion
+}
+
+type MultipartMarshalerParent struct {
+	Middle MultipartMarshalerMiddleNext `form:"middle"`
+}
+
+type MultipartMarshalerMiddleNext struct {
+	MiddleNext MultipartMarshalerMiddle `form:"middleNext"`
+}
+
+type MultipartMarshalerMiddle struct {
+	Child int `form:"child"`
 }
 
 var tests = map[string]struct {
@@ -366,6 +378,19 @@ true
 			},
 		},
 	},
+	"recursive_struct,brackets": {
+		`--xxx
+Content-Disposition: form-data; name="child[name]"
+
+Alex
+--xxx
+Content-Disposition: form-data; name="name"
+
+Robert
+--xxx--
+`,
+		Recursive{Name: "Robert", Child: &Recursive{Name: "Alex"}},
+	},
 
 	"recursive_struct": {
 		`--xxx
@@ -529,6 +554,30 @@ Content-Disposition: form-data; name="union"
 			Union: UnionTime(time.Date(2010, 05, 23, 0, 0, 0, 0, time.UTC)),
 		},
 	},
+	"deeply-nested-struct,brackets": {
+		`--xxx
+Content-Disposition: form-data; name="middle[middleNext][child]"
+
+10
+--xxx--
+`,
+		MultipartMarshalerParent{
+			Middle: MultipartMarshalerMiddleNext{
+				MiddleNext: MultipartMarshalerMiddle{
+					Child: 10,
+				},
+			},
+		},
+	},
+	"deeply-nested-map,brackets": {
+		`--xxx
+Content-Disposition: form-data; name="middle[middleNext][child]"
+
+10
+--xxx--
+`,
+		map[string]any{"middle": map[string]any{"middleNext": map[string]any{"child": 10}}},
+	},
 }
 
 func TestEncode(t *testing.T) {
@@ -536,14 +585,17 @@ func TestEncode(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			buf := bytes.NewBuffer(nil)
 			writer := multipart.NewWriter(buf)
-			writer.SetBoundary("xxx")
+			err := writer.SetBoundary("xxx")
+			if err != nil {
+				t.Errorf("setting boundary for %v failed with error %v", test.val, err)
+			}
 
-			var arrayFmt string = "indices:dots"
+			arrayFmt := "indices:dots"
 			if tags := strings.Split(name, ","); len(tags) > 1 {
 				arrayFmt = tags[1]
 			}
 
-			err := MarshalWithSettings(test.val, writer, arrayFmt)
+			err = MarshalWithSettings(test.val, writer, arrayFmt)
 			if err != nil {
 				t.Errorf("serialization of %v failed with error %v", test.val, err)
 			}
@@ -553,7 +605,7 @@ func TestEncode(t *testing.T) {
 			}
 			raw := buf.Bytes()
 			if string(raw) != strings.ReplaceAll(test.buf, "\n", "\r\n") {
-				t.Errorf("expected %+#v to serialize to '%s' but got '%s'", test.val, test.buf, string(raw))
+				t.Errorf("expected %+#v to serialize to '%s' but got '%s' (with format %s)", test.val, test.buf, string(raw), arrayFmt)
 			}
 		})
 	}

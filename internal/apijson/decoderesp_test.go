@@ -2,13 +2,13 @@ package apijson_test
 
 import (
 	"encoding/json"
-	"github.com/stainless-sdks/dedalus-go/internal/apijson"
-	"github.com/stainless-sdks/dedalus-go/packages/respjson"
+	"github.com/dedalus-labs/dedalus-go/internal/apijson"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 	"testing"
 )
 
 type StructWithNullExtraField struct {
-	Results []string `json:"results,required"`
+	Results []string `json:"results" api:"required"`
 	JSON    struct {
 		Results     respjson.Field
 		ExtraFields map[string]respjson.Field

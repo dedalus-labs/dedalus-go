@@ -11,15 +11,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/stainless-sdks/dedalus-go/internal/requestconfig"
+	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/tidwall/sjson"
 )
 
-// RequestOption is an option for the requests made by the dedalus API Client
+// RequestOption is an option for the requests made by the Dedalus API Client
 // which can be supplied to clients, services, and methods. You can read more about this functional
 // options pattern in our [README].
 //
-// [README]: https://pkg.go.dev/github.com/stainless-sdks/dedalus-go#readme-requestoptions
+// [README]: https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#readme-requestoptions
 type RequestOption = requestconfig.RequestOption
 
 // WithBaseURL returns a RequestOption that sets the BaseURL for the client.
@@ -263,13 +263,29 @@ func WithRequestTimeout(dur time.Duration) RequestOption {
 // environment to be the "production" environment. An environment specifies which base URL
 // to use by default.
 func WithEnvironmentProduction() RequestOption {
-	return requestconfig.WithDefaultBaseURL("https://petstore3.swagger.io/api/v3/")
+	return requestconfig.WithDefaultBaseURL("https://dcs.dedaluslabs.ai/")
 }
 
 // WithAPIKey returns a RequestOption that sets the client setting "api_key".
 func WithAPIKey(value string) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		r.APIKey = value
-		return r.Apply(WithHeader("api_key", r.APIKey))
+		return r.Apply(WithHeader("authorization", fmt.Sprintf("Bearer %s", r.APIKey)))
+	})
+}
+
+// WithXAPIKey returns a RequestOption that sets the client setting "x_api_key".
+func WithXAPIKey(value string) RequestOption {
+	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+		r.XAPIKey = value
+		return r.Apply(WithHeader("x-api-key", r.XAPIKey))
+	})
+}
+
+// WithDedalusOrgID returns a RequestOption that sets the client setting "dedalus_org_id".
+func WithDedalusOrgID(value string) RequestOption {
+	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+		r.DedalusOrgID = value
+		return r.Apply(WithHeader("X-Dedalus-Org-Id", value))
 	})
 }

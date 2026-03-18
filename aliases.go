@@ -3,9 +3,8 @@
 package dedalus
 
 import (
-	"github.com/stainless-sdks/dedalus-go/internal/apierror"
-	"github.com/stainless-sdks/dedalus-go/packages/param"
-	"github.com/stainless-sdks/dedalus-go/shared"
+	"github.com/dedalus-labs/dedalus-go/internal/apierror"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
 )
 
 // aliased to make [param.APIUnion] private when embedding
@@ -15,23 +14,3 @@ type paramUnion = param.APIUnion
 type paramObj = param.APIObject
 
 type Error = apierror.Error
-
-// This is an alias to an internal type.
-type Order = shared.Order
-
-// Order Status
-//
-// This is an alias to an internal type.
-type OrderStatus = shared.OrderStatus
-
-// Equals "placed"
-const OrderStatusPlaced = shared.OrderStatusPlaced
-
-// Equals "approved"
-const OrderStatusApproved = shared.OrderStatusApproved
-
-// Equals "delivered"
-const OrderStatusDelivered = shared.OrderStatusDelivered
-
-// This is an alias to an internal type.
-type OrderParam = shared.OrderParam

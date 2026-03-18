@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stainless-sdks/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
 )
 
 type Struct struct {
@@ -361,5 +361,17 @@ func TestOverriddenUnion(t *testing.T) {
 				t.Fatalf("expected %s, received %s", test.expected, string(b))
 			}
 		})
+	}
+}
+
+func TestNullStructUnion(t *testing.T) {
+	nullUnion := param.NullStruct[PrimitiveUnion]()
+
+	b, err := json.Marshal(nullUnion)
+	if err != nil {
+		t.Fatalf("didn't expect error %v", err)
+	}
+	if string(b) != "null" {
+		t.Fatalf("expected null, received %s", string(b))
 	}
 }

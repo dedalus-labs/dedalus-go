@@ -1,8 +1,8 @@
 package paramutil
 
 import (
-	"github.com/stainless-sdks/dedalus-go/packages/param"
-	"github.com/stainless-sdks/dedalus-go/packages/respjson"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 func AddrIfPresent[T comparable](v param.Opt[T]) *T {

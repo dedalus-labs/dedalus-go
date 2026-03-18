@@ -1,9 +1,10 @@
-module github.com/stainless-sdks/dedalus-go
+module github.com/dedalus-labs/dedalus-go
 
 go 1.22
 
 require (
-	github.com/tidwall/gjson v1.14.4
+	github.com/google/uuid v1.6.0
+	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 )
 

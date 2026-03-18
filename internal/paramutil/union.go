@@ -2,7 +2,7 @@ package paramutil
 
 import (
 	"fmt"
-	"github.com/stainless-sdks/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
 	"reflect"
 )
 

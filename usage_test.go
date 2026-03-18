@@ -7,9 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stainless-sdks/dedalus-go"
-	"github.com/stainless-sdks/dedalus-go/internal/testutil"
-	"github.com/stainless-sdks/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go"
+	"github.com/dedalus-labs/dedalus-go/internal/testutil"
+	"github.com/dedalus-labs/dedalus-go/option"
 )
 
 func TestUsage(t *testing.T) {
@@ -24,9 +24,15 @@ func TestUsage(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	order, err := client.Store.Orders.New(context.TODO(), dedalus.StoreOrderNewParams{})
+	workspace, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
+		},
+	})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
-	t.Logf("%+v\n", order.ID)
+	t.Logf("%+v\n", workspace.WorkspaceID)
 }

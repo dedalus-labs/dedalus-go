@@ -1,7 +1,7 @@
 package apijson
 
 import (
-	"github.com/stainless-sdks/dedalus-go/packages/respjson"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 	"reflect"
 )
 

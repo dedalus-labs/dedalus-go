@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stainless-sdks/dedalus-go"
-	"github.com/stainless-sdks/dedalus-go/internal"
-	"github.com/stainless-sdks/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go"
+	"github.com/dedalus-labs/dedalus-go/internal"
+	"github.com/dedalus-labs/dedalus-go/option"
 )
 
 type closureTransport struct {
@@ -38,7 +38,13 @@ func TestUserAgentHeader(t *testing.T) {
 			},
 		}),
 	)
-	client.Store.ListInventory(context.Background())
+	_, _ = client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
+		},
+	})
 	if userAgent != fmt.Sprintf("Dedalus/Go %s", internal.PackageVersion) {
 		t.Errorf("Expected User-Agent to be correct, but got: %#v", userAgent)
 	}
@@ -62,7 +68,13 @@ func TestRetryAfter(t *testing.T) {
 			},
 		}),
 	)
-	_, err := client.Store.ListInventory(context.Background())
+	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
+		},
+	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
 	}
@@ -97,7 +109,13 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 		}),
 		option.WithHeaderDel("X-Stainless-Retry-Count"),
 	)
-	_, err := client.Store.ListInventory(context.Background())
+	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
+		},
+	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
 	}
@@ -127,7 +145,13 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 		}),
 		option.WithHeader("X-Stainless-Retry-Count", "42"),
 	)
-	_, err := client.Store.ListInventory(context.Background())
+	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
+		},
+	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
 	}
@@ -156,7 +180,13 @@ func TestRetryAfterMs(t *testing.T) {
 			},
 		}),
 	)
-	_, err := client.Store.ListInventory(context.Background())
+	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
+		},
+	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
 	}
@@ -179,7 +209,13 @@ func TestContextCancel(t *testing.T) {
 	)
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	cancel()
-	_, err := client.Store.ListInventory(cancelCtx)
+	_, err := client.Workspaces.New(cancelCtx, dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
+		},
+	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
 	}
@@ -199,7 +235,13 @@ func TestContextCancelDelay(t *testing.T) {
 	)
 	cancelCtx, cancel := context.WithTimeout(context.Background(), 2*time.Millisecond)
 	defer cancel()
-	_, err := client.Store.ListInventory(cancelCtx)
+	_, err := client.Workspaces.New(cancelCtx, dedalus.WorkspaceNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
+		},
+	})
 	if err == nil {
 		t.Error("expected there to be a cancel error")
 	}
@@ -225,7 +267,13 @@ func TestContextDeadline(t *testing.T) {
 				},
 			}),
 		)
-		_, err := client.Store.ListInventory(deadlineCtx)
+		_, err := client.Workspaces.New(deadlineCtx, dedalus.WorkspaceNewParams{
+			CreateParams: dedalus.CreateParams{
+				MemoryMiB:  0,
+				StorageGiB: 0,
+				VCPU:       0,
+			},
+		})
 		if err == nil {
 			t.Error("expected there to be a deadline error")
 		}
