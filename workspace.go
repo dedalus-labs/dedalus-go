@@ -29,7 +29,12 @@ import (
 // automatically. You should not instantiate this service directly, and instead use
 // the [NewWorkspaceService] method instead.
 type WorkspaceService struct {
-	Options []option.RequestOption
+	Options    []option.RequestOption
+	Artifacts  WorkspaceArtifactService
+	Previews   WorkspacePreviewService
+	SSH        WorkspaceSSHService
+	Executions WorkspaceExecutionService
+	Terminals  WorkspaceTerminalService
 }
 
 // NewWorkspaceService generates a new service that applies the given options to
@@ -38,6 +43,11 @@ type WorkspaceService struct {
 func NewWorkspaceService(opts ...option.RequestOption) (r WorkspaceService) {
 	r = WorkspaceService{}
 	r.Options = opts
+	r.Artifacts = NewWorkspaceArtifactService(opts...)
+	r.Previews = NewWorkspacePreviewService(opts...)
+	r.SSH = NewWorkspaceSSHService(opts...)
+	r.Executions = NewWorkspaceExecutionService(opts...)
+	r.Terminals = NewWorkspaceTerminalService(opts...)
 	return
 }
 
@@ -114,12 +124,14 @@ func (r *WorkspaceService) Delete(ctx context.Context, workspaceID string, body 
 	return res, err
 }
 
-// The properties CPUs, ImageVersion, MemoryMiB, StorageGiB are required.
+// The properties ImageVersion, MemoryMiB, StorageGiB, VCPU are required.
 type CreateParams struct {
-	CPUs         int64  `json:"cpus" api:"required"`
 	ImageVersion string `json:"image_version" api:"required"`
-	MemoryMiB    int64  `json:"memory_mib" api:"required"`
-	StorageGiB   int64  `json:"storage_gib" api:"required"`
+	// Memory in MiB.
+	MemoryMiB  int64 `json:"memory_mib" api:"required"`
+	StorageGiB int64 `json:"storage_gib" api:"required"`
+	// CPU in vCPUs.
+	VCPU float64 `json:"vcpu" api:"required"`
 	paramObj
 }
 
@@ -137,25 +149,31 @@ type LifecycleStatus struct {
 	ObservedRevision string    `json:"observed_revision" api:"required"`
 	// Any of "accepted", "placement_pending", "starting", "running", "stopping",
 	// "sleeping", "destroying", "destroyed", "failed".
-	Phase        LifecycleStatusPhase `json:"phase" api:"required"`
-	Reason       string               `json:"reason" api:"required"`
-	Retryable    bool                 `json:"retryable" api:"required"`
-	Revision     string               `json:"revision" api:"required"`
-	AssignedHost string               `json:"assigned_host"`
-	LastError    string               `json:"last_error"`
+	Phase             LifecycleStatusPhase `json:"phase" api:"required"`
+	Reason            string               `json:"reason" api:"required"`
+	Retryable         bool                 `json:"retryable" api:"required"`
+	Revision          string               `json:"revision" api:"required"`
+	AssignedHost      string               `json:"assigned_host"`
+	LastError         string               `json:"last_error"`
+	MemoryAssignedMiB int64                `json:"memory_assigned_mib"`
+	MemoryResizeState string               `json:"memory_resize_state"`
+	MemoryTargetMiB   int64                `json:"memory_target_mib"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		LastProgressAt   respjson.Field
-		LastTransitionAt respjson.Field
-		ObservedRevision respjson.Field
-		Phase            respjson.Field
-		Reason           respjson.Field
-		Retryable        respjson.Field
-		Revision         respjson.Field
-		AssignedHost     respjson.Field
-		LastError        respjson.Field
-		ExtraFields      map[string]respjson.Field
-		raw              string
+		LastProgressAt    respjson.Field
+		LastTransitionAt  respjson.Field
+		ObservedRevision  respjson.Field
+		Phase             respjson.Field
+		Reason            respjson.Field
+		Retryable         respjson.Field
+		Revision          respjson.Field
+		AssignedHost      respjson.Field
+		LastError         respjson.Field
+		MemoryAssignedMiB respjson.Field
+		MemoryResizeState respjson.Field
+		MemoryTargetMiB   respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
 	} `json:"-"`
 }
 
@@ -180,9 +198,11 @@ const (
 )
 
 type UpdateParams struct {
-	CPUs       param.Opt[int64] `json:"cpus,omitzero"`
+	// Memory in MiB.
 	MemoryMiB  param.Opt[int64] `json:"memory_mib,omitzero"`
 	StorageGiB param.Opt[int64] `json:"storage_gib,omitzero"`
+	// CPU in vCPUs.
+	VCPU param.Opt[float64] `json:"vcpu,omitzero"`
 	paramObj
 }
 
@@ -197,16 +217,26 @@ func (r *UpdateParams) UnmarshalJSON(data []byte) error {
 type Workspace struct {
 	// Any of "active", "inactive", "destroyed".
 	DesiredState WorkspaceDesiredState `json:"desired_state" api:"required"`
-	Status       LifecycleStatus       `json:"status" api:"required"`
-	WorkspaceID  string                `json:"workspace_id" api:"required"`
+	// Memory in MiB.
+	MemoryMiB  int64           `json:"memory_mib" api:"required"`
+	Status     LifecycleStatus `json:"status" api:"required"`
+	StorageGiB int64           `json:"storage_gib" api:"required"`
+	// CPU in vCPUs.
+	VCPU        float64 `json:"vcpu" api:"required"`
+	WorkspaceID string  `json:"workspace_id" api:"required"`
 	// A URL to the JSON Schema for this object.
-	Schema string `json:"$schema" format:"uri"`
+	Schema       string `json:"$schema" format:"uri"`
+	ImageVersion string `json:"image_version"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		DesiredState respjson.Field
+		MemoryMiB    respjson.Field
 		Status       respjson.Field
+		StorageGiB   respjson.Field
+		VCPU         respjson.Field
 		WorkspaceID  respjson.Field
 		Schema       respjson.Field
+		ImageVersion respjson.Field
 		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
@@ -248,23 +278,25 @@ func (r *WorkspaceList) UnmarshalJSON(data []byte) error {
 }
 
 type WorkspaceListItem struct {
-	CPUs      int64     `json:"cpus" api:"required"`
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Any of "active", "inactive", "destroyed".
-	DesiredState string          `json:"desired_state" api:"required"`
-	MemoryMiB    int64           `json:"memory_mib" api:"required"`
-	Status       LifecycleStatus `json:"status" api:"required"`
-	StorageGiB   int64           `json:"storage_gib" api:"required"`
-	WorkspaceID  string          `json:"workspace_id" api:"required"`
-	ImageVersion string          `json:"image_version"`
+	DesiredState string `json:"desired_state" api:"required"`
+	// Memory in MiB.
+	MemoryMiB  int64           `json:"memory_mib" api:"required"`
+	Status     LifecycleStatus `json:"status" api:"required"`
+	StorageGiB int64           `json:"storage_gib" api:"required"`
+	// CPU in vCPUs.
+	VCPU         float64 `json:"vcpu" api:"required"`
+	WorkspaceID  string  `json:"workspace_id" api:"required"`
+	ImageVersion string  `json:"image_version"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CPUs         respjson.Field
 		CreatedAt    respjson.Field
 		DesiredState respjson.Field
 		MemoryMiB    respjson.Field
 		Status       respjson.Field
 		StorageGiB   respjson.Field
+		VCPU         respjson.Field
 		WorkspaceID  respjson.Field
 		ImageVersion respjson.Field
 		ExtraFields  map[string]respjson.Field
