@@ -56,7 +56,7 @@ func (r *WorkspaceArtifactService) Get(ctx context.Context, artifactID string, q
 }
 
 // List artifacts
-func (r *WorkspaceArtifactService) List(ctx context.Context, workspaceID string, query WorkspaceArtifactListParams, opts ...option.RequestOption) (res *pagination.ArtifactList[Artifact], err error) {
+func (r *WorkspaceArtifactService) List(ctx context.Context, workspaceID string, query WorkspaceArtifactListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Artifact], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -78,8 +78,8 @@ func (r *WorkspaceArtifactService) List(ctx context.Context, workspaceID string,
 }
 
 // List artifacts
-func (r *WorkspaceArtifactService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceArtifactListParams, opts ...option.RequestOption) *pagination.ArtifactListAutoPager[Artifact] {
-	return pagination.NewArtifactListAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *WorkspaceArtifactService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceArtifactListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Artifact] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Delete artifact

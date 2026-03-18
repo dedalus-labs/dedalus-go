@@ -70,7 +70,7 @@ func (r *WorkspaceSSHService) Get(ctx context.Context, sessionID string, query W
 }
 
 // List SSH sessions
-func (r *WorkspaceSSHService) List(ctx context.Context, workspaceID string, query WorkspaceSSHListParams, opts ...option.RequestOption) (res *pagination.SSHSessionList[SSHSession], err error) {
+func (r *WorkspaceSSHService) List(ctx context.Context, workspaceID string, query WorkspaceSSHListParams, opts ...option.RequestOption) (res *pagination.CursorPage[SSHSession], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -92,8 +92,8 @@ func (r *WorkspaceSSHService) List(ctx context.Context, workspaceID string, quer
 }
 
 // List SSH sessions
-func (r *WorkspaceSSHService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceSSHListParams, opts ...option.RequestOption) *pagination.SSHSessionListAutoPager[SSHSession] {
-	return pagination.NewSSHSessionListAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *WorkspaceSSHService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceSSHListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[SSHSession] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Delete SSH session

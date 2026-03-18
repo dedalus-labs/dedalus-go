@@ -70,7 +70,7 @@ func (r *WorkspaceExecutionService) Get(ctx context.Context, executionID string,
 }
 
 // List executions
-func (r *WorkspaceExecutionService) List(ctx context.Context, workspaceID string, query WorkspaceExecutionListParams, opts ...option.RequestOption) (res *pagination.ExecutionList[Execution], err error) {
+func (r *WorkspaceExecutionService) List(ctx context.Context, workspaceID string, query WorkspaceExecutionListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Execution], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -92,8 +92,8 @@ func (r *WorkspaceExecutionService) List(ctx context.Context, workspaceID string
 }
 
 // List executions
-func (r *WorkspaceExecutionService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceExecutionListParams, opts ...option.RequestOption) *pagination.ExecutionListAutoPager[Execution] {
-	return pagination.NewExecutionListAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *WorkspaceExecutionService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceExecutionListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Execution] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
 }
 
 // Delete execution
@@ -113,7 +113,7 @@ func (r *WorkspaceExecutionService) Delete(ctx context.Context, executionID stri
 }
 
 // List execution events
-func (r *WorkspaceExecutionService) Events(ctx context.Context, executionID string, params WorkspaceExecutionEventsParams, opts ...option.RequestOption) (res *pagination.ExecutionEvents[ExecutionEvent], err error) {
+func (r *WorkspaceExecutionService) Events(ctx context.Context, executionID string, params WorkspaceExecutionEventsParams, opts ...option.RequestOption) (res *pagination.CursorPage[ExecutionEvent], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
@@ -139,8 +139,8 @@ func (r *WorkspaceExecutionService) Events(ctx context.Context, executionID stri
 }
 
 // List execution events
-func (r *WorkspaceExecutionService) EventsAutoPaging(ctx context.Context, executionID string, params WorkspaceExecutionEventsParams, opts ...option.RequestOption) *pagination.ExecutionEventsAutoPager[ExecutionEvent] {
-	return pagination.NewExecutionEventsAutoPager(r.Events(ctx, executionID, params, opts...))
+func (r *WorkspaceExecutionService) EventsAutoPaging(ctx context.Context, executionID string, params WorkspaceExecutionEventsParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[ExecutionEvent] {
+	return pagination.NewCursorPageAutoPager(r.Events(ctx, executionID, params, opts...))
 }
 
 // Get execution output
