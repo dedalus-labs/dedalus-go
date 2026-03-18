@@ -30,9 +30,8 @@ func TestWorkspaceExecutionNewWithOptionalParams(t *testing.T) {
 		"workspace_id",
 		dedalus.WorkspaceExecutionNewParams{
 			ExecutionCreateParams: dedalus.ExecutionCreateParams{
-				Command:      []string{"string"},
-				CapturePaths: []string{"string"},
-				Cwd:          dedalus.String("cwd"),
+				Command: []string{"string"},
+				Cwd:     dedalus.String("cwd"),
 				Env: map[string]string{
 					"foo": "string",
 				},

@@ -67,10 +67,9 @@ func main() {
 	)
 	workspace, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			ImageVersion: "image_version",
-			MemoryMiB:    0,
-			StorageGiB:   0,
-			VCPU:         0,
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
 		},
 	})
 	if err != nil {
@@ -340,10 +339,9 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 ```go
 _, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
 	CreateParams: dedalus.CreateParams{
-		ImageVersion: "image_version",
-		MemoryMiB:    0,
-		StorageGiB:   0,
-		VCPU:         0,
+		MemoryMiB:  0,
+		StorageGiB: 0,
+		VCPU:       0,
 	},
 })
 if err != nil {
@@ -377,10 +375,9 @@ client.Workspaces.New(
 	ctx,
 	dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			ImageVersion: "image_version",
-			MemoryMiB:    0,
-			StorageGiB:   0,
-			VCPU:         0,
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
 		},
 	},
 	// This sets the per-retry timeout
@@ -420,10 +417,9 @@ client.Workspaces.New(
 	context.TODO(),
 	dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			ImageVersion: "image_version",
-			MemoryMiB:    0,
-			StorageGiB:   0,
-			VCPU:         0,
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
 		},
 	},
 	option.WithMaxRetries(5),
@@ -442,10 +438,9 @@ workspace, err := client.Workspaces.New(
 	context.TODO(),
 	dedalus.WorkspaceNewParams{
 		CreateParams: dedalus.CreateParams{
-			ImageVersion: "image_version",
-			MemoryMiB:    0,
-			StorageGiB:   0,
-			VCPU:         0,
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
 		},
 	},
 	option.WithResponseInto(&response),

@@ -255,7 +255,6 @@ type ExecutionCreateParams struct {
 	Stdin        param.Opt[string] `json:"stdin,omitzero"`
 	TimeoutMs    param.Opt[int64]  `json:"timeout_ms,omitzero"`
 	WakeIfNeeded param.Opt[bool]   `json:"wake_if_needed,omitzero"`
-	CapturePaths []string          `json:"capture_paths,omitzero"`
 	Env          map[string]string `json:"env,omitzero"`
 	paramObj
 }

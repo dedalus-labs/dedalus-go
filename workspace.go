@@ -124,9 +124,8 @@ func (r *WorkspaceService) Delete(ctx context.Context, workspaceID string, body 
 	return res, err
 }
 
-// The properties ImageVersion, MemoryMiB, StorageGiB, VCPU are required.
+// The properties MemoryMiB, StorageGiB, VCPU are required.
 type CreateParams struct {
-	ImageVersion string `json:"image_version" api:"required"`
 	// Memory in MiB.
 	MemoryMiB  int64 `json:"memory_mib" api:"required"`
 	StorageGiB int64 `json:"storage_gib" api:"required"`
@@ -146,34 +145,24 @@ func (r *CreateParams) UnmarshalJSON(data []byte) error {
 type LifecycleStatus struct {
 	LastProgressAt   time.Time `json:"last_progress_at" api:"required" format:"date-time"`
 	LastTransitionAt time.Time `json:"last_transition_at" api:"required" format:"date-time"`
-	ObservedRevision string    `json:"observed_revision" api:"required"`
 	// Any of "accepted", "placement_pending", "starting", "running", "stopping",
 	// "sleeping", "destroying", "destroyed", "failed".
-	Phase             LifecycleStatusPhase `json:"phase" api:"required"`
-	Reason            string               `json:"reason" api:"required"`
-	Retryable         bool                 `json:"retryable" api:"required"`
-	Revision          string               `json:"revision" api:"required"`
-	AssignedHost      string               `json:"assigned_host"`
-	LastError         string               `json:"last_error"`
-	MemoryAssignedMiB int64                `json:"memory_assigned_mib"`
-	MemoryResizeState string               `json:"memory_resize_state"`
-	MemoryTargetMiB   int64                `json:"memory_target_mib"`
+	Phase     LifecycleStatusPhase `json:"phase" api:"required"`
+	Reason    string               `json:"reason" api:"required"`
+	Retryable bool                 `json:"retryable" api:"required"`
+	Revision  string               `json:"revision" api:"required"`
+	LastError string               `json:"last_error"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		LastProgressAt    respjson.Field
-		LastTransitionAt  respjson.Field
-		ObservedRevision  respjson.Field
-		Phase             respjson.Field
-		Reason            respjson.Field
-		Retryable         respjson.Field
-		Revision          respjson.Field
-		AssignedHost      respjson.Field
-		LastError         respjson.Field
-		MemoryAssignedMiB respjson.Field
-		MemoryResizeState respjson.Field
-		MemoryTargetMiB   respjson.Field
-		ExtraFields       map[string]respjson.Field
-		raw               string
+		LastProgressAt   respjson.Field
+		LastTransitionAt respjson.Field
+		Phase            respjson.Field
+		Reason           respjson.Field
+		Retryable        respjson.Field
+		Revision         respjson.Field
+		LastError        respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -225,8 +214,7 @@ type Workspace struct {
 	VCPU        float64 `json:"vcpu" api:"required"`
 	WorkspaceID string  `json:"workspace_id" api:"required"`
 	// A URL to the JSON Schema for this object.
-	Schema       string `json:"$schema" format:"uri"`
-	ImageVersion string `json:"image_version"`
+	Schema string `json:"$schema" format:"uri"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		DesiredState respjson.Field
@@ -236,7 +224,6 @@ type Workspace struct {
 		VCPU         respjson.Field
 		WorkspaceID  respjson.Field
 		Schema       respjson.Field
-		ImageVersion respjson.Field
 		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
@@ -286,9 +273,8 @@ type WorkspaceListItem struct {
 	Status     LifecycleStatus `json:"status" api:"required"`
 	StorageGiB int64           `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
-	VCPU         float64 `json:"vcpu" api:"required"`
-	WorkspaceID  string  `json:"workspace_id" api:"required"`
-	ImageVersion string  `json:"image_version"`
+	VCPU        float64 `json:"vcpu" api:"required"`
+	WorkspaceID string  `json:"workspace_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CreatedAt    respjson.Field
@@ -298,7 +284,6 @@ type WorkspaceListItem struct {
 		StorageGiB   respjson.Field
 		VCPU         respjson.Field
 		WorkspaceID  respjson.Field
-		ImageVersion respjson.Field
 		ExtraFields  map[string]respjson.Field
 		raw          string
 	} `json:"-"`
