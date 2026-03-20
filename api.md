@@ -18,6 +18,7 @@ Methods:
 - <code title="patch /v1/workspaces/{workspace_id}">client.Workspaces.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceService.Update">Update</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, params <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceUpdateParams">WorkspaceUpdateParams</a>) (\*<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#Workspace">Workspace</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="get /v1/workspaces">client.Workspaces.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceService.List">List</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, query <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceListParams">WorkspaceListParams</a>) (\*<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go/packages/pagination">pagination</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go/packages/pagination#CursorPage">CursorPage</a>[<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceListItem">WorkspaceListItem</a>], <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 - <code title="delete /v1/workspaces/{workspace_id}">client.Workspaces.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceService.Delete">Delete</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, body <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceDeleteParams">WorkspaceDeleteParams</a>) (\*<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#Workspace">Workspace</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
+- <code title="get /v1/workspaces/{workspace_id}/status/stream">client.Workspaces.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceService.StreamStatus">StreamStatus</a>(ctx <a href="https://pkg.go.dev/context">context</a>.<a href="https://pkg.go.dev/context#Context">Context</a>, workspaceID <a href="https://pkg.go.dev/builtin#string">string</a>, query <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#WorkspaceStreamStatusParams">WorkspaceStreamStatusParams</a>) (\*<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#Workspace">Workspace</a>, <a href="https://pkg.go.dev/builtin#error">error</a>)</code>
 
 ## Artifacts
 
@@ -98,12 +99,22 @@ Methods:
 
 Params Types:
 
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalClientEventUnionParam">TerminalClientEventUnionParam</a>
 - <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalCreateParams">TerminalCreateParams</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalInputEventParam">TerminalInputEventParam</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalResizeEventParam">TerminalResizeEventParam</a>
 
 Response Types:
 
 - <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#Terminal">Terminal</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalClientEventUnion">TerminalClientEventUnion</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalClosedEvent">TerminalClosedEvent</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalErrorEvent">TerminalErrorEvent</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalInputEvent">TerminalInputEvent</a>
 - <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalList">TerminalList</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalOutputEvent">TerminalOutputEvent</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalResizeEvent">TerminalResizeEvent</a>
+- <a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go">dedalus</a>.<a href="https://pkg.go.dev/github.com/dedalus-labs/dedalus-go#TerminalServerEventUnion">TerminalServerEventUnion</a>
 
 Methods:
 
