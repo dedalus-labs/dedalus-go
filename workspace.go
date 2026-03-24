@@ -20,6 +20,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/pagination"
 	"github.com/dedalus-labs/dedalus-go/packages/param"
 	"github.com/dedalus-labs/dedalus-go/packages/respjson"
+	"github.com/dedalus-labs/dedalus-go/packages/ssestream"
 )
 
 // WorkspaceService contains methods and other services that help with interacting
@@ -122,6 +123,28 @@ func (r *WorkspaceService) Delete(ctx context.Context, workspaceID string, body 
 	path := fmt.Sprintf("v1/workspaces/%s", url.PathEscape(workspaceID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
+}
+
+// Streams workspace lifecycle updates over Server-Sent Events. Each `status` event
+// contains a full `LifecycleResponse` payload. The stream closes after the
+// workspace reaches its current desired state.
+func (r *WorkspaceService) StreamStatusStreaming(ctx context.Context, workspaceID string, query WorkspaceStreamStatusParams, opts ...option.RequestOption) (stream *ssestream.Stream[Workspace]) {
+	var (
+		raw *http.Response
+		err error
+	)
+	if !param.IsOmitted(query.LastEventID) {
+		opts = append(opts, option.WithHeader("Last-Event-ID", fmt.Sprintf("%v", query.LastEventID.Value)))
+	}
+	opts = slices.Concat(r.Options, opts)
+	opts = append([]option.RequestOption{option.WithHeader("Accept", "text/event-stream")}, opts...)
+	if workspaceID == "" {
+		err = errors.New("missing required workspace_id parameter")
+		return ssestream.NewStream[Workspace](nil, err)
+	}
+	path := fmt.Sprintf("v1/workspaces/%s/status/stream", url.PathEscape(workspaceID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
+	return ssestream.NewStream[Workspace](ssestream.NewDecoder(raw), err)
 }
 
 // The properties MemoryMiB, StorageGiB, VCPU are required.
@@ -330,5 +353,10 @@ func (r WorkspaceListParams) URLQuery() (v url.Values, err error) {
 
 type WorkspaceDeleteParams struct {
 	IfMatch string `header:"If-Match" api:"required" json:"-"`
+	paramObj
+}
+
+type WorkspaceStreamStatusParams struct {
+	LastEventID param.Opt[string] `header:"Last-Event-ID,omitzero" json:"-"`
 	paramObj
 }

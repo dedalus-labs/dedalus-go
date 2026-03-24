@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.0.3 (2026-03-23)
+
+Full Changelog: [v0.0.2...v0.0.3](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.2...v0.0.3)
+
+### Bug Fixes
+
+* **api:** add workspace status streaming, terminal events types ([cb4ce8c](https://github.com/dedalus-labs/dedalus-go/commit/cb4ce8cc93f61d1022efe7bffca296ff7b4dc269))
+
+
+### Chores
+
+* **internal:** update gitignore ([2792731](https://github.com/dedalus-labs/dedalus-go/commit/2792731cdc4918c80d06b4c1476e0180fc69cacb))
+* **tests:** bump steady to v0.19.4 ([4d8986e](https://github.com/dedalus-labs/dedalus-go/commit/4d8986ea15ca11981b9453150877bd6c6e6acaa7))
+* **tests:** bump steady to v0.19.5 ([4da56b4](https://github.com/dedalus-labs/dedalus-go/commit/4da56b4f0566678cf86c80fa27f666f9c45e15f9))
+* **tests:** bump steady to v0.19.6 ([d0822f9](https://github.com/dedalus-labs/dedalus-go/commit/d0822f939fa85458477a46ade3b5a53ccb295e4e))
+
+
+### Refactors
+
+* **tests:** switch from prism to steady ([58bc744](https://github.com/dedalus-labs/dedalus-go/commit/58bc744da3f352bc4a43654635bcea1ed7dd8898))
+
 ## 0.0.2 (2026-03-18)
 
 Full Changelog: [v0.0.1...v0.0.2](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.1...v0.0.2)
