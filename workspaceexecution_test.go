@@ -35,9 +35,8 @@ func TestWorkspaceExecutionNewWithOptionalParams(t *testing.T) {
 				Env: map[string]string{
 					"foo": "string",
 				},
-				Stdin:        dedalus.String("stdin"),
-				TimeoutMs:    dedalus.Int(0),
-				WakeIfNeeded: dedalus.Bool(true),
+				Stdin:     dedalus.String("stdin"),
+				TimeoutMs: dedalus.Int(0),
 			},
 		},
 	)

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.0.4 (2026-03-25)
+
+Full Changelog: [v0.0.3...v0.0.4](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.3...v0.0.4)
+
+### Bug Fixes
+
+* **api:** rename StreamStatus to Watch, remove wake_if_needed params, update workspace states ([5a28130](https://github.com/dedalus-labs/dedalus-go/commit/5a28130ee20552b3dbf3a1097ab8574b551f36e7))
+
+
+### Chores
+
+* **ci:** skip lint on metadata-only changes ([c17f53f](https://github.com/dedalus-labs/dedalus-go/commit/c17f53f08433c343cd3a5212be62e071a04d7252))
+* **tests:** bump steady to v0.19.7 ([715d3e7](https://github.com/dedalus-labs/dedalus-go/commit/715d3e78d302a6fd046d3cca7bd931b3ba5492e9))
+
 ## 0.0.3 (2026-03-23)
 
 Full Changelog: [v0.0.2...v0.0.3](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.2...v0.0.3)

@@ -210,8 +210,7 @@ const (
 
 // The property PublicKey is required.
 type SSHSessionCreateParams struct {
-	PublicKey    string          `json:"public_key" api:"required"`
-	WakeIfNeeded param.Opt[bool] `json:"wake_if_needed,omitzero"`
+	PublicKey string `json:"public_key" api:"required"`
 	paramObj
 }
 

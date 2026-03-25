@@ -171,8 +171,7 @@ const (
 
 // The property Port is required.
 type PreviewCreateParams struct {
-	Port         int64           `json:"port" api:"required"`
-	WakeIfNeeded param.Opt[bool] `json:"wake_if_needed,omitzero"`
+	Port int64 `json:"port" api:"required"`
 	// Any of "http", "https".
 	Protocol PreviewCreateParamsProtocol `json:"protocol,omitzero"`
 	paramObj

@@ -247,12 +247,11 @@ const (
 
 // The property Command is required.
 type ExecutionCreateParams struct {
-	Command      []string          `json:"command,omitzero" api:"required"`
-	Cwd          param.Opt[string] `json:"cwd,omitzero"`
-	Stdin        param.Opt[string] `json:"stdin,omitzero"`
-	TimeoutMs    param.Opt[int64]  `json:"timeout_ms,omitzero"`
-	WakeIfNeeded param.Opt[bool]   `json:"wake_if_needed,omitzero"`
-	Env          map[string]string `json:"env,omitzero"`
+	Command   []string          `json:"command,omitzero" api:"required"`
+	Cwd       param.Opt[string] `json:"cwd,omitzero"`
+	Stdin     param.Opt[string] `json:"stdin,omitzero"`
+	TimeoutMs param.Opt[int64]  `json:"timeout_ms,omitzero"`
+	Env       map[string]string `json:"env,omitzero"`
 	paramObj
 }
 
