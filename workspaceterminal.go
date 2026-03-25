@@ -312,12 +312,11 @@ const (
 
 // The properties Height, Width are required.
 type TerminalCreateParams struct {
-	Height       int64             `json:"height" api:"required"`
-	Width        int64             `json:"width" api:"required"`
-	Cwd          param.Opt[string] `json:"cwd,omitzero"`
-	Shell        param.Opt[string] `json:"shell,omitzero"`
-	WakeIfNeeded param.Opt[bool]   `json:"wake_if_needed,omitzero"`
-	Env          map[string]string `json:"env,omitzero"`
+	Height int64             `json:"height" api:"required"`
+	Width  int64             `json:"width" api:"required"`
+	Cwd    param.Opt[string] `json:"cwd,omitzero"`
+	Shell  param.Opt[string] `json:"shell,omitzero"`
+	Env    map[string]string `json:"env,omitzero"`
 	paramObj
 }
 
