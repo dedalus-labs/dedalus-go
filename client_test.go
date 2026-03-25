@@ -319,10 +319,10 @@ func TestContextDeadlineStreaming(t *testing.T) {
 				},
 			}),
 		)
-		stream := client.Workspaces.StreamStatusStreaming(
+		stream := client.Workspaces.WatchStreaming(
 			deadlineCtx,
 			"workspace_id",
-			dedalus.WorkspaceStreamStatusParams{},
+			dedalus.WorkspaceWatchParams{},
 		)
 		for stream.Next() {
 			_ = stream.Current()
@@ -368,10 +368,10 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 				},
 			}),
 		)
-		stream := client.Workspaces.StreamStatusStreaming(
+		stream := client.Workspaces.WatchStreaming(
 			context.Background(),
 			"workspace_id",
-			dedalus.WorkspaceStreamStatusParams{},
+			dedalus.WorkspaceWatchParams{},
 			option.WithRequestTimeout((100 * time.Millisecond)),
 		)
 		for stream.Next() {

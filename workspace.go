@@ -128,7 +128,7 @@ func (r *WorkspaceService) Delete(ctx context.Context, workspaceID string, body 
 // Streams workspace lifecycle updates over Server-Sent Events. Each `status` event
 // contains a full `LifecycleResponse` payload. The stream closes after the
 // workspace reaches its current desired state.
-func (r *WorkspaceService) StreamStatusStreaming(ctx context.Context, workspaceID string, query WorkspaceStreamStatusParams, opts ...option.RequestOption) (stream *ssestream.Stream[Workspace]) {
+func (r *WorkspaceService) WatchStreaming(ctx context.Context, workspaceID string, query WorkspaceWatchParams, opts ...option.RequestOption) (stream *ssestream.Stream[Workspace]) {
 	var (
 		raw *http.Response
 		err error
@@ -150,7 +150,8 @@ func (r *WorkspaceService) StreamStatusStreaming(ctx context.Context, workspaceI
 // The properties MemoryMiB, StorageGiB, VCPU are required.
 type CreateParams struct {
 	// Memory in MiB.
-	MemoryMiB  int64 `json:"memory_mib" api:"required"`
+	MemoryMiB int64 `json:"memory_mib" api:"required"`
+	// Storage in GiB.
 	StorageGiB int64 `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
 	VCPU float64 `json:"vcpu" api:"required"`
@@ -211,7 +212,8 @@ const (
 
 type UpdateParams struct {
 	// Memory in MiB.
-	MemoryMiB  param.Opt[int64] `json:"memory_mib,omitzero"`
+	MemoryMiB param.Opt[int64] `json:"memory_mib,omitzero"`
+	// Storage in GiB.
 	StorageGiB param.Opt[int64] `json:"storage_gib,omitzero"`
 	// CPU in vCPUs.
 	VCPU param.Opt[float64] `json:"vcpu,omitzero"`
@@ -227,7 +229,7 @@ func (r *UpdateParams) UnmarshalJSON(data []byte) error {
 }
 
 type Workspace struct {
-	// Any of "active", "inactive", "destroyed".
+	// Any of "running", "sleeping", "destroyed".
 	DesiredState WorkspaceDesiredState `json:"desired_state" api:"required"`
 	// Memory in MiB.
 	MemoryMiB  int64           `json:"memory_mib" api:"required"`
@@ -258,8 +260,8 @@ func (r *Workspace) UnmarshalJSON(data []byte) error {
 type WorkspaceDesiredState string
 
 const (
-	WorkspaceDesiredStateActive    WorkspaceDesiredState = "active"
-	WorkspaceDesiredStateInactive  WorkspaceDesiredState = "inactive"
+	WorkspaceDesiredStateRunning   WorkspaceDesiredState = "running"
+	WorkspaceDesiredStateSleeping  WorkspaceDesiredState = "sleeping"
 	WorkspaceDesiredStateDestroyed WorkspaceDesiredState = "destroyed"
 )
 
@@ -283,7 +285,7 @@ func (r *WorkspaceList) UnmarshalJSON(data []byte) error {
 
 type WorkspaceListItem struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Any of "active", "inactive", "destroyed".
+	// Any of "running", "sleeping", "destroyed".
 	DesiredState string `json:"desired_state" api:"required"`
 	// Memory in MiB.
 	MemoryMiB  int64           `json:"memory_mib" api:"required"`
@@ -356,7 +358,7 @@ type WorkspaceDeleteParams struct {
 	paramObj
 }
 
-type WorkspaceStreamStatusParams struct {
+type WorkspaceWatchParams struct {
 	LastEventID param.Opt[string] `header:"Last-Event-ID,omitzero" json:"-"`
 	paramObj
 }

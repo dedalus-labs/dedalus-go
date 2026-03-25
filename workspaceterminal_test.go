@@ -36,8 +36,7 @@ func TestWorkspaceTerminalNewWithOptionalParams(t *testing.T) {
 				Env: map[string]string{
 					"foo": "string",
 				},
-				Shell:        dedalus.String("shell"),
-				WakeIfNeeded: dedalus.Bool(true),
+				Shell: dedalus.String("shell"),
 			},
 		},
 	)

@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestWorkspaceSSHNewWithOptionalParams(t *testing.T) {
+func TestWorkspaceSSHNew(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -30,8 +30,7 @@ func TestWorkspaceSSHNewWithOptionalParams(t *testing.T) {
 		"workspace_id",
 		dedalus.WorkspaceSSHNewParams{
 			SSHSessionCreateParams: dedalus.SSHSessionCreateParams{
-				PublicKey:    "public_key",
-				WakeIfNeeded: dedalus.Bool(true),
+				PublicKey: "public_key",
 			},
 		},
 	)

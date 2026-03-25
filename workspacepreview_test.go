@@ -30,9 +30,8 @@ func TestWorkspacePreviewNewWithOptionalParams(t *testing.T) {
 		"workspace_id",
 		dedalus.WorkspacePreviewNewParams{
 			PreviewCreateParams: dedalus.PreviewCreateParams{
-				Port:         0,
-				Protocol:     dedalus.PreviewCreateParamsProtocolHTTP,
-				WakeIfNeeded: dedalus.Bool(true),
+				Port:     0,
+				Protocol: dedalus.PreviewCreateParamsProtocolHTTP,
 			},
 		},
 	)
