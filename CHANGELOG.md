@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.1.0 (2026-03-27)
+
+Full Changelog: [v0.0.4...v0.1.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.4...v0.1.0)
+
+### Features
+
+* **internal:** support comma format in multipart form encoding ([b6e4a66](https://github.com/dedalus-labs/dedalus-go/commit/b6e4a66de5e3dca7e6e3019770f9f605413d052f))
+
+
+### Bug Fixes
+
+* prevent duplicate ? in query params ([499b0b9](https://github.com/dedalus-labs/dedalus-go/commit/499b0b9e2dacc422cc3d9f9151bb6e1a715d3524))
+
+
+### Chores
+
+* **ci:** support opting out of skipping builds on metadata-only commits ([5bbd0c1](https://github.com/dedalus-labs/dedalus-go/commit/5bbd0c13b84be6b815fdddeb29f525e4f73b9474))
+* **client:** fix multipart serialisation of Default() fields ([2fb659b](https://github.com/dedalus-labs/dedalus-go/commit/2fb659bf2dcb63ab6b0ae4a17255950443c86609))
+* **internal:** support default value struct tag ([04b200b](https://github.com/dedalus-labs/dedalus-go/commit/04b200b04f54bb3af1b068d5ecb2e1500d16a10a))
+* remove unnecessary error check for url parsing ([ebb626d](https://github.com/dedalus-labs/dedalus-go/commit/ebb626d7f0225deea8a7465a6219ba955019f8e8))
+* update docs for api:"required" ([128f066](https://github.com/dedalus-labs/dedalus-go/commit/128f066dedd518f68cf1df91a1153604d3b763c1))
+
 ## 0.0.4 (2026-03-25)
 
 Full Changelog: [v0.0.3...v0.0.4](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.3...v0.0.4)
