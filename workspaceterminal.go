@@ -591,7 +591,7 @@ func (r WorkspaceTerminalNewParams) MarshalJSON() (data []byte, err error) {
 	return shimjson.Marshal(r.TerminalCreateParams)
 }
 func (r *WorkspaceTerminalNewParams) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &r.TerminalCreateParams)
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type WorkspaceTerminalGetParams struct {

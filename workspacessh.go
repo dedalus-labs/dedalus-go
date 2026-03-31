@@ -4,7 +4,6 @@ package dedalus
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -249,7 +248,7 @@ func (r WorkspaceSSHNewParams) MarshalJSON() (data []byte, err error) {
 	return shimjson.Marshal(r.SSHSessionCreateParams)
 }
 func (r *WorkspaceSSHNewParams) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &r.SSHSessionCreateParams)
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type WorkspaceSSHGetParams struct {

@@ -4,7 +4,6 @@ package dedalus
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -391,7 +390,7 @@ func (r WorkspaceExecutionNewParams) MarshalJSON() (data []byte, err error) {
 	return shimjson.Marshal(r.ExecutionCreateParams)
 }
 func (r *WorkspaceExecutionNewParams) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &r.ExecutionCreateParams)
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type WorkspaceExecutionGetParams struct {
