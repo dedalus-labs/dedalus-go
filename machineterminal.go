@@ -22,64 +22,64 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
-// WorkspaceTerminalService contains methods and other services that help with
+// MachineTerminalService contains methods and other services that help with
 // interacting with the Dedalus API.
 //
 // Note, unlike clients, this service does not read variables from the environment
 // automatically. You should not instantiate this service directly, and instead use
-// the [NewWorkspaceTerminalService] method instead.
-type WorkspaceTerminalService struct {
+// the [NewMachineTerminalService] method instead.
+type MachineTerminalService struct {
 	Options []option.RequestOption
 }
 
-// NewWorkspaceTerminalService generates a new service that applies the given
-// options to each request. These options are applied after the parent client's
-// options (if there is one), and before any request-specific options.
-func NewWorkspaceTerminalService(opts ...option.RequestOption) (r WorkspaceTerminalService) {
-	r = WorkspaceTerminalService{}
+// NewMachineTerminalService generates a new service that applies the given options
+// to each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewMachineTerminalService(opts ...option.RequestOption) (r MachineTerminalService) {
+	r = MachineTerminalService{}
 	r.Options = opts
 	return
 }
 
 // Create terminal
-func (r *WorkspaceTerminalService) New(ctx context.Context, workspaceID string, body WorkspaceTerminalNewParams, opts ...option.RequestOption) (res *Terminal, err error) {
+func (r *MachineTerminalService) New(ctx context.Context, params MachineTerminalNewParams, opts ...option.RequestOption) (res *Terminal, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/terminals", url.PathEscape(workspaceID))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/machines/%s/terminals", url.PathEscape(params.MachineID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Get terminal
-func (r *WorkspaceTerminalService) Get(ctx context.Context, terminalID string, query WorkspaceTerminalGetParams, opts ...option.RequestOption) (res *Terminal, err error) {
+func (r *MachineTerminalService) Get(ctx context.Context, query MachineTerminalGetParams, opts ...option.RequestOption) (res *Terminal, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if query.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if query.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if terminalID == "" {
+	if query.TerminalID == "" {
 		err = errors.New("missing required terminal_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/terminals/%s", url.PathEscape(query.WorkspaceID), url.PathEscape(terminalID))
+	path := fmt.Sprintf("v1/machines/%s/terminals/%s", url.PathEscape(query.MachineID), url.PathEscape(query.TerminalID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // List terminals
-func (r *WorkspaceTerminalService) List(ctx context.Context, workspaceID string, query WorkspaceTerminalListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Terminal], err error) {
+func (r *MachineTerminalService) List(ctx context.Context, params MachineTerminalListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Terminal], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/terminals", url.PathEscape(workspaceID))
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/machines/%s/terminals", url.PathEscape(params.MachineID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,22 +92,22 @@ func (r *WorkspaceTerminalService) List(ctx context.Context, workspaceID string,
 }
 
 // List terminals
-func (r *WorkspaceTerminalService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceTerminalListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Terminal] {
-	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *MachineTerminalService) ListAutoPaging(ctx context.Context, params MachineTerminalListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Terminal] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete terminal
-func (r *WorkspaceTerminalService) Delete(ctx context.Context, terminalID string, body WorkspaceTerminalDeleteParams, opts ...option.RequestOption) (res *Terminal, err error) {
+func (r *MachineTerminalService) Delete(ctx context.Context, body MachineTerminalDeleteParams, opts ...option.RequestOption) (res *Terminal, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if body.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if body.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if terminalID == "" {
+	if body.TerminalID == "" {
 		err = errors.New("missing required terminal_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/terminals/%s", url.PathEscape(body.WorkspaceID), url.PathEscape(terminalID))
+	path := fmt.Sprintf("v1/machines/%s/terminals/%s", url.PathEscape(body.MachineID), url.PathEscape(body.TerminalID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -115,11 +115,11 @@ func (r *WorkspaceTerminalService) Delete(ctx context.Context, terminalID string
 type Terminal struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	Height    int64     `json:"height" api:"required"`
+	MachineID string    `json:"machine_id" api:"required"`
 	// Any of "wake_in_progress", "ready", "closed", "expired", "failed".
 	Status       TerminalStatus `json:"status" api:"required"`
 	TerminalID   string         `json:"terminal_id" api:"required"`
 	Width        int64          `json:"width" api:"required"`
-	WorkspaceID  string         `json:"workspace_id" api:"required"`
 	ErrorCode    string         `json:"error_code"`
 	ErrorMessage string         `json:"error_message"`
 	ExpiresAt    time.Time      `json:"expires_at" format:"date-time"`
@@ -132,10 +132,10 @@ type Terminal struct {
 	JSON struct {
 		CreatedAt    respjson.Field
 		Height       respjson.Field
+		MachineID    respjson.Field
 		Status       respjson.Field
 		TerminalID   respjson.Field
 		Width        respjson.Field
-		WorkspaceID  respjson.Field
 		ErrorCode    respjson.Field
 		ErrorMessage respjson.Field
 		ExpiresAt    respjson.Field
@@ -277,6 +277,49 @@ func (u TerminalClientEventUnionParam) MarshalJSON() ([]byte, error) {
 }
 func (u *TerminalClientEventUnionParam) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
+}
+
+func (u *TerminalClientEventUnionParam) asAny() any {
+	if !param.IsOmitted(u.OfInput) {
+		return u.OfInput
+	} else if !param.IsOmitted(u.OfResize) {
+		return u.OfResize
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TerminalClientEventUnionParam) GetData() *string {
+	if vt := u.OfInput; vt != nil {
+		return &vt.Data
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TerminalClientEventUnionParam) GetHeight() *int64 {
+	if vt := u.OfResize; vt != nil {
+		return &vt.Height
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TerminalClientEventUnionParam) GetWidth() *int64 {
+	if vt := u.OfResize; vt != nil {
+		return &vt.Width
+	}
+	return nil
+}
+
+// Returns a pointer to the underlying variant's property, if present.
+func (u TerminalClientEventUnionParam) GetType() *string {
+	if vt := u.OfInput; vt != nil {
+		return (*string)(&vt.Type)
+	} else if vt := u.OfResize; vt != nil {
+		return (*string)(&vt.Type)
+	}
+	return nil
 }
 
 func init() {
@@ -582,39 +625,43 @@ func (r *TerminalServerEventUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspaceTerminalNewParams struct {
+type MachineTerminalNewParams struct {
+	MachineID            string `path:"machine_id" api:"required" json:"-"`
 	TerminalCreateParams TerminalCreateParams
 	paramObj
 }
 
-func (r WorkspaceTerminalNewParams) MarshalJSON() (data []byte, err error) {
+func (r MachineTerminalNewParams) MarshalJSON() (data []byte, err error) {
 	return shimjson.Marshal(r.TerminalCreateParams)
 }
-func (r *WorkspaceTerminalNewParams) UnmarshalJSON(data []byte) error {
+func (r *MachineTerminalNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspaceTerminalGetParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachineTerminalGetParams struct {
+	MachineID  string `path:"machine_id" api:"required" json:"-"`
+	TerminalID string `path:"terminal_id" api:"required" json:"-"`
 	paramObj
 }
 
-type WorkspaceTerminalListParams struct {
-	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
-	Limit  param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+type MachineTerminalListParams struct {
+	MachineID string            `path:"machine_id" api:"required" json:"-"`
+	Cursor    param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	Limit     param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	paramObj
 }
 
-// URLQuery serializes [WorkspaceTerminalListParams]'s query parameters as
+// URLQuery serializes [MachineTerminalListParams]'s query parameters as
 // `url.Values`.
-func (r WorkspaceTerminalListParams) URLQuery() (v url.Values, err error) {
+func (r MachineTerminalListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
 
-type WorkspaceTerminalDeleteParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachineTerminalDeleteParams struct {
+	MachineID  string `path:"machine_id" api:"required" json:"-"`
+	TerminalID string `path:"terminal_id" api:"required" json:"-"`
 	paramObj
 }

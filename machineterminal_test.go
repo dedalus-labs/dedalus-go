@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestWorkspaceNew(t *testing.T) {
+func TestMachineTerminalNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,92 +25,17 @@ func TestWorkspaceNew(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
-	})
-	if err != nil {
-		var apierr *dedalus.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestWorkspaceGet(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := dedalus.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Workspaces.Get(context.TODO(), "workspace_id")
-	if err != nil {
-		var apierr *dedalus.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestWorkspaceUpdateWithOptionalParams(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := dedalus.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Workspaces.Update(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspaceUpdateParams{
-			UpdateParams: dedalus.UpdateParams{
-				MemoryMiB:  dedalus.Int(0),
-				StorageGiB: dedalus.Int(0),
-				VCPU:       dedalus.Float(0),
+	_, err := client.Machines.Terminals.New(context.TODO(), dedalus.MachineTerminalNewParams{
+		MachineID: "machine_id",
+		TerminalCreateParams: dedalus.TerminalCreateParams{
+			Height: 0,
+			Width:  0,
+			Cwd:    dedalus.String("cwd"),
+			Env: map[string]string{
+				"foo": "string",
 			},
-			IfMatch: "If-Match",
+			Shell: dedalus.String("shell"),
 		},
-	)
-	if err != nil {
-		var apierr *dedalus.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestWorkspaceListWithOptionalParams(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := dedalus.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Workspaces.List(context.TODO(), dedalus.WorkspaceListParams{
-		Cursor: dedalus.String("cursor"),
-		Limit:  dedalus.Int(0),
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -121,7 +46,7 @@ func TestWorkspaceListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceDelete(t *testing.T) {
+func TestMachineTerminalGet(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -133,13 +58,61 @@ func TestWorkspaceDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Delete(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspaceDeleteParams{
-			IfMatch: "If-Match",
-		},
+	_, err := client.Machines.Terminals.Get(context.TODO(), dedalus.MachineTerminalGetParams{
+		MachineID:  "machine_id",
+		TerminalID: "terminal_id",
+	})
+	if err != nil {
+		var apierr *dedalus.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestMachineTerminalListWithOptionalParams(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := dedalus.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
 	)
+	_, err := client.Machines.Terminals.List(context.TODO(), dedalus.MachineTerminalListParams{
+		MachineID: "machine_id",
+		Cursor:    dedalus.String("cursor"),
+		Limit:     dedalus.Int(0),
+	})
+	if err != nil {
+		var apierr *dedalus.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestMachineTerminalDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := dedalus.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Machines.Terminals.Delete(context.TODO(), dedalus.MachineTerminalDeleteParams{
+		MachineID:  "machine_id",
+		TerminalID: "terminal_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {

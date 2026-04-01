@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestWorkspaceTerminalNewWithOptionalParams(t *testing.T) {
+func TestMachinePreviewNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,21 +25,14 @@ func TestWorkspaceTerminalNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Terminals.New(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspaceTerminalNewParams{
-			TerminalCreateParams: dedalus.TerminalCreateParams{
-				Height: 0,
-				Width:  0,
-				Cwd:    dedalus.String("cwd"),
-				Env: map[string]string{
-					"foo": "string",
-				},
-				Shell: dedalus.String("shell"),
-			},
+	_, err := client.Machines.Previews.New(context.TODO(), dedalus.MachinePreviewNewParams{
+		MachineID: "machine_id",
+		PreviewCreateParams: dedalus.PreviewCreateParams{
+			Port:       0,
+			Protocol:   dedalus.PreviewCreateParamsProtocolHTTP,
+			Visibility: dedalus.PreviewCreateParamsVisibilityPublic,
 		},
-	)
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -49,7 +42,7 @@ func TestWorkspaceTerminalNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceTerminalGet(t *testing.T) {
+func TestMachinePreviewGet(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -61,13 +54,10 @@ func TestWorkspaceTerminalGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Terminals.Get(
-		context.TODO(),
-		"terminal_id",
-		dedalus.WorkspaceTerminalGetParams{
-			WorkspaceID: "workspace_id",
-		},
-	)
+	_, err := client.Machines.Previews.Get(context.TODO(), dedalus.MachinePreviewGetParams{
+		MachineID: "machine_id",
+		PreviewID: "preview_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -77,7 +67,7 @@ func TestWorkspaceTerminalGet(t *testing.T) {
 	}
 }
 
-func TestWorkspaceTerminalListWithOptionalParams(t *testing.T) {
+func TestMachinePreviewListWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -89,14 +79,11 @@ func TestWorkspaceTerminalListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Terminals.List(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspaceTerminalListParams{
-			Cursor: dedalus.String("cursor"),
-			Limit:  dedalus.Int(0),
-		},
-	)
+	_, err := client.Machines.Previews.List(context.TODO(), dedalus.MachinePreviewListParams{
+		MachineID: "machine_id",
+		Cursor:    dedalus.String("cursor"),
+		Limit:     dedalus.Int(0),
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -106,7 +93,7 @@ func TestWorkspaceTerminalListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceTerminalDelete(t *testing.T) {
+func TestMachinePreviewDelete(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -118,13 +105,10 @@ func TestWorkspaceTerminalDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Terminals.Delete(
-		context.TODO(),
-		"terminal_id",
-		dedalus.WorkspaceTerminalDeleteParams{
-			WorkspaceID: "workspace_id",
-		},
-	)
+	_, err := client.Machines.Previews.Delete(context.TODO(), dedalus.MachinePreviewDeleteParams{
+		MachineID: "machine_id",
+		PreviewID: "preview_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {

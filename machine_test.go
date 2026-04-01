@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestWorkspacePreviewNewWithOptionalParams(t *testing.T) {
+func TestMachineNew(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,16 +25,13 @@ func TestWorkspacePreviewNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Previews.New(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspacePreviewNewParams{
-			PreviewCreateParams: dedalus.PreviewCreateParams{
-				Port:     0,
-				Protocol: dedalus.PreviewCreateParamsProtocolHTTP,
-			},
+	_, err := client.Machines.New(context.TODO(), dedalus.MachineNewParams{
+		CreateParams: dedalus.CreateParams{
+			MemoryMiB:  0,
+			StorageGiB: 0,
+			VCPU:       0,
 		},
-	)
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -44,7 +41,7 @@ func TestWorkspacePreviewNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspacePreviewGet(t *testing.T) {
+func TestMachineGet(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -56,13 +53,9 @@ func TestWorkspacePreviewGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Previews.Get(
-		context.TODO(),
-		"preview_id",
-		dedalus.WorkspacePreviewGetParams{
-			WorkspaceID: "workspace_id",
-		},
-	)
+	_, err := client.Machines.Get(context.TODO(), dedalus.MachineGetParams{
+		MachineID: "machine_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -72,7 +65,7 @@ func TestWorkspacePreviewGet(t *testing.T) {
 	}
 }
 
-func TestWorkspacePreviewListWithOptionalParams(t *testing.T) {
+func TestMachineUpdateWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -84,14 +77,15 @@ func TestWorkspacePreviewListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Previews.List(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspacePreviewListParams{
-			Cursor: dedalus.String("cursor"),
-			Limit:  dedalus.Int(0),
+	_, err := client.Machines.Update(context.TODO(), dedalus.MachineUpdateParams{
+		MachineID: "machine_id",
+		UpdateParams: dedalus.UpdateParams{
+			MemoryMiB:  dedalus.Int(0),
+			StorageGiB: dedalus.Int(0),
+			VCPU:       dedalus.Float(0),
 		},
-	)
+		IfMatch: "If-Match",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -101,7 +95,7 @@ func TestWorkspacePreviewListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspacePreviewDelete(t *testing.T) {
+func TestMachineListWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -113,13 +107,35 @@ func TestWorkspacePreviewDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Previews.Delete(
-		context.TODO(),
-		"preview_id",
-		dedalus.WorkspacePreviewDeleteParams{
-			WorkspaceID: "workspace_id",
-		},
+	_, err := client.Machines.List(context.TODO(), dedalus.MachineListParams{
+		Cursor: dedalus.String("cursor"),
+		Limit:  dedalus.Int(0),
+	})
+	if err != nil {
+		var apierr *dedalus.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestMachineDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := dedalus.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
 	)
+	_, err := client.Machines.Delete(context.TODO(), dedalus.MachineDeleteParams{
+		MachineID: "machine_id",
+		IfMatch:   "If-Match",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {

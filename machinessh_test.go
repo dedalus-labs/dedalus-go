@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestWorkspaceArtifactGet(t *testing.T) {
+func TestMachineSSHNew(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,13 +25,12 @@ func TestWorkspaceArtifactGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Artifacts.Get(
-		context.TODO(),
-		"artifact_id",
-		dedalus.WorkspaceArtifactGetParams{
-			WorkspaceID: "workspace_id",
+	_, err := client.Machines.SSH.New(context.TODO(), dedalus.MachineSSHNewParams{
+		MachineID: "machine_id",
+		SSHSessionCreateParams: dedalus.SSHSessionCreateParams{
+			PublicKey: "public_key",
 		},
-	)
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -41,7 +40,7 @@ func TestWorkspaceArtifactGet(t *testing.T) {
 	}
 }
 
-func TestWorkspaceArtifactListWithOptionalParams(t *testing.T) {
+func TestMachineSSHGet(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -53,14 +52,10 @@ func TestWorkspaceArtifactListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Artifacts.List(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspaceArtifactListParams{
-			Cursor: dedalus.String("cursor"),
-			Limit:  dedalus.Int(0),
-		},
-	)
+	_, err := client.Machines.SSH.Get(context.TODO(), dedalus.MachineSSHGetParams{
+		MachineID: "machine_id",
+		SessionID: "session_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -70,7 +65,7 @@ func TestWorkspaceArtifactListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceArtifactDelete(t *testing.T) {
+func TestMachineSSHListWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -82,13 +77,36 @@ func TestWorkspaceArtifactDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Artifacts.Delete(
-		context.TODO(),
-		"artifact_id",
-		dedalus.WorkspaceArtifactDeleteParams{
-			WorkspaceID: "workspace_id",
-		},
+	_, err := client.Machines.SSH.List(context.TODO(), dedalus.MachineSSHListParams{
+		MachineID: "machine_id",
+		Cursor:    dedalus.String("cursor"),
+		Limit:     dedalus.Int(0),
+	})
+	if err != nil {
+		var apierr *dedalus.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestMachineSSHDelete(t *testing.T) {
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := dedalus.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
 	)
+	_, err := client.Machines.SSH.Delete(context.TODO(), dedalus.MachineSSHDeleteParams{
+		MachineID: "machine_id",
+		SessionID: "session_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {

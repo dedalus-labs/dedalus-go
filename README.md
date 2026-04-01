@@ -65,7 +65,7 @@ func main() {
 	client := dedalus.NewClient(
 		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("DEDALUS_API_KEY")
 	)
-	workspace, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
+	machine, err := client.Machines.New(context.TODO(), dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -75,7 +75,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Printf("%+v\n", workspace.WorkspaceID)
+	fmt.Printf("%+v\n", machine.MachineID)
 }
 
 ```
@@ -281,7 +281,7 @@ client := dedalus.NewClient(
 	option.WithHeader("X-Some-Header", "custom_header_info"),
 )
 
-client.Workspaces.New(context.TODO(), ...,
+client.Machines.New(context.TODO(), ...,
 	// Override the header
 	option.WithHeader("X-Some-Header", "some_other_custom_header_info"),
 	// Add an undocumented field to the request body, using sjson syntax
@@ -300,11 +300,11 @@ This library provides some conveniences for working with paginated list endpoint
 You can use `.ListAutoPaging()` methods to iterate through items across all pages:
 
 ```go
-iter := client.Workspaces.ListAutoPaging(context.TODO(), dedalus.WorkspaceListParams{})
+iter := client.Machines.ListAutoPaging(context.TODO(), dedalus.MachineListParams{})
 // Automatically fetches more pages as needed.
 for iter.Next() {
-	workspace := iter.Current()
-	fmt.Printf("%+v\n", workspace)
+	machineListItem := iter.Current()
+	fmt.Printf("%+v\n", machineListItem)
 }
 if err := iter.Err(); err != nil {
 	panic(err.Error())
@@ -315,10 +315,10 @@ Or you can use simple `.List()` methods to fetch a single page and receive a sta
 with additional helper methods like `.GetNextPage()`, e.g.:
 
 ```go
-page, err := client.Workspaces.List(context.TODO(), dedalus.WorkspaceListParams{})
+page, err := client.Machines.List(context.TODO(), dedalus.MachineListParams{})
 for page != nil {
-	for _, workspace := range page.Items {
-		fmt.Printf("%+v\n", workspace)
+	for _, machine := range page.Items {
+		fmt.Printf("%+v\n", machine)
 	}
 	page, err = page.GetNextPage()
 }
@@ -337,7 +337,7 @@ When the API returns a non-success status code, we return an error with type
 To handle errors, we recommend that you use the `errors.As` pattern:
 
 ```go
-_, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
+_, err := client.Machines.New(context.TODO(), dedalus.MachineNewParams{
 	CreateParams: dedalus.CreateParams{
 		MemoryMiB:  0,
 		StorageGiB: 0,
@@ -353,7 +353,7 @@ if err != nil {
 		println(apierr.Message)                    // idempotency key reused with different request parameters
 		println(apierr.Retryable)                  // false
 	}
-	panic(err.Error()) // GET "/v1/workspaces": 400 Bad Request { ... }
+	panic(err.Error()) // GET "/v1/machines": 400 Bad Request { ... }
 }
 ```
 
@@ -371,9 +371,9 @@ To set a per-retry timeout, use `option.WithRequestTimeout()`.
 // This sets the timeout for the request, including all the retries.
 ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 defer cancel()
-client.Workspaces.New(
+client.Machines.New(
 	ctx,
-	dedalus.WorkspaceNewParams{
+	dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -413,9 +413,9 @@ client := dedalus.NewClient(
 )
 
 // Override per-request:
-client.Workspaces.New(
+client.Machines.New(
 	context.TODO(),
-	dedalus.WorkspaceNewParams{
+	dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -434,9 +434,9 @@ you need to examine response headers, status codes, or other details.
 ```go
 // Create a variable to store the HTTP response
 var response *http.Response
-workspace, err := client.Workspaces.New(
+machine, err := client.Machines.New(
 	context.TODO(),
-	dedalus.WorkspaceNewParams{
+	dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -448,7 +448,7 @@ workspace, err := client.Workspaces.New(
 if err != nil {
 	// handle error
 }
-fmt.Printf("%+v\n", workspace)
+fmt.Printf("%+v\n", machine)
 
 fmt.Printf("Status Code: %d\n", response.StatusCode)
 fmt.Printf("Headers: %+#v\n", response.Header)
