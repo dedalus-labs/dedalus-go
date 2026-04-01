@@ -4,7 +4,6 @@ package dedalus
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -22,64 +21,64 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
-// WorkspaceExecutionService contains methods and other services that help with
+// MachineExecutionService contains methods and other services that help with
 // interacting with the Dedalus API.
 //
 // Note, unlike clients, this service does not read variables from the environment
 // automatically. You should not instantiate this service directly, and instead use
-// the [NewWorkspaceExecutionService] method instead.
-type WorkspaceExecutionService struct {
+// the [NewMachineExecutionService] method instead.
+type MachineExecutionService struct {
 	Options []option.RequestOption
 }
 
-// NewWorkspaceExecutionService generates a new service that applies the given
+// NewMachineExecutionService generates a new service that applies the given
 // options to each request. These options are applied after the parent client's
 // options (if there is one), and before any request-specific options.
-func NewWorkspaceExecutionService(opts ...option.RequestOption) (r WorkspaceExecutionService) {
-	r = WorkspaceExecutionService{}
+func NewMachineExecutionService(opts ...option.RequestOption) (r MachineExecutionService) {
+	r = MachineExecutionService{}
 	r.Options = opts
 	return
 }
 
 // Create execution
-func (r *WorkspaceExecutionService) New(ctx context.Context, workspaceID string, body WorkspaceExecutionNewParams, opts ...option.RequestOption) (res *Execution, err error) {
+func (r *MachineExecutionService) New(ctx context.Context, params MachineExecutionNewParams, opts ...option.RequestOption) (res *Execution, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/executions", url.PathEscape(workspaceID))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/machines/%s/executions", url.PathEscape(params.MachineID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Get execution
-func (r *WorkspaceExecutionService) Get(ctx context.Context, executionID string, query WorkspaceExecutionGetParams, opts ...option.RequestOption) (res *Execution, err error) {
+func (r *MachineExecutionService) Get(ctx context.Context, query MachineExecutionGetParams, opts ...option.RequestOption) (res *Execution, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if query.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if query.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if executionID == "" {
+	if query.ExecutionID == "" {
 		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/executions/%s", url.PathEscape(query.WorkspaceID), url.PathEscape(executionID))
+	path := fmt.Sprintf("v1/machines/%s/executions/%s", url.PathEscape(query.MachineID), url.PathEscape(query.ExecutionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // List executions
-func (r *WorkspaceExecutionService) List(ctx context.Context, workspaceID string, query WorkspaceExecutionListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Execution], err error) {
+func (r *MachineExecutionService) List(ctx context.Context, params MachineExecutionListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Execution], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/executions", url.PathEscape(workspaceID))
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/machines/%s/executions", url.PathEscape(params.MachineID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -92,40 +91,40 @@ func (r *WorkspaceExecutionService) List(ctx context.Context, workspaceID string
 }
 
 // List executions
-func (r *WorkspaceExecutionService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceExecutionListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Execution] {
-	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *MachineExecutionService) ListAutoPaging(ctx context.Context, params MachineExecutionListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Execution] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete execution
-func (r *WorkspaceExecutionService) Delete(ctx context.Context, executionID string, body WorkspaceExecutionDeleteParams, opts ...option.RequestOption) (res *Execution, err error) {
+func (r *MachineExecutionService) Delete(ctx context.Context, body MachineExecutionDeleteParams, opts ...option.RequestOption) (res *Execution, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if body.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if body.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if executionID == "" {
+	if body.ExecutionID == "" {
 		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/executions/%s", url.PathEscape(body.WorkspaceID), url.PathEscape(executionID))
+	path := fmt.Sprintf("v1/machines/%s/executions/%s", url.PathEscape(body.MachineID), url.PathEscape(body.ExecutionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
 
 // List execution events
-func (r *WorkspaceExecutionService) Events(ctx context.Context, executionID string, params WorkspaceExecutionEventsParams, opts ...option.RequestOption) (res *pagination.CursorPage[ExecutionEvent], err error) {
+func (r *MachineExecutionService) Events(ctx context.Context, params MachineExecutionEventsParams, opts ...option.RequestOption) (res *pagination.CursorPage[ExecutionEvent], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if params.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if executionID == "" {
+	if params.ExecutionID == "" {
 		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/executions/%s/events", url.PathEscape(params.WorkspaceID), url.PathEscape(executionID))
+	path := fmt.Sprintf("v1/machines/%s/executions/%s/events", url.PathEscape(params.MachineID), url.PathEscape(params.ExecutionID))
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -139,22 +138,22 @@ func (r *WorkspaceExecutionService) Events(ctx context.Context, executionID stri
 }
 
 // List execution events
-func (r *WorkspaceExecutionService) EventsAutoPaging(ctx context.Context, executionID string, params WorkspaceExecutionEventsParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[ExecutionEvent] {
-	return pagination.NewCursorPageAutoPager(r.Events(ctx, executionID, params, opts...))
+func (r *MachineExecutionService) EventsAutoPaging(ctx context.Context, params MachineExecutionEventsParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[ExecutionEvent] {
+	return pagination.NewCursorPageAutoPager(r.Events(ctx, params, opts...))
 }
 
 // Get execution output
-func (r *WorkspaceExecutionService) Output(ctx context.Context, executionID string, query WorkspaceExecutionOutputParams, opts ...option.RequestOption) (res *ExecutionOutput, err error) {
+func (r *MachineExecutionService) Output(ctx context.Context, query MachineExecutionOutputParams, opts ...option.RequestOption) (res *ExecutionOutput, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if query.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if query.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if executionID == "" {
+	if query.ExecutionID == "" {
 		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/executions/%s/output", url.PathEscape(query.WorkspaceID), url.PathEscape(executionID))
+	path := fmt.Sprintf("v1/machines/%s/executions/%s/output", url.PathEscape(query.MachineID), url.PathEscape(query.ExecutionID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
@@ -181,10 +180,10 @@ type Execution struct {
 	Command     []string  `json:"command" api:"required"`
 	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
 	ExecutionID string    `json:"execution_id" api:"required"`
+	MachineID   string    `json:"machine_id" api:"required"`
 	// Any of "wake_in_progress", "queued", "running", "succeeded", "failed",
 	// "cancelled", "expired".
 	Status          ExecutionStatus `json:"status" api:"required"`
-	WorkspaceID     string          `json:"workspace_id" api:"required"`
 	Artifacts       []ArtifactRef   `json:"artifacts" api:"nullable"`
 	CompletedAt     time.Time       `json:"completed_at" format:"date-time"`
 	Cwd             string          `json:"cwd"`
@@ -205,8 +204,8 @@ type Execution struct {
 		Command         respjson.Field
 		CreatedAt       respjson.Field
 		ExecutionID     respjson.Field
+		MachineID       respjson.Field
 		Status          respjson.Field
-		WorkspaceID     respjson.Field
 		Artifacts       respjson.Field
 		CompletedAt     respjson.Field
 		Cwd             respjson.Field
@@ -382,60 +381,66 @@ func (r *ExecutionOutput) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspaceExecutionNewParams struct {
+type MachineExecutionNewParams struct {
+	MachineID             string `path:"machine_id" api:"required" json:"-"`
 	ExecutionCreateParams ExecutionCreateParams
 	paramObj
 }
 
-func (r WorkspaceExecutionNewParams) MarshalJSON() (data []byte, err error) {
+func (r MachineExecutionNewParams) MarshalJSON() (data []byte, err error) {
 	return shimjson.Marshal(r.ExecutionCreateParams)
 }
-func (r *WorkspaceExecutionNewParams) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &r.ExecutionCreateParams)
+func (r *MachineExecutionNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspaceExecutionGetParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachineExecutionGetParams struct {
+	MachineID   string `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	paramObj
 }
 
-type WorkspaceExecutionListParams struct {
-	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
-	Limit  param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+type MachineExecutionListParams struct {
+	MachineID string            `path:"machine_id" api:"required" json:"-"`
+	Cursor    param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	Limit     param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	paramObj
 }
 
-// URLQuery serializes [WorkspaceExecutionListParams]'s query parameters as
+// URLQuery serializes [MachineExecutionListParams]'s query parameters as
 // `url.Values`.
-func (r WorkspaceExecutionListParams) URLQuery() (v url.Values, err error) {
+func (r MachineExecutionListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
 
-type WorkspaceExecutionDeleteParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachineExecutionDeleteParams struct {
+	MachineID   string `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	paramObj
 }
 
-type WorkspaceExecutionEventsParams struct {
-	WorkspaceID string            `path:"workspace_id" api:"required" json:"-"`
+type MachineExecutionEventsParams struct {
+	MachineID   string            `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string            `path:"execution_id" api:"required" json:"-"`
 	Cursor      param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	paramObj
 }
 
-// URLQuery serializes [WorkspaceExecutionEventsParams]'s query parameters as
+// URLQuery serializes [MachineExecutionEventsParams]'s query parameters as
 // `url.Values`.
-func (r WorkspaceExecutionEventsParams) URLQuery() (v url.Values, err error) {
+func (r MachineExecutionEventsParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
 
-type WorkspaceExecutionOutputParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachineExecutionOutputParams struct {
+	MachineID   string `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	paramObj
 }

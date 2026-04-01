@@ -4,7 +4,6 @@ package dedalus
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -23,76 +22,76 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/ssestream"
 )
 
-// WorkspaceService contains methods and other services that help with interacting
+// MachineService contains methods and other services that help with interacting
 // with the Dedalus API.
 //
 // Note, unlike clients, this service does not read variables from the environment
 // automatically. You should not instantiate this service directly, and instead use
-// the [NewWorkspaceService] method instead.
-type WorkspaceService struct {
+// the [NewMachineService] method instead.
+type MachineService struct {
 	Options    []option.RequestOption
-	Artifacts  WorkspaceArtifactService
-	Previews   WorkspacePreviewService
-	SSH        WorkspaceSSHService
-	Executions WorkspaceExecutionService
-	Terminals  WorkspaceTerminalService
+	Artifacts  MachineArtifactService
+	Previews   MachinePreviewService
+	SSH        MachineSSHService
+	Executions MachineExecutionService
+	Terminals  MachineTerminalService
 }
 
-// NewWorkspaceService generates a new service that applies the given options to
-// each request. These options are applied after the parent client's options (if
-// there is one), and before any request-specific options.
-func NewWorkspaceService(opts ...option.RequestOption) (r WorkspaceService) {
-	r = WorkspaceService{}
+// NewMachineService generates a new service that applies the given options to each
+// request. These options are applied after the parent client's options (if there
+// is one), and before any request-specific options.
+func NewMachineService(opts ...option.RequestOption) (r MachineService) {
+	r = MachineService{}
 	r.Options = opts
-	r.Artifacts = NewWorkspaceArtifactService(opts...)
-	r.Previews = NewWorkspacePreviewService(opts...)
-	r.SSH = NewWorkspaceSSHService(opts...)
-	r.Executions = NewWorkspaceExecutionService(opts...)
-	r.Terminals = NewWorkspaceTerminalService(opts...)
+	r.Artifacts = NewMachineArtifactService(opts...)
+	r.Previews = NewMachinePreviewService(opts...)
+	r.SSH = NewMachineSSHService(opts...)
+	r.Executions = NewMachineExecutionService(opts...)
+	r.Terminals = NewMachineTerminalService(opts...)
 	return
 }
 
-// Create workspace
-func (r *WorkspaceService) New(ctx context.Context, body WorkspaceNewParams, opts ...option.RequestOption) (res *Workspace, err error) {
+// Create machine
+func (r *MachineService) New(ctx context.Context, body MachineNewParams, opts ...option.RequestOption) (res *Machine, err error) {
 	opts = slices.Concat(r.Options, opts)
-	path := "v1/workspaces"
+	path := "v1/machines"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
-// Get workspace
-func (r *WorkspaceService) Get(ctx context.Context, workspaceID string, opts ...option.RequestOption) (res *Workspace, err error) {
+// Get machine
+func (r *MachineService) Get(ctx context.Context, query MachineGetParams, opts ...option.RequestOption) (res *Machine, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if query.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/machines/%s", url.PathEscape(query.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
-// Update workspace
-func (r *WorkspaceService) Update(ctx context.Context, workspaceID string, params WorkspaceUpdateParams, opts ...option.RequestOption) (res *Workspace, err error) {
+// Update machine
+func (r *MachineService) Update(ctx context.Context, params MachineUpdateParams, opts ...option.RequestOption) (res *Machine, err error) {
 	if !param.IsOmitted(params.IfMatch) {
 		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", params.IfMatch)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/machines/%s", url.PathEscape(params.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, params, &res, opts...)
 	return res, err
 }
 
-// List workspaces
-func (r *WorkspaceService) List(ctx context.Context, query WorkspaceListParams, opts ...option.RequestOption) (res *pagination.CursorPage[WorkspaceListItem], err error) {
+// List machines
+func (r *MachineService) List(ctx context.Context, query MachineListParams, opts ...option.RequestOption) (res *pagination.CursorPage[MachineListItem], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	path := "v1/workspaces"
+	path := "v1/machines"
 	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
 	if err != nil {
 		return nil, err
@@ -105,46 +104,46 @@ func (r *WorkspaceService) List(ctx context.Context, query WorkspaceListParams, 
 	return res, nil
 }
 
-// List workspaces
-func (r *WorkspaceService) ListAutoPaging(ctx context.Context, query WorkspaceListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[WorkspaceListItem] {
+// List machines
+func (r *MachineService) ListAutoPaging(ctx context.Context, query MachineListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[MachineListItem] {
 	return pagination.NewCursorPageAutoPager(r.List(ctx, query, opts...))
 }
 
-// Destroy workspace
-func (r *WorkspaceService) Delete(ctx context.Context, workspaceID string, body WorkspaceDeleteParams, opts ...option.RequestOption) (res *Workspace, err error) {
-	if !param.IsOmitted(body.IfMatch) {
-		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", body.IfMatch)))
+// Destroy machine
+func (r *MachineService) Delete(ctx context.Context, params MachineDeleteParams, opts ...option.RequestOption) (res *Machine, err error) {
+	if !param.IsOmitted(params.IfMatch) {
+		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", params.IfMatch)))
 	}
 	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/machines/%s", url.PathEscape(params.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
 
-// Streams workspace lifecycle updates over Server-Sent Events. Each `status` event
-// contains a full `LifecycleResponse` payload. The stream closes after the
-// workspace reaches its current desired state.
-func (r *WorkspaceService) WatchStreaming(ctx context.Context, workspaceID string, query WorkspaceWatchParams, opts ...option.RequestOption) (stream *ssestream.Stream[Workspace]) {
+// Streams machine lifecycle updates over Server-Sent Events. Each `status` event
+// contains a full `LifecycleResponse` payload. The stream closes after the machine
+// reaches its current desired state.
+func (r *MachineService) WatchStreaming(ctx context.Context, params MachineWatchParams, opts ...option.RequestOption) (stream *ssestream.Stream[Machine]) {
 	var (
 		raw *http.Response
 		err error
 	)
-	if !param.IsOmitted(query.LastEventID) {
-		opts = append(opts, option.WithHeader("Last-Event-ID", fmt.Sprintf("%v", query.LastEventID.Value)))
+	if !param.IsOmitted(params.LastEventID) {
+		opts = append(opts, option.WithHeader("Last-Event-ID", fmt.Sprintf("%v", params.LastEventID.Value)))
 	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "text/event-stream")}, opts...)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
-		return ssestream.NewStream[Workspace](nil, err)
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
+		return ssestream.NewStream[Machine](nil, err)
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/status/stream", url.PathEscape(workspaceID))
+	path := fmt.Sprintf("v1/machines/%s/status/stream", url.PathEscape(params.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
-	return ssestream.NewStream[Workspace](ssestream.NewDecoder(raw), err)
+	return ssestream.NewStream[Machine](ssestream.NewDecoder(raw), err)
 }
 
 // The properties MemoryMiB, StorageGiB, VCPU are required.
@@ -210,6 +209,100 @@ const (
 	LifecycleStatusPhaseFailed           LifecycleStatusPhase = "failed"
 )
 
+type Machine struct {
+	// Any of "running", "sleeping", "destroyed".
+	DesiredState MachineDesiredState `json:"desired_state" api:"required"`
+	MachineID    string              `json:"machine_id" api:"required"`
+	// Memory in MiB.
+	MemoryMiB  int64           `json:"memory_mib" api:"required"`
+	Status     LifecycleStatus `json:"status" api:"required"`
+	StorageGiB int64           `json:"storage_gib" api:"required"`
+	// CPU in vCPUs.
+	VCPU float64 `json:"vcpu" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		DesiredState respjson.Field
+		MachineID    respjson.Field
+		MemoryMiB    respjson.Field
+		Status       respjson.Field
+		StorageGiB   respjson.Field
+		VCPU         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r Machine) RawJSON() string { return r.JSON.raw }
+func (r *Machine) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type MachineDesiredState string
+
+const (
+	MachineDesiredStateRunning   MachineDesiredState = "running"
+	MachineDesiredStateSleeping  MachineDesiredState = "sleeping"
+	MachineDesiredStateDestroyed MachineDesiredState = "destroyed"
+)
+
+type MachineList struct {
+	Items      []MachineListItem `json:"items" api:"required"`
+	NextCursor string            `json:"next_cursor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Items       respjson.Field
+		NextCursor  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r MachineList) RawJSON() string { return r.JSON.raw }
+func (r *MachineList) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type MachineListItem struct {
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Any of "running", "sleeping", "destroyed".
+	DesiredState MachineListItemDesiredState `json:"desired_state" api:"required"`
+	MachineID    string                      `json:"machine_id" api:"required"`
+	// Memory in MiB.
+	MemoryMiB  int64           `json:"memory_mib" api:"required"`
+	Status     LifecycleStatus `json:"status" api:"required"`
+	StorageGiB int64           `json:"storage_gib" api:"required"`
+	// CPU in vCPUs.
+	VCPU float64 `json:"vcpu" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CreatedAt    respjson.Field
+		DesiredState respjson.Field
+		MachineID    respjson.Field
+		MemoryMiB    respjson.Field
+		Status       respjson.Field
+		StorageGiB   respjson.Field
+		VCPU         respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r MachineListItem) RawJSON() string { return r.JSON.raw }
+func (r *MachineListItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type MachineListItemDesiredState string
+
+const (
+	MachineListItemDesiredStateRunning   MachineListItemDesiredState = "running"
+	MachineListItemDesiredStateSleeping  MachineListItemDesiredState = "sleeping"
+	MachineListItemDesiredStateDestroyed MachineListItemDesiredState = "destroyed"
+)
+
 type UpdateParams struct {
 	// Memory in MiB.
 	MemoryMiB param.Opt[int64] `json:"memory_mib,omitzero"`
@@ -228,137 +321,59 @@ func (r *UpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type Workspace struct {
-	// Any of "running", "sleeping", "destroyed".
-	DesiredState WorkspaceDesiredState `json:"desired_state" api:"required"`
-	// Memory in MiB.
-	MemoryMiB  int64           `json:"memory_mib" api:"required"`
-	Status     LifecycleStatus `json:"status" api:"required"`
-	StorageGiB int64           `json:"storage_gib" api:"required"`
-	// CPU in vCPUs.
-	VCPU        float64 `json:"vcpu" api:"required"`
-	WorkspaceID string  `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		DesiredState respjson.Field
-		MemoryMiB    respjson.Field
-		Status       respjson.Field
-		StorageGiB   respjson.Field
-		VCPU         respjson.Field
-		WorkspaceID  respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r Workspace) RawJSON() string { return r.JSON.raw }
-func (r *Workspace) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type WorkspaceDesiredState string
-
-const (
-	WorkspaceDesiredStateRunning   WorkspaceDesiredState = "running"
-	WorkspaceDesiredStateSleeping  WorkspaceDesiredState = "sleeping"
-	WorkspaceDesiredStateDestroyed WorkspaceDesiredState = "destroyed"
-)
-
-type WorkspaceList struct {
-	Items      []WorkspaceListItem `json:"items" api:"required"`
-	NextCursor string              `json:"next_cursor"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Items       respjson.Field
-		NextCursor  respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r WorkspaceList) RawJSON() string { return r.JSON.raw }
-func (r *WorkspaceList) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type WorkspaceListItem struct {
-	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
-	// Any of "running", "sleeping", "destroyed".
-	DesiredState string `json:"desired_state" api:"required"`
-	// Memory in MiB.
-	MemoryMiB  int64           `json:"memory_mib" api:"required"`
-	Status     LifecycleStatus `json:"status" api:"required"`
-	StorageGiB int64           `json:"storage_gib" api:"required"`
-	// CPU in vCPUs.
-	VCPU        float64 `json:"vcpu" api:"required"`
-	WorkspaceID string  `json:"workspace_id" api:"required"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		CreatedAt    respjson.Field
-		DesiredState respjson.Field
-		MemoryMiB    respjson.Field
-		Status       respjson.Field
-		StorageGiB   respjson.Field
-		VCPU         respjson.Field
-		WorkspaceID  respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
-	} `json:"-"`
-}
-
-// Returns the unmodified JSON received from the API
-func (r WorkspaceListItem) RawJSON() string { return r.JSON.raw }
-func (r *WorkspaceListItem) UnmarshalJSON(data []byte) error {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-type WorkspaceNewParams struct {
+type MachineNewParams struct {
 	CreateParams CreateParams
 	paramObj
 }
 
-func (r WorkspaceNewParams) MarshalJSON() (data []byte, err error) {
+func (r MachineNewParams) MarshalJSON() (data []byte, err error) {
 	return shimjson.Marshal(r.CreateParams)
 }
-func (r *WorkspaceNewParams) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &r.CreateParams)
+func (r *MachineNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspaceUpdateParams struct {
+type MachineGetParams struct {
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	paramObj
+}
+
+type MachineUpdateParams struct {
+	MachineID    string `path:"machine_id" api:"required" json:"-"`
 	UpdateParams UpdateParams
 	IfMatch      string `header:"If-Match" api:"required" json:"-"`
 	paramObj
 }
 
-func (r WorkspaceUpdateParams) MarshalJSON() (data []byte, err error) {
+func (r MachineUpdateParams) MarshalJSON() (data []byte, err error) {
 	return shimjson.Marshal(r.UpdateParams)
 }
-func (r *WorkspaceUpdateParams) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, &r.UpdateParams)
+func (r *MachineUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspaceListParams struct {
+type MachineListParams struct {
 	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
 	Limit  param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	paramObj
 }
 
-// URLQuery serializes [WorkspaceListParams]'s query parameters as `url.Values`.
-func (r WorkspaceListParams) URLQuery() (v url.Values, err error) {
+// URLQuery serializes [MachineListParams]'s query parameters as `url.Values`.
+func (r MachineListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
 
-type WorkspaceDeleteParams struct {
-	IfMatch string `header:"If-Match" api:"required" json:"-"`
+type MachineDeleteParams struct {
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	IfMatch   string `header:"If-Match" api:"required" json:"-"`
 	paramObj
 }
 
-type WorkspaceWatchParams struct {
+type MachineWatchParams struct {
+	MachineID   string            `path:"machine_id" api:"required" json:"-"`
 	LastEventID param.Opt[string] `header:"Last-Event-ID,omitzero" json:"-"`
 	paramObj
 }

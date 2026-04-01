@@ -24,12 +24,12 @@ func TestManualPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	page, err := client.Workspaces.List(context.TODO(), dedalus.WorkspaceListParams{})
+	page, err := client.Machines.List(context.TODO(), dedalus.MachineListParams{})
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
-	for _, workspace := range page.Items {
-		t.Logf("%+v\n", workspace.WorkspaceID)
+	for _, machine := range page.Items {
+		t.Logf("%+v\n", machine.MachineID)
 	}
 	// The mock server isn't going to give us real pagination
 	page, err = page.GetNextPage()
@@ -37,8 +37,8 @@ func TestManualPagination(t *testing.T) {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
 	if page != nil {
-		for _, workspace := range page.Items {
-			t.Logf("%+v\n", workspace.WorkspaceID)
+		for _, machine := range page.Items {
+			t.Logf("%+v\n", machine.MachineID)
 		}
 	}
 }

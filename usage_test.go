@@ -24,7 +24,7 @@ func TestUsage(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	workspace, err := client.Workspaces.New(context.TODO(), dedalus.WorkspaceNewParams{
+	machine, err := client.Machines.New(context.TODO(), dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -34,5 +34,5 @@ func TestUsage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
-	t.Logf("%+v\n", workspace.WorkspaceID)
+	t.Logf("%+v\n", machine.MachineID)
 }

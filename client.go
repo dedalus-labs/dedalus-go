@@ -16,8 +16,8 @@ import (
 // interacting with the Dedalus API. You should not instantiate this client
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
-	Options    []option.RequestOption
-	Workspaces WorkspaceService
+	Options  []option.RequestOption
+	Machines MachineService
 }
 
 // DefaultClientOptions read from the environment (DEDALUS_API_KEY,
@@ -50,7 +50,7 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
-	r.Workspaces = NewWorkspaceService(opts...)
+	r.Machines = NewMachineService(opts...)
 
 	return
 }

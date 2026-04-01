@@ -24,11 +24,11 @@ func TestAutoPagination(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	iter := client.Workspaces.ListAutoPaging(context.TODO(), dedalus.WorkspaceListParams{})
+	iter := client.Machines.ListAutoPaging(context.TODO(), dedalus.MachineListParams{})
 	// The mock server isn't going to give us real pagination
 	for i := 0; i < 3 && iter.Next(); i++ {
-		workspace := iter.Current()
-		t.Logf("%+v\n", workspace.WorkspaceID)
+		machine := iter.Current()
+		t.Logf("%+v\n", machine.MachineID)
 	}
 	if err := iter.Err(); err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
