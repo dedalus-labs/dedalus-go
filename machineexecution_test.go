@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestWorkspaceExecutionNewWithOptionalParams(t *testing.T) {
+func TestMachineExecutionNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,21 +25,18 @@ func TestWorkspaceExecutionNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Executions.New(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspaceExecutionNewParams{
-			ExecutionCreateParams: dedalus.ExecutionCreateParams{
-				Command: []string{"string"},
-				Cwd:     dedalus.String("cwd"),
-				Env: map[string]string{
-					"foo": "string",
-				},
-				Stdin:     dedalus.String("stdin"),
-				TimeoutMs: dedalus.Int(0),
+	_, err := client.Machines.Executions.New(context.TODO(), dedalus.MachineExecutionNewParams{
+		MachineID: "machine_id",
+		ExecutionCreateParams: dedalus.ExecutionCreateParams{
+			Command: []string{"string"},
+			Cwd:     dedalus.String("cwd"),
+			Env: map[string]string{
+				"foo": "string",
 			},
+			Stdin:     dedalus.String("stdin"),
+			TimeoutMs: dedalus.Int(0),
 		},
-	)
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -49,7 +46,7 @@ func TestWorkspaceExecutionNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceExecutionGet(t *testing.T) {
+func TestMachineExecutionGet(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -61,13 +58,10 @@ func TestWorkspaceExecutionGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Executions.Get(
-		context.TODO(),
-		"execution_id",
-		dedalus.WorkspaceExecutionGetParams{
-			WorkspaceID: "workspace_id",
-		},
-	)
+	_, err := client.Machines.Executions.Get(context.TODO(), dedalus.MachineExecutionGetParams{
+		MachineID:   "machine_id",
+		ExecutionID: "execution_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -77,7 +71,7 @@ func TestWorkspaceExecutionGet(t *testing.T) {
 	}
 }
 
-func TestWorkspaceExecutionListWithOptionalParams(t *testing.T) {
+func TestMachineExecutionListWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -89,14 +83,11 @@ func TestWorkspaceExecutionListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Executions.List(
-		context.TODO(),
-		"workspace_id",
-		dedalus.WorkspaceExecutionListParams{
-			Cursor: dedalus.String("cursor"),
-			Limit:  dedalus.Int(0),
-		},
-	)
+	_, err := client.Machines.Executions.List(context.TODO(), dedalus.MachineExecutionListParams{
+		MachineID: "machine_id",
+		Cursor:    dedalus.String("cursor"),
+		Limit:     dedalus.Int(0),
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -106,7 +97,7 @@ func TestWorkspaceExecutionListWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceExecutionDelete(t *testing.T) {
+func TestMachineExecutionDelete(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -118,13 +109,10 @@ func TestWorkspaceExecutionDelete(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Executions.Delete(
-		context.TODO(),
-		"execution_id",
-		dedalus.WorkspaceExecutionDeleteParams{
-			WorkspaceID: "workspace_id",
-		},
-	)
+	_, err := client.Machines.Executions.Delete(context.TODO(), dedalus.MachineExecutionDeleteParams{
+		MachineID:   "machine_id",
+		ExecutionID: "execution_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -134,7 +122,7 @@ func TestWorkspaceExecutionDelete(t *testing.T) {
 	}
 }
 
-func TestWorkspaceExecutionEventsWithOptionalParams(t *testing.T) {
+func TestMachineExecutionEventsWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -146,15 +134,12 @@ func TestWorkspaceExecutionEventsWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Executions.Events(
-		context.TODO(),
-		"execution_id",
-		dedalus.WorkspaceExecutionEventsParams{
-			WorkspaceID: "workspace_id",
-			Cursor:      dedalus.String("cursor"),
-			Limit:       dedalus.Int(0),
-		},
-	)
+	_, err := client.Machines.Executions.Events(context.TODO(), dedalus.MachineExecutionEventsParams{
+		MachineID:   "machine_id",
+		ExecutionID: "execution_id",
+		Cursor:      dedalus.String("cursor"),
+		Limit:       dedalus.Int(0),
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {
@@ -164,7 +149,7 @@ func TestWorkspaceExecutionEventsWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestWorkspaceExecutionOutput(t *testing.T) {
+func TestMachineExecutionOutput(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -176,13 +161,10 @@ func TestWorkspaceExecutionOutput(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Workspaces.Executions.Output(
-		context.TODO(),
-		"execution_id",
-		dedalus.WorkspaceExecutionOutputParams{
-			WorkspaceID: "workspace_id",
-		},
-	)
+	_, err := client.Machines.Executions.Output(context.TODO(), dedalus.MachineExecutionOutputParams{
+		MachineID:   "machine_id",
+		ExecutionID: "execution_id",
+	})
 	if err != nil {
 		var apierr *dedalus.Error
 		if errors.As(err, &apierr) {

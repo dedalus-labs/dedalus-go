@@ -20,52 +20,52 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
-// WorkspaceArtifactService contains methods and other services that help with
+// MachineArtifactService contains methods and other services that help with
 // interacting with the Dedalus API.
 //
 // Note, unlike clients, this service does not read variables from the environment
 // automatically. You should not instantiate this service directly, and instead use
-// the [NewWorkspaceArtifactService] method instead.
-type WorkspaceArtifactService struct {
+// the [NewMachineArtifactService] method instead.
+type MachineArtifactService struct {
 	Options []option.RequestOption
 }
 
-// NewWorkspaceArtifactService generates a new service that applies the given
-// options to each request. These options are applied after the parent client's
-// options (if there is one), and before any request-specific options.
-func NewWorkspaceArtifactService(opts ...option.RequestOption) (r WorkspaceArtifactService) {
-	r = WorkspaceArtifactService{}
+// NewMachineArtifactService generates a new service that applies the given options
+// to each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewMachineArtifactService(opts ...option.RequestOption) (r MachineArtifactService) {
+	r = MachineArtifactService{}
 	r.Options = opts
 	return
 }
 
 // Get artifact
-func (r *WorkspaceArtifactService) Get(ctx context.Context, artifactID string, query WorkspaceArtifactGetParams, opts ...option.RequestOption) (res *Artifact, err error) {
+func (r *MachineArtifactService) Get(ctx context.Context, query MachineArtifactGetParams, opts ...option.RequestOption) (res *Artifact, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if query.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if query.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if artifactID == "" {
+	if query.ArtifactID == "" {
 		err = errors.New("missing required artifact_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/artifacts/%s", url.PathEscape(query.WorkspaceID), url.PathEscape(artifactID))
+	path := fmt.Sprintf("v1/machines/%s/artifacts/%s", url.PathEscape(query.MachineID), url.PathEscape(query.ArtifactID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // List artifacts
-func (r *WorkspaceArtifactService) List(ctx context.Context, workspaceID string, query WorkspaceArtifactListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Artifact], err error) {
+func (r *MachineArtifactService) List(ctx context.Context, params MachineArtifactListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Artifact], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/artifacts", url.PathEscape(workspaceID))
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/machines/%s/artifacts", url.PathEscape(params.MachineID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -78,22 +78,22 @@ func (r *WorkspaceArtifactService) List(ctx context.Context, workspaceID string,
 }
 
 // List artifacts
-func (r *WorkspaceArtifactService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspaceArtifactListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Artifact] {
-	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *MachineArtifactService) ListAutoPaging(ctx context.Context, params MachineArtifactListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Artifact] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete artifact
-func (r *WorkspaceArtifactService) Delete(ctx context.Context, artifactID string, body WorkspaceArtifactDeleteParams, opts ...option.RequestOption) (res *Artifact, err error) {
+func (r *MachineArtifactService) Delete(ctx context.Context, body MachineArtifactDeleteParams, opts ...option.RequestOption) (res *Artifact, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if body.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if body.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if artifactID == "" {
+	if body.ArtifactID == "" {
 		err = errors.New("missing required artifact_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/artifacts/%s", url.PathEscape(body.WorkspaceID), url.PathEscape(artifactID))
+	path := fmt.Sprintf("v1/machines/%s/artifacts/%s", url.PathEscape(body.MachineID), url.PathEscape(body.ArtifactID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
@@ -101,9 +101,9 @@ func (r *WorkspaceArtifactService) Delete(ctx context.Context, artifactID string
 type Artifact struct {
 	ArtifactID  string    `json:"artifact_id" api:"required"`
 	CreatedAt   time.Time `json:"created_at" api:"required" format:"date-time"`
+	MachineID   string    `json:"machine_id" api:"required"`
 	Name        string    `json:"name" api:"required"`
 	SizeBytes   int64     `json:"size_bytes" api:"required"`
-	WorkspaceID string    `json:"workspace_id" api:"required"`
 	DownloadURL string    `json:"download_url"`
 	ExecutionID string    `json:"execution_id"`
 	ExpiresAt   time.Time `json:"expires_at" format:"date-time"`
@@ -113,9 +113,9 @@ type Artifact struct {
 	JSON struct {
 		ArtifactID  respjson.Field
 		CreatedAt   respjson.Field
+		MachineID   respjson.Field
 		Name        respjson.Field
 		SizeBytes   respjson.Field
-		WorkspaceID respjson.Field
 		DownloadURL respjson.Field
 		ExecutionID respjson.Field
 		ExpiresAt   respjson.Field
@@ -150,27 +150,30 @@ func (r *ArtifactList) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspaceArtifactGetParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachineArtifactGetParams struct {
+	MachineID  string `path:"machine_id" api:"required" json:"-"`
+	ArtifactID string `path:"artifact_id" api:"required" json:"-"`
 	paramObj
 }
 
-type WorkspaceArtifactListParams struct {
-	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
-	Limit  param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+type MachineArtifactListParams struct {
+	MachineID string            `path:"machine_id" api:"required" json:"-"`
+	Cursor    param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	Limit     param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	paramObj
 }
 
-// URLQuery serializes [WorkspaceArtifactListParams]'s query parameters as
+// URLQuery serializes [MachineArtifactListParams]'s query parameters as
 // `url.Values`.
-func (r WorkspaceArtifactListParams) URLQuery() (v url.Values, err error) {
+func (r MachineArtifactListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
 
-type WorkspaceArtifactDeleteParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachineArtifactDeleteParams struct {
+	MachineID  string `path:"machine_id" api:"required" json:"-"`
+	ArtifactID string `path:"artifact_id" api:"required" json:"-"`
 	paramObj
 }

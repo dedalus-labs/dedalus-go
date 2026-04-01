@@ -39,7 +39,7 @@ func TestUserAgentHeader(t *testing.T) {
 			},
 		}),
 	)
-	_, _ = client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+	_, _ = client.Machines.New(context.Background(), dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -69,7 +69,7 @@ func TestRetryAfter(t *testing.T) {
 			},
 		}),
 	)
-	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+	_, err := client.Machines.New(context.Background(), dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -110,7 +110,7 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 		}),
 		option.WithHeaderDel("X-Stainless-Retry-Count"),
 	)
-	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+	_, err := client.Machines.New(context.Background(), dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -146,7 +146,7 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 		}),
 		option.WithHeader("X-Stainless-Retry-Count", "42"),
 	)
-	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+	_, err := client.Machines.New(context.Background(), dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -181,7 +181,7 @@ func TestRetryAfterMs(t *testing.T) {
 			},
 		}),
 	)
-	_, err := client.Workspaces.New(context.Background(), dedalus.WorkspaceNewParams{
+	_, err := client.Machines.New(context.Background(), dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -210,7 +210,7 @@ func TestContextCancel(t *testing.T) {
 	)
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	cancel()
-	_, err := client.Workspaces.New(cancelCtx, dedalus.WorkspaceNewParams{
+	_, err := client.Machines.New(cancelCtx, dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -236,7 +236,7 @@ func TestContextCancelDelay(t *testing.T) {
 	)
 	cancelCtx, cancel := context.WithTimeout(context.Background(), 2*time.Millisecond)
 	defer cancel()
-	_, err := client.Workspaces.New(cancelCtx, dedalus.WorkspaceNewParams{
+	_, err := client.Machines.New(cancelCtx, dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
 			MemoryMiB:  0,
 			StorageGiB: 0,
@@ -268,7 +268,7 @@ func TestContextDeadline(t *testing.T) {
 				},
 			}),
 		)
-		_, err := client.Workspaces.New(deadlineCtx, dedalus.WorkspaceNewParams{
+		_, err := client.Machines.New(deadlineCtx, dedalus.MachineNewParams{
 			CreateParams: dedalus.CreateParams{
 				MemoryMiB:  0,
 				StorageGiB: 0,
@@ -319,11 +319,9 @@ func TestContextDeadlineStreaming(t *testing.T) {
 				},
 			}),
 		)
-		stream := client.Workspaces.WatchStreaming(
-			deadlineCtx,
-			"workspace_id",
-			dedalus.WorkspaceWatchParams{},
-		)
+		stream := client.Machines.WatchStreaming(deadlineCtx, dedalus.MachineWatchParams{
+			MachineID: "machine_id",
+		})
 		for stream.Next() {
 			_ = stream.Current()
 		}
@@ -368,10 +366,11 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 				},
 			}),
 		)
-		stream := client.Workspaces.WatchStreaming(
+		stream := client.Machines.WatchStreaming(
 			context.Background(),
-			"workspace_id",
-			dedalus.WorkspaceWatchParams{},
+			dedalus.MachineWatchParams{
+				MachineID: "machine_id",
+			},
 			option.WithRequestTimeout((100 * time.Millisecond)),
 		)
 		for stream.Next() {

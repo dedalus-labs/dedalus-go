@@ -21,64 +21,64 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
-// WorkspacePreviewService contains methods and other services that help with
+// MachinePreviewService contains methods and other services that help with
 // interacting with the Dedalus API.
 //
 // Note, unlike clients, this service does not read variables from the environment
 // automatically. You should not instantiate this service directly, and instead use
-// the [NewWorkspacePreviewService] method instead.
-type WorkspacePreviewService struct {
+// the [NewMachinePreviewService] method instead.
+type MachinePreviewService struct {
 	Options []option.RequestOption
 }
 
-// NewWorkspacePreviewService generates a new service that applies the given
-// options to each request. These options are applied after the parent client's
-// options (if there is one), and before any request-specific options.
-func NewWorkspacePreviewService(opts ...option.RequestOption) (r WorkspacePreviewService) {
-	r = WorkspacePreviewService{}
+// NewMachinePreviewService generates a new service that applies the given options
+// to each request. These options are applied after the parent client's options (if
+// there is one), and before any request-specific options.
+func NewMachinePreviewService(opts ...option.RequestOption) (r MachinePreviewService) {
+	r = MachinePreviewService{}
 	r.Options = opts
 	return
 }
 
 // Create preview
-func (r *WorkspacePreviewService) New(ctx context.Context, workspaceID string, body WorkspacePreviewNewParams, opts ...option.RequestOption) (res *Preview, err error) {
+func (r *MachinePreviewService) New(ctx context.Context, params MachinePreviewNewParams, opts ...option.RequestOption) (res *Preview, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/previews", url.PathEscape(workspaceID))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	path := fmt.Sprintf("v1/machines/%s/previews", url.PathEscape(params.MachineID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, params, &res, opts...)
 	return res, err
 }
 
 // Get preview
-func (r *WorkspacePreviewService) Get(ctx context.Context, previewID string, query WorkspacePreviewGetParams, opts ...option.RequestOption) (res *Preview, err error) {
+func (r *MachinePreviewService) Get(ctx context.Context, query MachinePreviewGetParams, opts ...option.RequestOption) (res *Preview, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if query.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if query.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if previewID == "" {
+	if query.PreviewID == "" {
 		err = errors.New("missing required preview_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/previews/%s", url.PathEscape(query.WorkspaceID), url.PathEscape(previewID))
+	path := fmt.Sprintf("v1/machines/%s/previews/%s", url.PathEscape(query.MachineID), url.PathEscape(query.PreviewID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
 }
 
 // List previews
-func (r *WorkspacePreviewService) List(ctx context.Context, workspaceID string, query WorkspacePreviewListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Preview], err error) {
+func (r *MachinePreviewService) List(ctx context.Context, params MachinePreviewListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Preview], err error) {
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if workspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/previews", url.PathEscape(workspaceID))
-	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, query, &res, opts...)
+	path := fmt.Sprintf("v1/machines/%s/previews", url.PathEscape(params.MachineID))
+	cfg, err := requestconfig.NewRequestConfig(ctx, http.MethodGet, path, params, &res, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -91,36 +91,38 @@ func (r *WorkspacePreviewService) List(ctx context.Context, workspaceID string, 
 }
 
 // List previews
-func (r *WorkspacePreviewService) ListAutoPaging(ctx context.Context, workspaceID string, query WorkspacePreviewListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Preview] {
-	return pagination.NewCursorPageAutoPager(r.List(ctx, workspaceID, query, opts...))
+func (r *MachinePreviewService) ListAutoPaging(ctx context.Context, params MachinePreviewListParams, opts ...option.RequestOption) *pagination.CursorPageAutoPager[Preview] {
+	return pagination.NewCursorPageAutoPager(r.List(ctx, params, opts...))
 }
 
 // Delete preview
-func (r *WorkspacePreviewService) Delete(ctx context.Context, previewID string, body WorkspacePreviewDeleteParams, opts ...option.RequestOption) (res *Preview, err error) {
+func (r *MachinePreviewService) Delete(ctx context.Context, body MachinePreviewDeleteParams, opts ...option.RequestOption) (res *Preview, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if body.WorkspaceID == "" {
-		err = errors.New("missing required workspace_id parameter")
+	if body.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	if previewID == "" {
+	if body.PreviewID == "" {
 		err = errors.New("missing required preview_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/workspaces/%s/previews/%s", url.PathEscape(body.WorkspaceID), url.PathEscape(previewID))
+	path := fmt.Sprintf("v1/machines/%s/previews/%s", url.PathEscape(body.MachineID), url.PathEscape(body.PreviewID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
 
 type Preview struct {
 	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	MachineID string    `json:"machine_id" api:"required"`
 	Port      int64     `json:"port" api:"required"`
 	PreviewID string    `json:"preview_id" api:"required"`
 	// Any of "wake_in_progress", "ready", "closed", "expired", "failed".
-	Status       PreviewStatus `json:"status" api:"required"`
-	WorkspaceID  string        `json:"workspace_id" api:"required"`
-	ErrorCode    string        `json:"error_code"`
-	ErrorMessage string        `json:"error_message"`
-	ExpiresAt    time.Time     `json:"expires_at" format:"date-time"`
+	Status PreviewStatus `json:"status" api:"required"`
+	// Any of "public", "private", "org".
+	Visibility   PreviewVisibility `json:"visibility" api:"required"`
+	ErrorCode    string            `json:"error_code"`
+	ErrorMessage string            `json:"error_message"`
+	ExpiresAt    time.Time         `json:"expires_at" format:"date-time"`
 	// Any of "http", "https".
 	Protocol     PreviewProtocol `json:"protocol"`
 	ReadyAt      time.Time       `json:"ready_at" format:"date-time"`
@@ -129,10 +131,11 @@ type Preview struct {
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CreatedAt    respjson.Field
+		MachineID    respjson.Field
 		Port         respjson.Field
 		PreviewID    respjson.Field
 		Status       respjson.Field
-		WorkspaceID  respjson.Field
+		Visibility   respjson.Field
 		ErrorCode    respjson.Field
 		ErrorMessage respjson.Field
 		ExpiresAt    respjson.Field
@@ -161,6 +164,14 @@ const (
 	PreviewStatusFailed         PreviewStatus = "failed"
 )
 
+type PreviewVisibility string
+
+const (
+	PreviewVisibilityPublic  PreviewVisibility = "public"
+	PreviewVisibilityPrivate PreviewVisibility = "private"
+	PreviewVisibilityOrg     PreviewVisibility = "org"
+)
+
 type PreviewProtocol string
 
 const (
@@ -173,6 +184,8 @@ type PreviewCreateParams struct {
 	Port int64 `json:"port" api:"required"`
 	// Any of "http", "https".
 	Protocol PreviewCreateParamsProtocol `json:"protocol,omitzero"`
+	// Any of "public", "private", "org".
+	Visibility PreviewCreateParamsVisibility `json:"visibility,omitzero"`
 	paramObj
 }
 
@@ -189,6 +202,14 @@ type PreviewCreateParamsProtocol string
 const (
 	PreviewCreateParamsProtocolHTTP  PreviewCreateParamsProtocol = "http"
 	PreviewCreateParamsProtocolHTTPS PreviewCreateParamsProtocol = "https"
+)
+
+type PreviewCreateParamsVisibility string
+
+const (
+	PreviewCreateParamsVisibilityPublic  PreviewCreateParamsVisibility = "public"
+	PreviewCreateParamsVisibilityPrivate PreviewCreateParamsVisibility = "private"
+	PreviewCreateParamsVisibilityOrg     PreviewCreateParamsVisibility = "org"
 )
 
 type PreviewList struct {
@@ -209,39 +230,43 @@ func (r *PreviewList) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspacePreviewNewParams struct {
+type MachinePreviewNewParams struct {
+	MachineID           string `path:"machine_id" api:"required" json:"-"`
 	PreviewCreateParams PreviewCreateParams
 	paramObj
 }
 
-func (r WorkspacePreviewNewParams) MarshalJSON() (data []byte, err error) {
+func (r MachinePreviewNewParams) MarshalJSON() (data []byte, err error) {
 	return shimjson.Marshal(r.PreviewCreateParams)
 }
-func (r *WorkspacePreviewNewParams) UnmarshalJSON(data []byte) error {
+func (r *MachinePreviewNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkspacePreviewGetParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachinePreviewGetParams struct {
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	PreviewID string `path:"preview_id" api:"required" json:"-"`
 	paramObj
 }
 
-type WorkspacePreviewListParams struct {
-	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
-	Limit  param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+type MachinePreviewListParams struct {
+	MachineID string            `path:"machine_id" api:"required" json:"-"`
+	Cursor    param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	Limit     param.Opt[int64]  `query:"limit,omitzero" json:"-"`
 	paramObj
 }
 
-// URLQuery serializes [WorkspacePreviewListParams]'s query parameters as
+// URLQuery serializes [MachinePreviewListParams]'s query parameters as
 // `url.Values`.
-func (r WorkspacePreviewListParams) URLQuery() (v url.Values, err error) {
+func (r MachinePreviewListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		ArrayFormat:  apiquery.ArrayQueryFormatRepeat,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
 }
 
-type WorkspacePreviewDeleteParams struct {
-	WorkspaceID string `path:"workspace_id" api:"required" json:"-"`
+type MachinePreviewDeleteParams struct {
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	PreviewID string `path:"preview_id" api:"required" json:"-"`
 	paramObj
 }
