@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0 (2026-04-02)
+
+Full Changelog: [v0.0.5...v0.1.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.5...v0.1.0)
+
+### Features
+
+* **api:** add sleep & wake methods ([867c576](https://github.com/dedalus-labs/dedalus-go/commit/867c5762ec96afec74583964b5d904ea956c639a))
+
 ## 0.0.5 (2026-04-01)
 
 Full Changelog: [v0.0.4...v0.0.5](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.4...v0.0.5)

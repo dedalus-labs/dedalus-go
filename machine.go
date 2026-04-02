@@ -124,6 +124,36 @@ func (r *MachineService) Delete(ctx context.Context, params MachineDeleteParams,
 	return res, err
 }
 
+// Sleep a running machine
+func (r *MachineService) Sleep(ctx context.Context, params MachineSleepParams, opts ...option.RequestOption) (res *Machine, err error) {
+	if !param.IsOmitted(params.IfMatch) {
+		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", params.IfMatch)))
+	}
+	opts = slices.Concat(r.Options, opts)
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/machines/%s/sleep", url.PathEscape(params.MachineID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
+// Wake a sleeping machine
+func (r *MachineService) Wake(ctx context.Context, params MachineWakeParams, opts ...option.RequestOption) (res *Machine, err error) {
+	if !param.IsOmitted(params.IfMatch) {
+		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", params.IfMatch)))
+	}
+	opts = slices.Concat(r.Options, opts)
+	if params.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/machines/%s/wake", url.PathEscape(params.MachineID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
 // Streams machine lifecycle updates over Server-Sent Events. Each `status` event
 // contains a full `LifecycleResponse` payload. The stream closes after the machine
 // reaches its current desired state.
@@ -367,6 +397,18 @@ func (r MachineListParams) URLQuery() (v url.Values, err error) {
 }
 
 type MachineDeleteParams struct {
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	IfMatch   string `header:"If-Match" api:"required" json:"-"`
+	paramObj
+}
+
+type MachineSleepParams struct {
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	IfMatch   string `header:"If-Match" api:"required" json:"-"`
+	paramObj
+}
+
+type MachineWakeParams struct {
 	MachineID string `path:"machine_id" api:"required" json:"-"`
 	IfMatch   string `header:"If-Match" api:"required" json:"-"`
 	paramObj
