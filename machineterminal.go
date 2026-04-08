@@ -665,3 +665,9 @@ type MachineTerminalDeleteParams struct {
 	TerminalID string `path:"terminal_id" api:"required" json:"-"`
 	paramObj
 }
+
+type MachineTerminalConnectParams struct {
+	MachineID  string `path:"machine_id" api:"required" json:"-"`
+	TerminalID string `path:"terminal_id" api:"required" json:"-"`
+	paramObj
+}
