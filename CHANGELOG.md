@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.0 (2026-04-27)
+
+Full Changelog: [v0.1.0...v0.2.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.1.0...v0.2.0)
+
+### Features
+
+* **go:** add default http client with timeout ([0274dc8](https://github.com/dedalus-labs/dedalus-go/commit/0274dc855748725fde1204fd708d4043e8cbb276))
+* support setting headers via env ([8db7f42](https://github.com/dedalus-labs/dedalus-go/commit/8db7f420775ef3ead170a022c03e5c3067b405e4))
+
+
+### Chores
+
+* **internal:** codegen related update ([9bacd0e](https://github.com/dedalus-labs/dedalus-go/commit/9bacd0e8816fd837eba3ec48c111eeb5a885bbb5))
+* **internal:** more robust bootstrap script ([cdecb20](https://github.com/dedalus-labs/dedalus-go/commit/cdecb20135dad2b47f1c7f83058a9a8e8bd364df))
+* **tests:** bump steady to v0.22.1 ([59b57d6](https://github.com/dedalus-labs/dedalus-go/commit/59b57d6852aac7819fe8ff68604e73aec283891c))
+
 ## 0.1.0 (2026-04-02)
 
 Full Changelog: [v0.0.5...v0.1.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.0.5...v0.1.0)
