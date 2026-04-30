@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 (2026-04-30)
+
+Full Changelog: [v0.2.0...v0.2.1](https://github.com/dedalus-labs/dedalus-go/compare/v0.2.0...v0.2.1)
+
+### Chores
+
+* avoid embedding reflect.Type for dead code elimination ([693bce7](https://github.com/dedalus-labs/dedalus-go/commit/693bce7245bc89741966acbe5956c199939b9f0f))
+
 ## 0.2.0 (2026-04-27)
 
 Full Changelog: [v0.1.0...v0.2.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.1.0...v0.2.0)
