@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.3.0 (2026-05-12)
+
+Full Changelog: [v0.2.0...v0.3.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.2.0...v0.3.0)
+
+### Features
+
+* **api:** add org usage endpoints, autosleep to machines, remove IfMatch header ([9cac88d](https://github.com/dedalus-labs/dedalus-go/commit/9cac88dbd5e5ab39c511a3cf886729378bb1a660))
+
+
+### Bug Fixes
+
+* **go:** avoid panic when http.DefaultTransport is wrapped ([db937b3](https://github.com/dedalus-labs/dedalus-go/commit/db937b3c7440745d0bdffe637284ceef4641f25b))
+
+
+### Chores
+
+* avoid embedding reflect.Type for dead code elimination ([693bce7](https://github.com/dedalus-labs/dedalus-go/commit/693bce7245bc89741966acbe5956c199939b9f0f))
+* redact api-key headers in debug logs ([85071cf](https://github.com/dedalus-labs/dedalus-go/commit/85071cfcc13bd6e0e224097107cf0b208850e1ef))
+
 ## 0.2.0 (2026-04-27)
 
 Full Changelog: [v0.1.0...v0.2.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.1.0...v0.2.0)
