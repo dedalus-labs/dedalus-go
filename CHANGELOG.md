@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 (2026-05-12)
+
+Full Changelog: [v0.3.0...v0.4.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.3.0...v0.4.0)
+
+### Features
+
+* **api:** move usage to top-level resource, remove Orgs, rename methods/types ([52c734c](https://github.com/dedalus-labs/dedalus-go/commit/52c734cfd7789be6f708a96fd2bf0757a92bdee0))
+
 ## 0.3.0 (2026-05-12)
 
 Full Changelog: [v0.2.0...v0.3.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.2.0...v0.3.0)
