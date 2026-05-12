@@ -26,7 +26,7 @@ func TestMachinePreviewNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Previews.New(context.TODO(), dedalus.MachinePreviewNewParams{
-		MachineID: "machine_id",
+		MachineID: "dm-3",
 		PreviewCreateParams: dedalus.PreviewCreateParams{
 			Port:       0,
 			Protocol:   dedalus.PreviewCreateParamsProtocolHTTP,
@@ -55,7 +55,7 @@ func TestMachinePreviewGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Previews.Get(context.TODO(), dedalus.MachinePreviewGetParams{
-		MachineID: "machine_id",
+		MachineID: "dm-3",
 		PreviewID: "preview_id",
 	})
 	if err != nil {
@@ -80,7 +80,7 @@ func TestMachinePreviewListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Previews.List(context.TODO(), dedalus.MachinePreviewListParams{
-		MachineID: "machine_id",
+		MachineID: "dm-3",
 		Cursor:    dedalus.String("cursor"),
 		Limit:     dedalus.Int(0),
 	})
@@ -106,7 +106,7 @@ func TestMachinePreviewDelete(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Previews.Delete(context.TODO(), dedalus.MachinePreviewDeleteParams{
-		MachineID: "machine_id",
+		MachineID: "dm-3",
 		PreviewID: "preview_id",
 	})
 	if err != nil {

@@ -320,7 +320,7 @@ func TestContextDeadlineStreaming(t *testing.T) {
 			}),
 		)
 		stream := client.Machines.WatchStreaming(deadlineCtx, dedalus.MachineWatchParams{
-			MachineID: "machine_id",
+			MachineID: "dm-3",
 		})
 		for stream.Next() {
 			_ = stream.Current()
@@ -369,7 +369,7 @@ func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
 		stream := client.Machines.WatchStreaming(
 			context.Background(),
 			dedalus.MachineWatchParams{
-				MachineID: "machine_id",
+				MachineID: "dm-3",
 			},
 			option.WithRequestTimeout((100 * time.Millisecond)),
 		)

@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestMachineNew(t *testing.T) {
+func TestMachineNewWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -30,6 +30,7 @@ func TestMachineNew(t *testing.T) {
 			MemoryMiB:  0,
 			StorageGiB: 0,
 			VCPU:       0,
+			Autosleep:  dedalus.String("autosleep"),
 		},
 	})
 	if err != nil {
@@ -54,7 +55,7 @@ func TestMachineGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Get(context.TODO(), dedalus.MachineGetParams{
-		MachineID: "machine_id",
+		MachineID: "dm-3",
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -78,13 +79,13 @@ func TestMachineUpdateWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Update(context.TODO(), dedalus.MachineUpdateParams{
-		MachineID: "machine_id",
+		MachineID: "dm-3",
 		UpdateParams: dedalus.UpdateParams{
+			Autosleep:  dedalus.String("autosleep"),
 			MemoryMiB:  dedalus.Int(0),
 			StorageGiB: dedalus.Int(0),
 			VCPU:       dedalus.Float(0),
 		},
-		IfMatch: "If-Match",
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -133,8 +134,7 @@ func TestMachineDelete(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Delete(context.TODO(), dedalus.MachineDeleteParams{
-		MachineID: "machine_id",
-		IfMatch:   "If-Match",
+		MachineID: "dm-3",
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -158,8 +158,7 @@ func TestMachineSleep(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Sleep(context.TODO(), dedalus.MachineSleepParams{
-		MachineID: "machine_id",
-		IfMatch:   "If-Match",
+		MachineID: "dm-3",
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -183,8 +182,7 @@ func TestMachineWake(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Wake(context.TODO(), dedalus.MachineWakeParams{
-		MachineID: "machine_id",
-		IfMatch:   "If-Match",
+		MachineID: "dm-3",
 	})
 	if err != nil {
 		var apierr *dedalus.Error
