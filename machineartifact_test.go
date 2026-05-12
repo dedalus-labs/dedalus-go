@@ -26,7 +26,7 @@ func TestMachineArtifactGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Artifacts.Get(context.TODO(), dedalus.MachineArtifactGetParams{
-		MachineID:  "machine_id",
+		MachineID:  "dm-3",
 		ArtifactID: "artifact_id",
 	})
 	if err != nil {
@@ -51,7 +51,7 @@ func TestMachineArtifactListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Artifacts.List(context.TODO(), dedalus.MachineArtifactListParams{
-		MachineID: "machine_id",
+		MachineID: "dm-3",
 		Cursor:    dedalus.String("cursor"),
 		Limit:     dedalus.Int(0),
 	})
@@ -77,7 +77,7 @@ func TestMachineArtifactDelete(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Artifacts.Delete(context.TODO(), dedalus.MachineArtifactDeleteParams{
-		MachineID:  "machine_id",
+		MachineID:  "dm-3",
 		ArtifactID: "artifact_id",
 	})
 	if err != nil {

@@ -73,9 +73,6 @@ func (r *MachineService) Get(ctx context.Context, query MachineGetParams, opts .
 
 // Update machine
 func (r *MachineService) Update(ctx context.Context, params MachineUpdateParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if !param.IsOmitted(params.IfMatch) {
-		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", params.IfMatch)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -110,46 +107,37 @@ func (r *MachineService) ListAutoPaging(ctx context.Context, query MachineListPa
 }
 
 // Destroy machine
-func (r *MachineService) Delete(ctx context.Context, params MachineDeleteParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if !param.IsOmitted(params.IfMatch) {
-		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", params.IfMatch)))
-	}
+func (r *MachineService) Delete(ctx context.Context, body MachineDeleteParams, opts ...option.RequestOption) (res *Machine, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.MachineID == "" {
+	if body.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/machines/%s", url.PathEscape(params.MachineID))
+	path := fmt.Sprintf("v1/machines/%s", url.PathEscape(body.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
 }
 
 // Sleep a running machine
-func (r *MachineService) Sleep(ctx context.Context, params MachineSleepParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if !param.IsOmitted(params.IfMatch) {
-		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", params.IfMatch)))
-	}
+func (r *MachineService) Sleep(ctx context.Context, body MachineSleepParams, opts ...option.RequestOption) (res *Machine, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.MachineID == "" {
+	if body.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/machines/%s/sleep", url.PathEscape(params.MachineID))
+	path := fmt.Sprintf("v1/machines/%s/sleep", url.PathEscape(body.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
 
 // Wake a sleeping machine
-func (r *MachineService) Wake(ctx context.Context, params MachineWakeParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if !param.IsOmitted(params.IfMatch) {
-		opts = append(opts, option.WithHeader("If-Match", fmt.Sprintf("%v", params.IfMatch)))
-	}
+func (r *MachineService) Wake(ctx context.Context, body MachineWakeParams, opts ...option.RequestOption) (res *Machine, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.MachineID == "" {
+	if body.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
-	path := fmt.Sprintf("v1/machines/%s/wake", url.PathEscape(params.MachineID))
+	path := fmt.Sprintf("v1/machines/%s/wake", url.PathEscape(body.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
 	return res, err
 }
@@ -184,6 +172,9 @@ type CreateParams struct {
 	StorageGiB int64 `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
 	VCPU float64 `json:"vcpu" api:"required"`
+	// Idle window before autosleep. Accepts fixed duration units like 30s, 30m, 2h,
+	// 7d3h4s, or 1w3d, raw seconds ("1800"), or never to disable.
+	Autosleep param.Opt[string] `json:"autosleep,omitzero"`
 	paramObj
 }
 
@@ -240,6 +231,8 @@ const (
 )
 
 type Machine struct {
+	// Seconds of inactivity before autosleep. 0 disables autosleep.
+	AutosleepSeconds int64 `json:"autosleep_seconds" api:"required"`
 	// Any of "running", "sleeping", "destroyed".
 	DesiredState MachineDesiredState `json:"desired_state" api:"required"`
 	MachineID    string              `json:"machine_id" api:"required"`
@@ -251,14 +244,15 @@ type Machine struct {
 	VCPU float64 `json:"vcpu" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		DesiredState respjson.Field
-		MachineID    respjson.Field
-		MemoryMiB    respjson.Field
-		Status       respjson.Field
-		StorageGiB   respjson.Field
-		VCPU         respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
+		AutosleepSeconds respjson.Field
+		DesiredState     respjson.Field
+		MachineID        respjson.Field
+		MemoryMiB        respjson.Field
+		Status           respjson.Field
+		StorageGiB       respjson.Field
+		VCPU             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -295,7 +289,9 @@ func (r *MachineList) UnmarshalJSON(data []byte) error {
 }
 
 type MachineListItem struct {
-	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Seconds of inactivity before autosleep. 0 disables autosleep.
+	AutosleepSeconds int64     `json:"autosleep_seconds" api:"required"`
+	CreatedAt        time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Any of "running", "sleeping", "destroyed".
 	DesiredState MachineListItemDesiredState `json:"desired_state" api:"required"`
 	MachineID    string                      `json:"machine_id" api:"required"`
@@ -307,15 +303,16 @@ type MachineListItem struct {
 	VCPU float64 `json:"vcpu" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		CreatedAt    respjson.Field
-		DesiredState respjson.Field
-		MachineID    respjson.Field
-		MemoryMiB    respjson.Field
-		Status       respjson.Field
-		StorageGiB   respjson.Field
-		VCPU         respjson.Field
-		ExtraFields  map[string]respjson.Field
-		raw          string
+		AutosleepSeconds respjson.Field
+		CreatedAt        respjson.Field
+		DesiredState     respjson.Field
+		MachineID        respjson.Field
+		MemoryMiB        respjson.Field
+		Status           respjson.Field
+		StorageGiB       respjson.Field
+		VCPU             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
@@ -334,6 +331,9 @@ const (
 )
 
 type UpdateParams struct {
+	// Idle window before autosleep. Accepts fixed duration units like 30s, 30m, 2h,
+	// 7d3h4s, or 1w3d, raw seconds ("1800"), or never to disable.
+	Autosleep param.Opt[string] `json:"autosleep,omitzero"`
 	// Memory in MiB.
 	MemoryMiB param.Opt[int64] `json:"memory_mib,omitzero"`
 	// Storage in GiB.
@@ -371,7 +371,6 @@ type MachineGetParams struct {
 type MachineUpdateParams struct {
 	MachineID    string `path:"machine_id" api:"required" json:"-"`
 	UpdateParams UpdateParams
-	IfMatch      string `header:"If-Match" api:"required" json:"-"`
 	paramObj
 }
 
@@ -398,19 +397,16 @@ func (r MachineListParams) URLQuery() (v url.Values, err error) {
 
 type MachineDeleteParams struct {
 	MachineID string `path:"machine_id" api:"required" json:"-"`
-	IfMatch   string `header:"If-Match" api:"required" json:"-"`
 	paramObj
 }
 
 type MachineSleepParams struct {
 	MachineID string `path:"machine_id" api:"required" json:"-"`
-	IfMatch   string `header:"If-Match" api:"required" json:"-"`
 	paramObj
 }
 
 type MachineWakeParams struct {
 	MachineID string `path:"machine_id" api:"required" json:"-"`
-	IfMatch   string `header:"If-Match" api:"required" json:"-"`
 	paramObj
 }
 
