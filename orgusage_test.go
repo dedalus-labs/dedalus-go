@@ -13,7 +13,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/option"
 )
 
-func TestMachineTerminalNewWithOptionalParams(t *testing.T) {
+func TestOrgUsageGetWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -25,17 +25,9 @@ func TestMachineTerminalNewWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Machines.Terminals.New(context.TODO(), dedalus.MachineTerminalNewParams{
-		MachineID: "dm-3",
-		TerminalCreateParams: dedalus.TerminalCreateParams{
-			Height: 0,
-			Width:  0,
-			Cwd:    dedalus.String("cwd"),
-			Env: map[string]string{
-				"foo": "string",
-			},
-			Shell: dedalus.String("shell"),
-		},
+	_, err := client.Orgs.Usage.Get(context.TODO(), dedalus.OrgUsageGetParams{
+		OrgID:       "org_id",
+		PeriodStart: dedalus.String("period_start"),
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -46,7 +38,7 @@ func TestMachineTerminalNewWithOptionalParams(t *testing.T) {
 	}
 }
 
-func TestMachineTerminalGet(t *testing.T) {
+func TestOrgUsageGetMachineStorageUsageWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -58,9 +50,11 @@ func TestMachineTerminalGet(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Machines.Terminals.Get(context.TODO(), dedalus.MachineTerminalGetParams{
-		MachineID:  "dm-3",
-		TerminalID: "terminal_id",
+	_, err := client.Orgs.Usage.GetMachineStorageUsage(context.TODO(), dedalus.OrgUsageGetMachineStorageUsageParams{
+		OrgID:       "org_id",
+		MachineID:   dedalus.String("machine_id"),
+		PeriodEnd:   dedalus.String("period_end"),
+		PeriodStart: dedalus.String("period_start"),
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -71,7 +65,7 @@ func TestMachineTerminalGet(t *testing.T) {
 	}
 }
 
-func TestMachineTerminalListWithOptionalParams(t *testing.T) {
+func TestOrgUsageGetMachineUsageWithOptionalParams(t *testing.T) {
 	baseURL := "http://localhost:4010"
 	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
 		baseURL = envURL
@@ -83,35 +77,12 @@ func TestMachineTerminalListWithOptionalParams(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	_, err := client.Machines.Terminals.List(context.TODO(), dedalus.MachineTerminalListParams{
-		MachineID: "dm-3",
-		Cursor:    dedalus.String("cursor"),
-		Limit:     dedalus.Int(0),
-	})
-	if err != nil {
-		var apierr *dedalus.Error
-		if errors.As(err, &apierr) {
-			t.Log(string(apierr.DumpRequest(true)))
-		}
-		t.Fatalf("err should be nil: %s", err.Error())
-	}
-}
-
-func TestMachineTerminalDelete(t *testing.T) {
-	baseURL := "http://localhost:4010"
-	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
-		baseURL = envURL
-	}
-	if !testutil.CheckTestServer(t, baseURL) {
-		return
-	}
-	client := dedalus.NewClient(
-		option.WithBaseURL(baseURL),
-		option.WithAPIKey("My API Key"),
-	)
-	_, err := client.Machines.Terminals.Delete(context.TODO(), dedalus.MachineTerminalDeleteParams{
-		MachineID:  "dm-3",
-		TerminalID: "terminal_id",
+	_, err := client.Orgs.Usage.GetMachineUsage(context.TODO(), dedalus.OrgUsageGetMachineUsageParams{
+		OrgID:       "org_id",
+		Granularity: dedalus.String("granularity"),
+		MachineID:   dedalus.String("machine_id"),
+		PeriodEnd:   dedalus.String("period_end"),
+		PeriodStart: dedalus.String("period_start"),
 	})
 	if err != nil {
 		var apierr *dedalus.Error
