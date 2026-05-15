@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0 (2026-05-15)
+
+Full Changelog: [v0.4.0...v0.5.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.4.0...v0.5.0)
+
+### Features
+
+* **client:** optimize json encoder for internal types ([165d9dd](https://github.com/dedalus-labs/dedalus-go/commit/165d9dd185ca38e330862cde49a6df1c9ed49562))
+
 ## 0.4.0 (2026-05-12)
 
 Full Changelog: [v0.3.0...v0.4.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.3.0...v0.4.0)
