@@ -37,7 +37,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/dedalus-labs/dedalus-go@v0.4.0'
+go get -u 'github.com/dedalus-labs/dedalus-go@v0.5.0'
 ```
 
 <!-- x-release-please-end -->
@@ -66,11 +66,7 @@ func main() {
 		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("DEDALUS_API_KEY")
 	)
 	machine, err := client.Machines.New(context.TODO(), dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	})
 	if err != nil {
 		panic(err.Error())
@@ -338,11 +334,7 @@ To handle errors, we recommend that you use the `errors.As` pattern:
 
 ```go
 _, err := client.Machines.New(context.TODO(), dedalus.MachineNewParams{
-	CreateParams: dedalus.CreateParams{
-		MemoryMiB:  0,
-		StorageGiB: 0,
-		VCPU:       0,
-	},
+	CreateParams: dedalus.CreateParams{},
 })
 if err != nil {
 	var apierr *dedalus.Error
@@ -374,11 +366,7 @@ defer cancel()
 client.Machines.New(
 	ctx,
 	dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	},
 	// This sets the per-retry timeout
 	option.WithRequestTimeout(20*time.Second),
@@ -416,11 +404,7 @@ client := dedalus.NewClient(
 client.Machines.New(
 	context.TODO(),
 	dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	},
 	option.WithMaxRetries(5),
 )
@@ -437,11 +421,7 @@ var response *http.Response
 machine, err := client.Machines.New(
 	context.TODO(),
 	dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	},
 	option.WithResponseInto(&response),
 )
