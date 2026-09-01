@@ -26,7 +26,7 @@ func TestMachineSSHNew(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.SSH.New(context.TODO(), dedalus.MachineSSHNewParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		SSHSessionCreateParams: dedalus.SSHSessionCreateParams{
 			PublicKey: "public_key",
 		},
@@ -53,7 +53,7 @@ func TestMachineSSHGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.SSH.Get(context.TODO(), dedalus.MachineSSHGetParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		SessionID: "session_id",
 	})
 	if err != nil {
@@ -78,7 +78,7 @@ func TestMachineSSHListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.SSH.List(context.TODO(), dedalus.MachineSSHListParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		Cursor:    dedalus.String("cursor"),
 		Limit:     dedalus.Int(0),
 	})
@@ -104,7 +104,7 @@ func TestMachineSSHDelete(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.SSH.Delete(context.TODO(), dedalus.MachineSSHDeleteParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		SessionID: "session_id",
 	})
 	if err != nil {
