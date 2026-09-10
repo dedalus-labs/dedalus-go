@@ -18,7 +18,6 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options  []option.RequestOption
-	Usage    UsageService
 	Machines MachineService
 }
 
@@ -60,7 +59,6 @@ func NewClient(opts ...option.RequestOption) (r Client) {
 
 	r = Client{Options: opts}
 
-	r.Usage = NewUsageService(opts...)
 	r.Machines = NewMachineService(opts...)
 
 	return

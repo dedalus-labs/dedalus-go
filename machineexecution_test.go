@@ -26,7 +26,7 @@ func TestMachineExecutionNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Executions.New(context.TODO(), dedalus.MachineExecutionNewParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		ExecutionCreateParams: dedalus.ExecutionCreateParams{
 			Command: []string{"string"},
 			Cwd:     dedalus.String("cwd"),
@@ -59,7 +59,7 @@ func TestMachineExecutionGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Executions.Get(context.TODO(), dedalus.MachineExecutionGetParams{
-		MachineID:   "dm-3",
+		MachineID:   "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		ExecutionID: "execution_id",
 	})
 	if err != nil {
@@ -84,7 +84,7 @@ func TestMachineExecutionListWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Executions.List(context.TODO(), dedalus.MachineExecutionListParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		Cursor:    dedalus.String("cursor"),
 		Limit:     dedalus.Int(0),
 	})
@@ -110,7 +110,7 @@ func TestMachineExecutionDelete(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Executions.Delete(context.TODO(), dedalus.MachineExecutionDeleteParams{
-		MachineID:   "dm-3",
+		MachineID:   "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		ExecutionID: "execution_id",
 	})
 	if err != nil {
@@ -135,7 +135,7 @@ func TestMachineExecutionEventsWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Executions.Events(context.TODO(), dedalus.MachineExecutionEventsParams{
-		MachineID:   "dm-3",
+		MachineID:   "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		ExecutionID: "execution_id",
 		Cursor:      dedalus.String("cursor"),
 		Limit:       dedalus.Int(0),
@@ -162,7 +162,7 @@ func TestMachineExecutionOutput(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Executions.Output(context.TODO(), dedalus.MachineExecutionOutputParams{
-		MachineID:   "dm-3",
+		MachineID:   "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		ExecutionID: "execution_id",
 	})
 	if err != nil {

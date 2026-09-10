@@ -19,7 +19,6 @@ import (
 	"github.com/dedalus-labs/dedalus-go/packages/pagination"
 	"github.com/dedalus-labs/dedalus-go/packages/param"
 	"github.com/dedalus-labs/dedalus-go/packages/respjson"
-	"github.com/dedalus-labs/dedalus-go/packages/ssestream"
 )
 
 // MachineService contains methods and other services that help with interacting
@@ -30,11 +29,8 @@ import (
 // the [NewMachineService] method instead.
 type MachineService struct {
 	Options    []option.RequestOption
-	Artifacts  MachineArtifactService
-	Previews   MachinePreviewService
 	SSH        MachineSSHService
 	Executions MachineExecutionService
-	Terminals  MachineTerminalService
 }
 
 // NewMachineService generates a new service that applies the given options to each
@@ -43,11 +39,8 @@ type MachineService struct {
 func NewMachineService(opts ...option.RequestOption) (r MachineService) {
 	r = MachineService{}
 	r.Options = opts
-	r.Artifacts = NewMachineArtifactService(opts...)
-	r.Previews = NewMachinePreviewService(opts...)
 	r.SSH = NewMachineSSHService(opts...)
 	r.Executions = NewMachineExecutionService(opts...)
-	r.Terminals = NewMachineTerminalService(opts...)
 	return
 }
 
@@ -60,7 +53,7 @@ func (r *MachineService) New(ctx context.Context, body MachineNewParams, opts ..
 }
 
 // Get machine
-func (r *MachineService) Get(ctx context.Context, query MachineGetParams, opts ...option.RequestOption) (res *Machine, err error) {
+func (r *MachineService) Get(ctx context.Context, query MachineGetParams, opts ...option.RequestOption) (res *MachineGetResponse, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if query.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -142,39 +135,16 @@ func (r *MachineService) Wake(ctx context.Context, body MachineWakeParams, opts 
 	return res, err
 }
 
-// Streams machine lifecycle updates over Server-Sent Events. Each `status` event
-// contains a full `LifecycleResponse` payload. The stream closes after the machine
-// reaches its current desired state.
-func (r *MachineService) WatchStreaming(ctx context.Context, params MachineWatchParams, opts ...option.RequestOption) (stream *ssestream.Stream[Machine]) {
-	var (
-		raw *http.Response
-		err error
-	)
-	if !param.IsOmitted(params.LastEventID) {
-		opts = append(opts, option.WithHeader("Last-Event-ID", fmt.Sprintf("%v", params.LastEventID.Value)))
-	}
-	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("Accept", "text/event-stream")}, opts...)
-	if params.MachineID == "" {
-		err = errors.New("missing required machine_id parameter")
-		return ssestream.NewStream[Machine](nil, err)
-	}
-	path := fmt.Sprintf("v1/machines/%s/status/stream", url.PathEscape(params.MachineID))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
-	return ssestream.NewStream[Machine](ssestream.NewDecoder(raw), err)
-}
-
-// The properties MemoryMiB, StorageGiB, VCPU are required.
 type CreateParams struct {
-	// Memory in MiB.
-	MemoryMiB int64 `json:"memory_mib" api:"required"`
-	// Storage in GiB.
-	StorageGiB int64 `json:"storage_gib" api:"required"`
-	// CPU in vCPUs.
-	VCPU float64 `json:"vcpu" api:"required"`
 	// Idle window before autosleep. Accepts fixed duration units like 30s, 30m, 2h,
 	// 7d3h4s, or 1w3d, raw seconds ("1800"), or never to disable.
 	Autosleep param.Opt[string] `json:"autosleep,omitzero"`
+	// Memory in MiB.
+	MemoryMiB param.Opt[int64] `json:"memory_mib,omitzero"`
+	// Storage in GiB.
+	StorageGiB param.Opt[int64] `json:"storage_gib,omitzero"`
+	// CPU in vCPUs.
+	VCPU param.Opt[float64] `json:"vcpu,omitzero"`
 	paramObj
 }
 
@@ -237,9 +207,11 @@ type Machine struct {
 	DesiredState MachineDesiredState `json:"desired_state" api:"required"`
 	MachineID    string              `json:"machine_id" api:"required"`
 	// Memory in MiB.
-	MemoryMiB  int64           `json:"memory_mib" api:"required"`
-	Status     LifecycleStatus `json:"status" api:"required"`
-	StorageGiB int64           `json:"storage_gib" api:"required"`
+	MemoryMiB int64 `json:"memory_mib" api:"required"`
+	// Any of "accepted", "placement_pending", "starting", "running", "stopping",
+	// "sleeping", "destroying", "destroyed", "failed".
+	Phase      MachinePhase `json:"phase" api:"required"`
+	StorageGiB int64        `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
 	VCPU float64 `json:"vcpu" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -248,7 +220,7 @@ type Machine struct {
 		DesiredState     respjson.Field
 		MachineID        respjson.Field
 		MemoryMiB        respjson.Field
-		Status           respjson.Field
+		Phase            respjson.Field
 		StorageGiB       respjson.Field
 		VCPU             respjson.Field
 		ExtraFields      map[string]respjson.Field
@@ -268,6 +240,20 @@ const (
 	MachineDesiredStateRunning   MachineDesiredState = "running"
 	MachineDesiredStateSleeping  MachineDesiredState = "sleeping"
 	MachineDesiredStateDestroyed MachineDesiredState = "destroyed"
+)
+
+type MachinePhase string
+
+const (
+	MachinePhaseAccepted         MachinePhase = "accepted"
+	MachinePhasePlacementPending MachinePhase = "placement_pending"
+	MachinePhaseStarting         MachinePhase = "starting"
+	MachinePhaseRunning          MachinePhase = "running"
+	MachinePhaseStopping         MachinePhase = "stopping"
+	MachinePhaseSleeping         MachinePhase = "sleeping"
+	MachinePhaseDestroying       MachinePhase = "destroying"
+	MachinePhaseDestroyed        MachinePhase = "destroyed"
+	MachinePhaseFailed           MachinePhase = "failed"
 )
 
 type MachineList struct {
@@ -296,9 +282,11 @@ type MachineListItem struct {
 	DesiredState MachineListItemDesiredState `json:"desired_state" api:"required"`
 	MachineID    string                      `json:"machine_id" api:"required"`
 	// Memory in MiB.
-	MemoryMiB  int64           `json:"memory_mib" api:"required"`
-	Status     LifecycleStatus `json:"status" api:"required"`
-	StorageGiB int64           `json:"storage_gib" api:"required"`
+	MemoryMiB int64 `json:"memory_mib" api:"required"`
+	// Any of "accepted", "placement_pending", "starting", "running", "stopping",
+	// "sleeping", "destroying", "destroyed", "failed".
+	Phase      MachineListItemPhase `json:"phase" api:"required"`
+	StorageGiB int64                `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
 	VCPU float64 `json:"vcpu" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
@@ -308,7 +296,7 @@ type MachineListItem struct {
 		DesiredState     respjson.Field
 		MachineID        respjson.Field
 		MemoryMiB        respjson.Field
-		Status           respjson.Field
+		Phase            respjson.Field
 		StorageGiB       respjson.Field
 		VCPU             respjson.Field
 		ExtraFields      map[string]respjson.Field
@@ -328,6 +316,20 @@ const (
 	MachineListItemDesiredStateRunning   MachineListItemDesiredState = "running"
 	MachineListItemDesiredStateSleeping  MachineListItemDesiredState = "sleeping"
 	MachineListItemDesiredStateDestroyed MachineListItemDesiredState = "destroyed"
+)
+
+type MachineListItemPhase string
+
+const (
+	MachineListItemPhaseAccepted         MachineListItemPhase = "accepted"
+	MachineListItemPhasePlacementPending MachineListItemPhase = "placement_pending"
+	MachineListItemPhaseStarting         MachineListItemPhase = "starting"
+	MachineListItemPhaseRunning          MachineListItemPhase = "running"
+	MachineListItemPhaseStopping         MachineListItemPhase = "stopping"
+	MachineListItemPhaseSleeping         MachineListItemPhase = "sleeping"
+	MachineListItemPhaseDestroying       MachineListItemPhase = "destroying"
+	MachineListItemPhaseDestroyed        MachineListItemPhase = "destroyed"
+	MachineListItemPhaseFailed           MachineListItemPhase = "failed"
 )
 
 type UpdateParams struct {
@@ -350,6 +352,46 @@ func (r UpdateParams) MarshalJSON() (data []byte, err error) {
 func (r *UpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
+
+type MachineGetResponse struct {
+	// Seconds of inactivity before autosleep. 0 disables autosleep.
+	AutosleepSeconds int64 `json:"autosleep_seconds" api:"required"`
+	// Any of "running", "sleeping", "destroyed".
+	DesiredState MachineGetResponseDesiredState `json:"desired_state" api:"required"`
+	MachineID    string                         `json:"machine_id" api:"required"`
+	// Memory in MiB.
+	MemoryMiB  int64           `json:"memory_mib" api:"required"`
+	Status     LifecycleStatus `json:"status" api:"required"`
+	StorageGiB int64           `json:"storage_gib" api:"required"`
+	// CPU in vCPUs.
+	VCPU float64 `json:"vcpu" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AutosleepSeconds respjson.Field
+		DesiredState     respjson.Field
+		MachineID        respjson.Field
+		MemoryMiB        respjson.Field
+		Status           respjson.Field
+		StorageGiB       respjson.Field
+		VCPU             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r MachineGetResponse) RawJSON() string { return r.JSON.raw }
+func (r *MachineGetResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type MachineGetResponseDesiredState string
+
+const (
+	MachineGetResponseDesiredStateRunning   MachineGetResponseDesiredState = "running"
+	MachineGetResponseDesiredStateSleeping  MachineGetResponseDesiredState = "sleeping"
+	MachineGetResponseDesiredStateDestroyed MachineGetResponseDesiredState = "destroyed"
+)
 
 type MachineNewParams struct {
 	CreateParams CreateParams
@@ -407,11 +449,5 @@ type MachineSleepParams struct {
 
 type MachineWakeParams struct {
 	MachineID string `path:"machine_id" api:"required" json:"-"`
-	paramObj
-}
-
-type MachineWatchParams struct {
-	MachineID   string            `path:"machine_id" api:"required" json:"-"`
-	LastEventID param.Opt[string] `header:"Last-Event-ID,omitzero" json:"-"`
 	paramObj
 }

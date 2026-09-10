@@ -27,10 +27,10 @@ func TestMachineNewWithOptionalParams(t *testing.T) {
 	)
 	_, err := client.Machines.New(context.TODO(), dedalus.MachineNewParams{
 		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
 			Autosleep:  dedalus.String("autosleep"),
+			MemoryMiB:  dedalus.Int(1),
+			StorageGiB: dedalus.Int(1),
+			VCPU:       dedalus.Float(1),
 		},
 	})
 	if err != nil {
@@ -55,7 +55,7 @@ func TestMachineGet(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Get(context.TODO(), dedalus.MachineGetParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -79,7 +79,7 @@ func TestMachineUpdateWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Update(context.TODO(), dedalus.MachineUpdateParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 		UpdateParams: dedalus.UpdateParams{
 			Autosleep:  dedalus.String("autosleep"),
 			MemoryMiB:  dedalus.Int(0),
@@ -134,7 +134,7 @@ func TestMachineDelete(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Delete(context.TODO(), dedalus.MachineDeleteParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -158,7 +158,7 @@ func TestMachineSleep(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Sleep(context.TODO(), dedalus.MachineSleepParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 	})
 	if err != nil {
 		var apierr *dedalus.Error
@@ -182,7 +182,7 @@ func TestMachineWake(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Machines.Wake(context.TODO(), dedalus.MachineWakeParams{
-		MachineID: "dm-3",
+		MachineID: "dm-ecc2efdd-ddfa-31a9-c6f1-b833d337aa7c",
 	})
 	if err != nil {
 		var apierr *dedalus.Error

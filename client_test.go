@@ -5,7 +5,6 @@ package dedalus_test
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"reflect"
 	"testing"
@@ -40,11 +39,7 @@ func TestUserAgentHeader(t *testing.T) {
 		}),
 	)
 	_, _ = client.Machines.New(context.Background(), dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	})
 	if userAgent != fmt.Sprintf("Dedalus/Go %s", internal.PackageVersion) {
 		t.Errorf("Expected User-Agent to be correct, but got: %#v", userAgent)
@@ -70,11 +65,7 @@ func TestRetryAfter(t *testing.T) {
 		}),
 	)
 	_, err := client.Machines.New(context.Background(), dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -111,11 +102,7 @@ func TestDeleteRetryCountHeader(t *testing.T) {
 		option.WithHeaderDel("X-Stainless-Retry-Count"),
 	)
 	_, err := client.Machines.New(context.Background(), dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -147,11 +134,7 @@ func TestOverwriteRetryCountHeader(t *testing.T) {
 		option.WithHeader("X-Stainless-Retry-Count", "42"),
 	)
 	_, err := client.Machines.New(context.Background(), dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -182,11 +165,7 @@ func TestRetryAfterMs(t *testing.T) {
 		}),
 	)
 	_, err := client.Machines.New(context.Background(), dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -211,11 +190,7 @@ func TestContextCancel(t *testing.T) {
 	cancelCtx, cancel := context.WithCancel(context.Background())
 	cancel()
 	_, err := client.Machines.New(cancelCtx, dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	})
 	if err == nil {
 		t.Error("Expected there to be a cancel error")
@@ -237,11 +212,7 @@ func TestContextCancelDelay(t *testing.T) {
 	cancelCtx, cancel := context.WithTimeout(context.Background(), 2*time.Millisecond)
 	defer cancel()
 	_, err := client.Machines.New(cancelCtx, dedalus.MachineNewParams{
-		CreateParams: dedalus.CreateParams{
-			MemoryMiB:  0,
-			StorageGiB: 0,
-			VCPU:       0,
-		},
+		CreateParams: dedalus.CreateParams{},
 	})
 	if err == nil {
 		t.Error("expected there to be a cancel error")
@@ -269,11 +240,7 @@ func TestContextDeadline(t *testing.T) {
 			}),
 		)
 		_, err := client.Machines.New(deadlineCtx, dedalus.MachineNewParams{
-			CreateParams: dedalus.CreateParams{
-				MemoryMiB:  0,
-				StorageGiB: 0,
-				VCPU:       0,
-			},
+			CreateParams: dedalus.CreateParams{},
 		})
 		if err == nil {
 			t.Error("expected there to be a deadline error")
@@ -290,109 +257,3 @@ func TestContextDeadline(t *testing.T) {
 		}
 	}
 }
-
-func TestContextDeadlineStreaming(t *testing.T) {
-	testTimeout := time.After(3 * time.Second)
-	testDone := make(chan struct{})
-
-	deadline := time.Now().Add(100 * time.Millisecond)
-	deadlineCtx, cancel := context.WithDeadline(context.Background(), deadline)
-	defer cancel()
-
-	go func() {
-		client := dedalus.NewClient(
-			option.WithAPIKey("My API Key"),
-			option.WithHTTPClient(&http.Client{
-				Transport: &closureTransport{
-					fn: func(req *http.Request) (*http.Response, error) {
-						return &http.Response{
-							StatusCode: 200,
-							Status:     "200 OK",
-							Body: io.NopCloser(
-								io.Reader(readerFunc(func([]byte) (int, error) {
-									<-req.Context().Done()
-									return 0, req.Context().Err()
-								})),
-							),
-						}, nil
-					},
-				},
-			}),
-		)
-		stream := client.Machines.WatchStreaming(deadlineCtx, dedalus.MachineWatchParams{
-			MachineID: "dm-3",
-		})
-		for stream.Next() {
-			_ = stream.Current()
-		}
-		if stream.Err() == nil {
-			t.Error("expected there to be a deadline error")
-		}
-		close(testDone)
-	}()
-
-	select {
-	case <-testTimeout:
-		t.Fatal("client didn't finish in time")
-	case <-testDone:
-		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
-			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
-		}
-	}
-}
-
-func TestContextDeadlineStreamingWithRequestTimeout(t *testing.T) {
-	testTimeout := time.After(3 * time.Second)
-	testDone := make(chan struct{})
-	deadline := time.Now().Add(100 * time.Millisecond)
-
-	go func() {
-		client := dedalus.NewClient(
-			option.WithAPIKey("My API Key"),
-			option.WithHTTPClient(&http.Client{
-				Transport: &closureTransport{
-					fn: func(req *http.Request) (*http.Response, error) {
-						return &http.Response{
-							StatusCode: 200,
-							Status:     "200 OK",
-							Body: io.NopCloser(
-								io.Reader(readerFunc(func([]byte) (int, error) {
-									<-req.Context().Done()
-									return 0, req.Context().Err()
-								})),
-							),
-						}, nil
-					},
-				},
-			}),
-		)
-		stream := client.Machines.WatchStreaming(
-			context.Background(),
-			dedalus.MachineWatchParams{
-				MachineID: "dm-3",
-			},
-			option.WithRequestTimeout((100 * time.Millisecond)),
-		)
-		for stream.Next() {
-			_ = stream.Current()
-		}
-		if stream.Err() == nil {
-			t.Error("expected there to be a deadline error")
-		}
-		close(testDone)
-	}()
-
-	select {
-	case <-testTimeout:
-		t.Fatal("client didn't finish in time")
-	case <-testDone:
-		if diff := time.Since(deadline); diff < -30*time.Millisecond || 30*time.Millisecond < diff {
-			t.Fatalf("client did not return within 30ms of context deadline, got %s", diff)
-		}
-	}
-}
-
-type readerFunc func([]byte) (int, error)
-
-func (f readerFunc) Read(p []byte) (int, error) { return f(p) }
-func (f readerFunc) Close() error               { return nil }

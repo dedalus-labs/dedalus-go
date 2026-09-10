@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.5.0 (2026-09-01)
+
+Full Changelog: [v0.4.0...v0.5.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.4.0...v0.5.0)
+
+### ⚠ BREAKING CHANGES
+
+* **api:** regenerate SDKs from the current public DCS contract
+
+### Features
+
+* **api:** regenerate SDKs from the current public DCS contract ([3062ff5](https://github.com/dedalus-labs/dedalus-go/commit/3062ff59c8f1dc066bc47884773ddf55339c24d4))
+* **client:** optimize json encoder for internal types ([165d9dd](https://github.com/dedalus-labs/dedalus-go/commit/165d9dd185ca38e330862cde49a6df1c9ed49562))
+* **stlc:** configurable CI runner and private-production-repo support in workflow templates ([c239ff7](https://github.com/dedalus-labs/dedalus-go/commit/c239ff7504684070a127e69862a63bce3e4af594))
+
+
+### Chores
+
+* **internal:** allow the mock server port to be set with STAINLESS_MOCK_PORT ([68b8030](https://github.com/dedalus-labs/dedalus-go/commit/68b803017b6272654d7ba5f820a5e16214df3e9e))
+
 ## 0.4.0 (2026-05-12)
 
 Full Changelog: [v0.3.0...v0.4.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.3.0...v0.4.0)
