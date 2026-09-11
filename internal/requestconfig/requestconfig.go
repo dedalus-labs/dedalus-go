@@ -161,7 +161,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	}
 	if method != http.MethodGet {
 		// Note this can be overridden with `WithHeader("Idempotency-Key", myIdempotencyKey)`
-		req.Header.Set("Idempotency-Key", "stainless-go-"+uuid.New().String())
+		req.Header.Set("Idempotency-Key", strings.ReplaceAll(uuid.Must(uuid.NewV7()).String(), "-", ""))
 	}
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Stainless-Retry-Count", "0")
@@ -602,7 +602,7 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 		XAPIKey:        cfg.XAPIKey,
 		DedalusOrgID:   cfg.DedalusOrgID,
 	}
-	new.Request.Header.Set("Idempotency-Key", "stainless-go-"+uuid.New().String())
+	new.Request.Header.Set("Idempotency-Key", strings.ReplaceAll(uuid.Must(uuid.NewV7()).String(), "-", ""))
 	return new
 }
 
