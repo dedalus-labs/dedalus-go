@@ -1,4 +1,4 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec by Scalar. See README.md for details.
 
 package option
 
@@ -10,7 +10,7 @@ import (
 
 // sensitiveLogHeaders are redacted before request and response content is
 // written to the debug logger.
-var sensitiveLogHeaders = []string{"authorization", "api-key", "x-api-key", "cookie", "set-cookie"}
+var sensitiveLogHeaders = []string{"authorization", "api-key", "x-api-key", "cookie", "set-cookie", "api_key"}
 
 // WithDebugLog logs the HTTP request and response content.
 // If the logger parameter is nil, it uses the default logger.

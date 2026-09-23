@@ -1,0 +1,31 @@
+name: Go SDK CI
+
+on:
+  push:
+  pull_request:
+
+# Least privilege for a verification-only workflow: every job below only reads the checked-out
+# tree, so the run's GITHUB_TOKEN is narrowed to that regardless of the repository's default
+# grants. Declared at the workflow level so a job added later inherits the floor.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.22"
+      - run: go build ./...
+      - run: go vet ./...
+      # Verification only, never auto-fix: the SDK is generated gofmt-clean, so a listed file means
+      # either hand-edited custom code or a regenerate that was not committed. `gofmt -l` exits 0
+      # even when it lists files, so the output itself is the assertion.
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::gofmt would reformat:"; echo "$unformatted"; exit 1
+          fi

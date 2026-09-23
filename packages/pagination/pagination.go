@@ -1,4 +1,4 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec by Scalar. See README.md for details.
 
 package pagination
 
@@ -8,34 +8,30 @@ import (
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
-	"github.com/dedalus-labs/dedalus-go/packages/param"
-	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
-// aliased to make [param.APIUnion] private when embedding
-type paramUnion = param.APIUnion
-
-// aliased to make [param.APIObject] private when embedding
-type paramObj = param.APIObject
-
 type CursorPage[T any] struct {
-	Items      []T    `json:"items"`
-	NextCursor string `json:"next_cursor" api:"nullable"`
-	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
-	JSON struct {
-		Items       respjson.Field
-		NextCursor  respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
-	} `json:"-"`
-	cfg *requestconfig.RequestConfig
-	res *http.Response
+	Items      []T            `json:"items"`
+	NextCursor string         `json:"next_cursor" api:"nullable"`
+	JSON       cursorPageJSON `json:"-"`
+	cfg        *requestconfig.RequestConfig
+	res        *http.Response
 }
 
-// Returns the unmodified JSON received from the API
-func (r CursorPage[T]) RawJSON() string { return r.JSON.raw }
-func (r *CursorPage[T]) UnmarshalJSON(data []byte) error {
+// cursorPageJSON contains the JSON metadata for the struct [CursorPage[T]]
+type cursorPageJSON struct {
+	Items       apijson.Field
+	NextCursor  apijson.Field
+	raw         string
+	ExtraFields map[string]apijson.Field
+}
+
+func (r *CursorPage[T]) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r cursorPageJSON) RawJSON() string {
+	return r.raw
 }
 
 // GetNextPage returns the next page as defined by this pagination style. When
@@ -79,7 +75,6 @@ type CursorPageAutoPager[T any] struct {
 	idx  int
 	run  int
 	err  error
-	paramObj
 }
 
 func NewCursorPageAutoPager[T any](page *CursorPage[T], err error) *CursorPageAutoPager[T] {
