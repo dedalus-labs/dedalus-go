@@ -86,25 +86,6 @@ if err != nil {
 fmt.Println(page)
 ```
 
-## Streaming
-
-Streaming endpoints return an iterator that yields results as the server emits them.
-
-```go
-stream := client.Machines.WatchStreaming(context.Background(), sdk.MachineWatchParams{
-	MachineID: "machineID",
-})
-defer stream.Close()
-
-for stream.Next() {
-	event := stream.Current()
-	fmt.Println(event)
-}
-if err := stream.Err(); err != nil {
-	panic(err)
-}
-```
-
 ## Error handling
 
 Non-success responses return generated API errors. Error objects expose status, headers, response body, and request metadata where the target runtime supports it.

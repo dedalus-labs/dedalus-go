@@ -51,17 +51,6 @@ func _smokeCase0() {
 }
 
 func _smokeCase1() {
-	page, err := client.Machines.List(context.Background(), sdk.MachineListParams{
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase2() {
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 		CreateParams: sdk.CreateParams{
 			Autosleep:  sdk.F[string]("300s"),
@@ -69,6 +58,17 @@ func _smokeCase2() {
 			StorageGib: sdk.F[int64](10),
 			Vcpu:       sdk.F[float64](1),
 		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(machine.MachineID)
+}
+
+func _smokeCase2() {
+	machine, err := client.Machines.Get(context.Background(), sdk.MachineGetParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
 	if err != nil {
 		panic(err)
@@ -78,48 +78,8 @@ func _smokeCase2() {
 }
 
 func _smokeCase3() {
-	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
-		CreateParams: sdk.CreateParams{
-			Autosleep:  sdk.F[string]("300s"),
-			MemoryMib:  sdk.F[int64](4096),
-			StorageGib: sdk.F[int64](10),
-			Vcpu:       sdk.F[float64](1),
-		},
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(machine.MachineID)
-}
-
-func _smokeCase4() {
-	machine, err := client.Machines.Get(context.Background(), sdk.MachineGetParams{
-		MachineID: "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(machine.MachineID)
-}
-
-func _smokeCase5() {
-	machine, err := client.Machines.Get(context.Background(), sdk.MachineGetParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(machine.MachineID)
-}
-
-func _smokeCase6() {
 	machine, err := client.Machines.Update(context.Background(), sdk.MachineUpdateParams{
-		MachineID:    "machineID",
+		MachineID:    "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		UpdateParams: sdk.UpdateParams{},
 	})
 	if err != nil {
@@ -129,16 +89,48 @@ func _smokeCase6() {
 	fmt.Println(machine.MachineID)
 }
 
-func _smokeCase7() {
+func _smokeCase4() {
 	machine, err := client.Machines.Update(context.Background(), sdk.MachineUpdateParams{
-		MachineID: "machineID",
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		UpdateParams: sdk.UpdateParams{
 			Autosleep:  sdk.F[string](""),
 			MemoryMib:  sdk.F[int64](0),
 			StorageGib: sdk.F[int64](0),
 			Vcpu:       sdk.F[float64](0),
 		},
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(machine.MachineID)
+}
+
+func _smokeCase5() {
+	machine, err := client.Machines.Delete(context.Background(), sdk.MachineDeleteParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(machine.MachineID)
+}
+
+func _smokeCase6() {
+	machine, err := client.Machines.Sleep(context.Background(), sdk.MachineSleepParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(machine.MachineID)
+}
+
+func _smokeCase7() {
+	machine, err := client.Machines.Wake(context.Background(), sdk.MachineWakeParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
 	if err != nil {
 		panic(err)
@@ -148,433 +140,68 @@ func _smokeCase7() {
 }
 
 func _smokeCase8() {
-	machine, err := client.Machines.Delete(context.Background(), sdk.MachineDeleteParams{
-		MachineID: "machineID",
+	page, err := client.Machines.SSH.List(context.Background(), sdk.MachineSSHListParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(machine.MachineID)
+	fmt.Println(page)
 }
 
 func _smokeCase9() {
-	machine, err := client.Machines.Delete(context.Background(), sdk.MachineDeleteParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
+	ssh, err := client.Machines.SSH.New(context.Background(), sdk.MachineSSHNewParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		SSHSessionCreateParams: sdk.SSHSessionCreateParams{
+			PublicKey: sdk.F[string](""),
+		},
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(machine.MachineID)
+	fmt.Println(ssh.SessionID)
 }
 
 func _smokeCase10() {
-	stream := client.Machines.WatchStreaming(context.Background(), sdk.MachineWatchParams{
-		MachineID: "machineID",
+	ssh, err := client.Machines.SSH.Get(context.Background(), sdk.MachineSSHGetParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		SessionID: "sessionID",
 	})
-	defer stream.Close()
-
-	for stream.Next() {
-		event := stream.Current()
-		fmt.Println(event)
-	}
-	if err := stream.Err(); err != nil {
+	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println(ssh.SessionID)
 }
 
 func _smokeCase11() {
-	stream := client.Machines.WatchStreaming(context.Background(), sdk.MachineWatchParams{
-		MachineID:     "machineID",
-		LastEventID:   sdk.F[string]("lastEventID"),
-		XDedalusOrgID: sdk.F[string]("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
+	ssh, err := client.Machines.SSH.Delete(context.Background(), sdk.MachineSSHDeleteParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		SessionID: "sessionID",
 	})
-	defer stream.Close()
-
-	for stream.Next() {
-		event := stream.Current()
-		fmt.Println(event)
-	}
-	if err := stream.Err(); err != nil {
+	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println(ssh.SessionID)
 }
 
 func _smokeCase12() {
-	machine, err := client.Machines.Sleep(context.Background(), sdk.MachineSleepParams{
-		MachineID: "machineID",
+	page, err := client.Machines.Executions.List(context.Background(), sdk.MachineExecutionListParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(machine.MachineID)
+	fmt.Println(page)
 }
 
 func _smokeCase13() {
-	machine, err := client.Machines.Sleep(context.Background(), sdk.MachineSleepParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(machine.MachineID)
-}
-
-func _smokeCase14() {
-	machine, err := client.Machines.Wake(context.Background(), sdk.MachineWakeParams{
-		MachineID: "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(machine.MachineID)
-}
-
-func _smokeCase15() {
-	machine, err := client.Machines.Wake(context.Background(), sdk.MachineWakeParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(machine.MachineID)
-}
-
-func _smokeCase16() {
-	network, err := client.Machines.Network.Get(context.Background(), sdk.MachineNetworkGetParams{
-		MachineID: "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(network)
-}
-
-func _smokeCase17() {
-	network, err := client.Machines.Network.Get(context.Background(), sdk.MachineNetworkGetParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(network)
-}
-
-func _smokeCase18() {
-	page, err := client.Machines.Artifacts.List(context.Background(), sdk.MachineArtifactListParams{
-		MachineID: "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase19() {
-	page, err := client.Machines.Artifacts.List(context.Background(), sdk.MachineArtifactListParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase20() {
-	artifact, err := client.Machines.Artifacts.Get(context.Background(), sdk.MachineArtifactGetParams{
-		ArtifactID: "artifactID",
-		MachineID:  "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(artifact.ArtifactID)
-}
-
-func _smokeCase21() {
-	artifact, err := client.Machines.Artifacts.Get(context.Background(), sdk.MachineArtifactGetParams{
-		ArtifactID:    "artifactID",
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(artifact.ArtifactID)
-}
-
-func _smokeCase22() {
-	artifact, err := client.Machines.Artifacts.Delete(context.Background(), sdk.MachineArtifactDeleteParams{
-		ArtifactID: "artifactID",
-		MachineID:  "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(artifact.ArtifactID)
-}
-
-func _smokeCase23() {
-	artifact, err := client.Machines.Artifacts.Delete(context.Background(), sdk.MachineArtifactDeleteParams{
-		ArtifactID:    "artifactID",
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(artifact.ArtifactID)
-}
-
-func _smokeCase24() {
-	page, err := client.Machines.Ports.List(context.Background(), sdk.MachinePortListParams{
-		MachineID: "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase25() {
-	page, err := client.Machines.Ports.List(context.Background(), sdk.MachinePortListParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase26() {
-	port, err := client.Machines.Ports.New(context.Background(), sdk.MachinePortNewParams{
-		MachineID: "machineID",
-		PortCreateParams: sdk.PortCreateParams{
-			Port: sdk.F[int64](0),
-		},
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(port.PortID)
-}
-
-func _smokeCase27() {
-	port, err := client.Machines.Ports.New(context.Background(), sdk.MachinePortNewParams{
-		MachineID: "machineID",
-		PortCreateParams: sdk.PortCreateParams{
-			Port:     sdk.F[int64](0),
-			Protocol: sdk.F[sdk.PortCreateParamsProtocol](sdk.PortCreateParamsProtocol("http")),
-		},
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(port.PortID)
-}
-
-func _smokeCase28() {
-	port, err := client.Machines.Ports.Get(context.Background(), sdk.MachinePortGetParams{
-		MachineID: "machineID",
-		PortID:    "portID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(port.PortID)
-}
-
-func _smokeCase29() {
-	port, err := client.Machines.Ports.Get(context.Background(), sdk.MachinePortGetParams{
-		MachineID:     "machineID",
-		PortID:        "portID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(port.PortID)
-}
-
-func _smokeCase30() {
-	port, err := client.Machines.Ports.Delete(context.Background(), sdk.MachinePortDeleteParams{
-		MachineID: "machineID",
-		PortID:    "portID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(port.PortID)
-}
-
-func _smokeCase31() {
-	port, err := client.Machines.Ports.Delete(context.Background(), sdk.MachinePortDeleteParams{
-		MachineID:     "machineID",
-		PortID:        "portID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(port.PortID)
-}
-
-func _smokeCase32() {
-	page, err := client.Machines.SSH.List(context.Background(), sdk.MachineSSHListParams{
-		MachineID: "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase33() {
-	page, err := client.Machines.SSH.List(context.Background(), sdk.MachineSSHListParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase34() {
-	ssh, err := client.Machines.SSH.New(context.Background(), sdk.MachineSSHNewParams{
-		MachineID: "machineID",
-		SSHSessionCreateParams: sdk.SSHSessionCreateParams{
-			PublicKey: sdk.F[string](""),
-		},
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(ssh.SessionID)
-}
-
-func _smokeCase35() {
-	ssh, err := client.Machines.SSH.New(context.Background(), sdk.MachineSSHNewParams{
-		MachineID: "machineID",
-		SSHSessionCreateParams: sdk.SSHSessionCreateParams{
-			PublicKey: sdk.F[string](""),
-		},
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(ssh.SessionID)
-}
-
-func _smokeCase36() {
-	ssh, err := client.Machines.SSH.Get(context.Background(), sdk.MachineSSHGetParams{
-		MachineID: "machineID",
-		SessionID: "sessionID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(ssh.SessionID)
-}
-
-func _smokeCase37() {
-	ssh, err := client.Machines.SSH.Get(context.Background(), sdk.MachineSSHGetParams{
-		MachineID:     "machineID",
-		SessionID:     "sessionID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(ssh.SessionID)
-}
-
-func _smokeCase38() {
-	ssh, err := client.Machines.SSH.Delete(context.Background(), sdk.MachineSSHDeleteParams{
-		MachineID: "machineID",
-		SessionID: "sessionID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(ssh.SessionID)
-}
-
-func _smokeCase39() {
-	ssh, err := client.Machines.SSH.Delete(context.Background(), sdk.MachineSSHDeleteParams{
-		MachineID:     "machineID",
-		SessionID:     "sessionID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(ssh.SessionID)
-}
-
-func _smokeCase40() {
-	page, err := client.Machines.Executions.List(context.Background(), sdk.MachineExecutionListParams{
-		MachineID: "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase41() {
-	page, err := client.Machines.Executions.List(context.Background(), sdk.MachineExecutionListParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase42() {
 	execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
-		MachineID: "machineID",
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		ExecutionCreateParams: sdk.ExecutionCreateParams{
 			Command: sdk.F[[]string]([]string{""}),
 		},
@@ -586,9 +213,9 @@ func _smokeCase42() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase43() {
+func _smokeCase14() {
 	execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
-		MachineID: "machineID",
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		ExecutionCreateParams: sdk.ExecutionCreateParams{
 			Command:   sdk.F[[]string]([]string{""}),
 			Cwd:       sdk.F[string](""),
@@ -596,7 +223,6 @@ func _smokeCase43() {
 			Stdin:     sdk.F[string](""),
 			TimeoutMs: sdk.F[int64](0),
 		},
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
 	})
 	if err != nil {
 		panic(err)
@@ -605,10 +231,10 @@ func _smokeCase43() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase44() {
+func _smokeCase15() {
 	execution, err := client.Machines.Executions.Get(context.Background(), sdk.MachineExecutionGetParams{
 		ExecutionID: "executionID",
-		MachineID:   "machineID",
+		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
 	if err != nil {
 		panic(err)
@@ -617,23 +243,10 @@ func _smokeCase44() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase45() {
-	execution, err := client.Machines.Executions.Get(context.Background(), sdk.MachineExecutionGetParams{
-		ExecutionID:   "executionID",
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(execution.ExecutionID)
-}
-
-func _smokeCase46() {
+func _smokeCase16() {
 	execution, err := client.Machines.Executions.Delete(context.Background(), sdk.MachineExecutionDeleteParams{
 		ExecutionID: "executionID",
-		MachineID:   "machineID",
+		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
 	if err != nil {
 		panic(err)
@@ -642,23 +255,10 @@ func _smokeCase46() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase47() {
-	execution, err := client.Machines.Executions.Delete(context.Background(), sdk.MachineExecutionDeleteParams{
-		ExecutionID:   "executionID",
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(execution.ExecutionID)
-}
-
-func _smokeCase48() {
+func _smokeCase17() {
 	execution, err := client.Machines.Executions.Output(context.Background(), sdk.MachineExecutionOutputParams{
 		ExecutionID: "executionID",
-		MachineID:   "machineID",
+		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
 	if err != nil {
 		panic(err)
@@ -667,237 +267,16 @@ func _smokeCase48() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase49() {
-	execution, err := client.Machines.Executions.Output(context.Background(), sdk.MachineExecutionOutputParams{
-		ExecutionID:   "executionID",
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(execution.ExecutionID)
-}
-
-func _smokeCase50() {
+func _smokeCase18() {
 	page, err := client.Machines.Executions.Events(context.Background(), sdk.MachineExecutionEventsParams{
 		ExecutionID: "executionID",
-		MachineID:   "machineID",
+		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(page)
-}
-
-func _smokeCase51() {
-	page, err := client.Machines.Executions.Events(context.Background(), sdk.MachineExecutionEventsParams{
-		ExecutionID:   "executionID",
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase52() {
-	page, err := client.Machines.Terminals.List(context.Background(), sdk.MachineTerminalListParams{
-		MachineID: "machineID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase53() {
-	page, err := client.Machines.Terminals.List(context.Background(), sdk.MachineTerminalListParams{
-		MachineID:     "machineID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(page)
-}
-
-func _smokeCase54() {
-	terminal, err := client.Machines.Terminals.New(context.Background(), sdk.MachineTerminalNewParams{
-		MachineID: "machineID",
-		TerminalCreateParams: sdk.TerminalCreateParams{
-			Height: sdk.F[int64](0),
-			Width:  sdk.F[int64](0),
-		},
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(terminal.TerminalID)
-}
-
-func _smokeCase55() {
-	terminal, err := client.Machines.Terminals.New(context.Background(), sdk.MachineTerminalNewParams{
-		MachineID: "machineID",
-		TerminalCreateParams: sdk.TerminalCreateParams{
-			Cwd:    sdk.F[string](""),
-			Env:    sdk.F[map[string]string](map[string]string{}),
-			Height: sdk.F[int64](0),
-			Shell:  sdk.F[string](""),
-			Width:  sdk.F[int64](0),
-		},
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(terminal.TerminalID)
-}
-
-func _smokeCase56() {
-	terminal, err := client.Machines.Terminals.Get(context.Background(), sdk.MachineTerminalGetParams{
-		MachineID:  "machineID",
-		TerminalID: "terminalID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(terminal.TerminalID)
-}
-
-func _smokeCase57() {
-	terminal, err := client.Machines.Terminals.Get(context.Background(), sdk.MachineTerminalGetParams{
-		MachineID:     "machineID",
-		TerminalID:    "terminalID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(terminal.TerminalID)
-}
-
-func _smokeCase58() {
-	terminal, err := client.Machines.Terminals.Delete(context.Background(), sdk.MachineTerminalDeleteParams{
-		MachineID:  "machineID",
-		TerminalID: "terminalID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(terminal.TerminalID)
-}
-
-func _smokeCase59() {
-	terminal, err := client.Machines.Terminals.Delete(context.Background(), sdk.MachineTerminalDeleteParams{
-		MachineID:     "machineID",
-		TerminalID:    "terminalID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(terminal.TerminalID)
-}
-
-func _smokeCase60() {
-	network, err := client.Networks.Get(context.Background(), sdk.NetworkGetParams{
-		NetworkID: "networkID",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(network)
-}
-
-func _smokeCase61() {
-	network, err := client.Networks.Get(context.Background(), sdk.NetworkGetParams{
-		NetworkID:     "networkID",
-		XDedalusOrgID: sdk.F[string]("xDedalusOrgID"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(network)
-}
-
-func _smokeCase62() {
-	usage, err := client.Usage.Get(context.Background(), sdk.UsageGetParams{})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(usage)
-}
-
-func _smokeCase63() {
-	usage, err := client.Usage.Get(context.Background(), sdk.UsageGetParams{
-		PeriodStart: sdk.F[string]("periodStart"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(usage)
-}
-
-func _smokeCase64() {
-	usage, err := client.Usage.MachineCompute(context.Background(), sdk.UsageMachineComputeParams{})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(usage)
-}
-
-func _smokeCase65() {
-	usage, err := client.Usage.MachineCompute(context.Background(), sdk.UsageMachineComputeParams{
-		Granularity: sdk.F[string]("granularity"),
-		MachineID:   sdk.F[string]("machineID"),
-		PeriodEnd:   sdk.F[string]("periodEnd"),
-		PeriodStart: sdk.F[string]("periodStart"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(usage)
-}
-
-func _smokeCase66() {
-	usage, err := client.Usage.MachineStorage(context.Background(), sdk.UsageMachineStorageParams{})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(usage)
-}
-
-func _smokeCase67() {
-	usage, err := client.Usage.MachineStorage(context.Background(), sdk.UsageMachineStorageParams{
-		MachineID:   sdk.F[string]("machineID"),
-		PeriodEnd:   sdk.F[string]("periodEnd"),
-		PeriodStart: sdk.F[string]("periodStart"),
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(usage)
 }
 
 var cases = []smokeCase{
@@ -905,544 +284,137 @@ var cases = []smokeCase{
 		Operation: "list",
 		Method:    "GET",
 		Path:      "/v1/machines",
-		Label:     "required params",
 		Run:       _smokeCase0,
 	},
 
 	{
-		Operation: "list",
-		Method:    "GET",
+		Operation: "create",
+		Method:    "POST",
 		Path:      "/v1/machines",
-		Label:     "all params",
 		Run:       _smokeCase1,
 	},
 
 	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines",
-		Label:     "required params",
+		Operation: "retrieve",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}",
 		Run:       _smokeCase2,
 	},
 
 	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines",
-		Label:     "all params",
+		Operation: "update",
+		Method:    "PATCH",
+		Path:      "/v1/machines/{machine_id}",
+		Label:     "required params",
 		Run:       _smokeCase3,
 	},
 
 	{
-		Operation: "retrieve",
-		Method:    "GET",
+		Operation: "update",
+		Method:    "PATCH",
 		Path:      "/v1/machines/{machine_id}",
-		Label:     "required params",
+		Label:     "all params",
 		Run:       _smokeCase4,
 	},
 
 	{
-		Operation: "retrieve",
-		Method:    "GET",
+		Operation: "delete",
+		Method:    "DELETE",
 		Path:      "/v1/machines/{machine_id}",
-		Label:     "all params",
 		Run:       _smokeCase5,
 	},
 
 	{
-		Operation: "update",
-		Method:    "PATCH",
-		Path:      "/v1/machines/{machine_id}",
-		Label:     "required params",
+		Operation: "sleep",
+		Method:    "POST",
+		Path:      "/v1/machines/{machine_id}/sleep",
 		Run:       _smokeCase6,
 	},
 
 	{
-		Operation: "update",
-		Method:    "PATCH",
-		Path:      "/v1/machines/{machine_id}",
-		Label:     "all params",
+		Operation: "wake",
+		Method:    "POST",
+		Path:      "/v1/machines/{machine_id}/wake",
 		Run:       _smokeCase7,
 	},
 
 	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}",
-		Label:     "required params",
+		Operation: "list",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/ssh",
 		Run:       _smokeCase8,
 	},
 
 	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}",
-		Label:     "all params",
+		Operation: "create",
+		Method:    "POST",
+		Path:      "/v1/machines/{machine_id}/ssh",
 		Run:       _smokeCase9,
 	},
 
 	{
-		Operation: "watch",
+		Operation: "retrieve",
 		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/status/stream",
-		Label:     "required params",
+		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
 		Run:       _smokeCase10,
 	},
 
 	{
-		Operation: "watch",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/status/stream",
-		Label:     "all params",
+		Operation: "delete",
+		Method:    "DELETE",
+		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
 		Run:       _smokeCase11,
 	},
 
 	{
-		Operation: "sleep",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/sleep",
-		Label:     "required params",
+		Operation: "list",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/executions",
 		Run:       _smokeCase12,
 	},
 
 	{
-		Operation: "sleep",
+		Operation: "create",
 		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/sleep",
-		Label:     "all params",
+		Path:      "/v1/machines/{machine_id}/executions",
+		Label:     "required params",
 		Run:       _smokeCase13,
 	},
 
 	{
-		Operation: "wake",
+		Operation: "create",
 		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/wake",
-		Label:     "required params",
+		Path:      "/v1/machines/{machine_id}/executions",
+		Label:     "all params",
 		Run:       _smokeCase14,
 	},
 
 	{
-		Operation: "wake",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/wake",
-		Label:     "all params",
+		Operation: "retrieve",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
 		Run:       _smokeCase15,
 	},
 
 	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/network",
-		Label:     "required params",
+		Operation: "delete",
+		Method:    "DELETE",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
 		Run:       _smokeCase16,
 	},
 
 	{
-		Operation: "retrieve",
+		Operation: "output",
 		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/network",
-		Label:     "all params",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/output",
 		Run:       _smokeCase17,
 	},
 
 	{
-		Operation: "list",
+		Operation: "events",
 		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/artifacts",
-		Label:     "required params",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/events",
 		Run:       _smokeCase18,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/artifacts",
-		Label:     "all params",
-		Run:       _smokeCase19,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/artifacts/{artifact_id}",
-		Label:     "required params",
-		Run:       _smokeCase20,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/artifacts/{artifact_id}",
-		Label:     "all params",
-		Run:       _smokeCase21,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/artifacts/{artifact_id}",
-		Label:     "required params",
-		Run:       _smokeCase22,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/artifacts/{artifact_id}",
-		Label:     "all params",
-		Run:       _smokeCase23,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ports",
-		Label:     "required params",
-		Run:       _smokeCase24,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ports",
-		Label:     "all params",
-		Run:       _smokeCase25,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/ports",
-		Label:     "required params",
-		Run:       _smokeCase26,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/ports",
-		Label:     "all params",
-		Run:       _smokeCase27,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ports/{port_id}",
-		Label:     "required params",
-		Run:       _smokeCase28,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ports/{port_id}",
-		Label:     "all params",
-		Run:       _smokeCase29,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/ports/{port_id}",
-		Label:     "required params",
-		Run:       _smokeCase30,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/ports/{port_id}",
-		Label:     "all params",
-		Run:       _smokeCase31,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ssh",
-		Label:     "required params",
-		Run:       _smokeCase32,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ssh",
-		Label:     "all params",
-		Run:       _smokeCase33,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/ssh",
-		Label:     "required params",
-		Run:       _smokeCase34,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/ssh",
-		Label:     "all params",
-		Run:       _smokeCase35,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
-		Label:     "required params",
-		Run:       _smokeCase36,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
-		Label:     "all params",
-		Run:       _smokeCase37,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
-		Label:     "required params",
-		Run:       _smokeCase38,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
-		Label:     "all params",
-		Run:       _smokeCase39,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions",
-		Label:     "required params",
-		Run:       _smokeCase40,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions",
-		Label:     "all params",
-		Run:       _smokeCase41,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/executions",
-		Label:     "required params",
-		Run:       _smokeCase42,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/executions",
-		Label:     "all params",
-		Run:       _smokeCase43,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
-		Label:     "required params",
-		Run:       _smokeCase44,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
-		Label:     "all params",
-		Run:       _smokeCase45,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
-		Label:     "required params",
-		Run:       _smokeCase46,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
-		Label:     "all params",
-		Run:       _smokeCase47,
-	},
-
-	{
-		Operation: "output",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/output",
-		Label:     "required params",
-		Run:       _smokeCase48,
-	},
-
-	{
-		Operation: "output",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/output",
-		Label:     "all params",
-		Run:       _smokeCase49,
-	},
-
-	{
-		Operation: "events",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/events",
-		Label:     "required params",
-		Run:       _smokeCase50,
-	},
-
-	{
-		Operation: "events",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/events",
-		Label:     "all params",
-		Run:       _smokeCase51,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/terminals",
-		Label:     "required params",
-		Run:       _smokeCase52,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/terminals",
-		Label:     "all params",
-		Run:       _smokeCase53,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/terminals",
-		Label:     "required params",
-		Run:       _smokeCase54,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/terminals",
-		Label:     "all params",
-		Run:       _smokeCase55,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/terminals/{terminal_id}",
-		Label:     "required params",
-		Run:       _smokeCase56,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/terminals/{terminal_id}",
-		Label:     "all params",
-		Run:       _smokeCase57,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/terminals/{terminal_id}",
-		Label:     "required params",
-		Run:       _smokeCase58,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/terminals/{terminal_id}",
-		Label:     "all params",
-		Run:       _smokeCase59,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/networks/{network_id}",
-		Label:     "required params",
-		Run:       _smokeCase60,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/networks/{network_id}",
-		Label:     "all params",
-		Run:       _smokeCase61,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/usage",
-		Label:     "required params",
-		Run:       _smokeCase62,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/usage",
-		Label:     "all params",
-		Run:       _smokeCase63,
-	},
-
-	{
-		Operation: "machineCompute",
-		Method:    "GET",
-		Path:      "/v1/usage/machines/compute",
-		Label:     "required params",
-		Run:       _smokeCase64,
-	},
-
-	{
-		Operation: "machineCompute",
-		Method:    "GET",
-		Path:      "/v1/usage/machines/compute",
-		Label:     "all params",
-		Run:       _smokeCase65,
-	},
-
-	{
-		Operation: "machineStorage",
-		Method:    "GET",
-		Path:      "/v1/usage/machines/storage",
-		Label:     "required params",
-		Run:       _smokeCase66,
-	},
-
-	{
-		Operation: "machineStorage",
-		Method:    "GET",
-		Path:      "/v1/usage/machines/storage",
-		Label:     "all params",
-		Run:       _smokeCase67,
 	},
 }
 

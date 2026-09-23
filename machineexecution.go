@@ -50,7 +50,7 @@ func NewMachineExecutionService(opts ...option.RequestOption) (r *MachineExecuti
 // Example:
 //
 //	page, err := client.Machines.Executions.List(context.Background(), sdk.MachineExecutionListParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -59,9 +59,6 @@ func NewMachineExecutionService(opts ...option.RequestOption) (r *MachineExecuti
 //	fmt.Println(page)
 func (r *MachineExecutionService) List(ctx context.Context, query MachineExecutionListParams, opts ...option.RequestOption) (res *pagination.CursorPage[Execution], err error) {
 	var raw *http.Response
-	if query.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", query.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	if query.MachineID == "" {
@@ -105,7 +102,7 @@ func (r *MachineExecutionService) ListAutoPaging(ctx context.Context, query Mach
 // Example:
 //
 //	execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //		ExecutionCreateParams: sdk.ExecutionCreateParams{
 //			Command: sdk.F[[]string]([]string{""}),
 //		},
@@ -116,9 +113,6 @@ func (r *MachineExecutionService) ListAutoPaging(ctx context.Context, query Mach
 //
 //	fmt.Println(execution.ExecutionID)
 func (r *MachineExecutionService) New(ctx context.Context, body MachineExecutionNewParams, opts ...option.RequestOption) (res *Execution, err error) {
-	if body.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", body.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if body.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -145,7 +139,7 @@ func (r *MachineExecutionService) New(ctx context.Context, body MachineExecution
 //
 //	execution, err := client.Machines.Executions.Get(context.Background(), sdk.MachineExecutionGetParams{
 //		ExecutionID: "executionID",
-//		MachineID:   "machineID",
+//		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -153,9 +147,6 @@ func (r *MachineExecutionService) New(ctx context.Context, body MachineExecution
 //
 //	fmt.Println(execution.ExecutionID)
 func (r *MachineExecutionService) Get(ctx context.Context, params MachineExecutionGetParams, opts ...option.RequestOption) (res *Execution, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.ExecutionID == "" {
 		err = errors.New("missing required execution_id parameter")
@@ -186,7 +177,7 @@ func (r *MachineExecutionService) Get(ctx context.Context, params MachineExecuti
 //
 //	execution, err := client.Machines.Executions.Delete(context.Background(), sdk.MachineExecutionDeleteParams{
 //		ExecutionID: "executionID",
-//		MachineID:   "machineID",
+//		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -194,9 +185,6 @@ func (r *MachineExecutionService) Get(ctx context.Context, params MachineExecuti
 //
 //	fmt.Println(execution.ExecutionID)
 func (r *MachineExecutionService) Delete(ctx context.Context, params MachineExecutionDeleteParams, opts ...option.RequestOption) (res *Execution, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.ExecutionID == "" {
 		err = errors.New("missing required execution_id parameter")
@@ -227,7 +215,7 @@ func (r *MachineExecutionService) Delete(ctx context.Context, params MachineExec
 //
 //	execution, err := client.Machines.Executions.Output(context.Background(), sdk.MachineExecutionOutputParams{
 //		ExecutionID: "executionID",
-//		MachineID:   "machineID",
+//		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -235,9 +223,6 @@ func (r *MachineExecutionService) Delete(ctx context.Context, params MachineExec
 //
 //	fmt.Println(execution.ExecutionID)
 func (r *MachineExecutionService) Output(ctx context.Context, params MachineExecutionOutputParams, opts ...option.RequestOption) (res *ExecutionOutput, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.ExecutionID == "" {
 		err = errors.New("missing required execution_id parameter")
@@ -268,7 +253,7 @@ func (r *MachineExecutionService) Output(ctx context.Context, params MachineExec
 //
 //	page, err := client.Machines.Executions.Events(context.Background(), sdk.MachineExecutionEventsParams{
 //		ExecutionID: "executionID",
-//		MachineID:   "machineID",
+//		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -277,9 +262,6 @@ func (r *MachineExecutionService) Output(ctx context.Context, params MachineExec
 //	fmt.Println(page)
 func (r *MachineExecutionService) Events(ctx context.Context, query MachineExecutionEventsParams, opts ...option.RequestOption) (res *pagination.CursorPage[ExecutionEvent], err error) {
 	var raw *http.Response
-	if query.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", query.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	if query.ExecutionID == "" {
@@ -325,53 +307,59 @@ func (r ExecutionCreateParams) MarshalJSON() (data []byte, err error) {
 }
 
 type Execution struct {
-	Command         []string        `json:"command" api:"required,nullable"`
-	CreatedAt       time.Time       `json:"created_at" api:"required" format:"date-time"`
-	ExecutionID     string          `json:"execution_id" api:"required"`
-	MachineID       string          `json:"machine_id" api:"required"`
-	Status          ExecutionStatus `json:"status" api:"required"`
-	Artifacts       []ArtifactRef   `json:"artifacts" api:"nullable"`
-	CompletedAt     time.Time       `json:"completed_at" format:"date-time"`
-	Cwd             string          `json:"cwd"`
-	EnvKeys         []string        `json:"env_keys" api:"nullable"`
-	ErrorCode       string          `json:"error_code"`
-	ErrorMessage    string          `json:"error_message"`
-	ExitCode        int64           `json:"exit_code"`
-	ExpiresAt       time.Time       `json:"expires_at" format:"date-time"`
-	RetryAfterMs    int64           `json:"retry_after_ms"`
-	Signal          int64           `json:"signal"`
-	StartedAt       time.Time       `json:"started_at" format:"date-time"`
-	StderrBytes     int64           `json:"stderr_bytes"`
-	StderrTruncated bool            `json:"stderr_truncated"`
-	StdoutBytes     int64           `json:"stdout_bytes"`
-	StdoutTruncated bool            `json:"stdout_truncated"`
-	JSON            executionJSON   `json:"-"`
+	Command           []string            `json:"command" api:"required,nullable"`
+	CreatedAt         time.Time           `json:"created_at" api:"required" format:"date-time"`
+	ExecutionID       string              `json:"execution_id" api:"required"`
+	LogCapture        ExecutionLogCapture `json:"log_capture" api:"required"`
+	MachineID         string              `json:"machine_id" api:"required" format:"uuid"`
+	Status            ExecutionStatus     `json:"status" api:"required"`
+	Artifacts         []ArtifactRef       `json:"artifacts" api:"nullable"`
+	CompletedAt       time.Time           `json:"completed_at" format:"date-time"`
+	CreationRequestID string              `json:"creation_request_id"`
+	CreationTraceID   string              `json:"creation_trace_id"`
+	Cwd               string              `json:"cwd"`
+	EnvKeys           []string            `json:"env_keys" api:"nullable"`
+	ErrorCode         string              `json:"error_code"`
+	ErrorMessage      string              `json:"error_message"`
+	ExitCode          int64               `json:"exit_code"`
+	ExpiresAt         time.Time           `json:"expires_at" format:"date-time"`
+	RetryAfterMs      int64               `json:"retry_after_ms"`
+	Signal            int64               `json:"signal"`
+	StartedAt         time.Time           `json:"started_at" format:"date-time"`
+	StderrBytes       int64               `json:"stderr_bytes"`
+	StderrTruncated   bool                `json:"stderr_truncated"`
+	StdoutBytes       int64               `json:"stdout_bytes"`
+	StdoutTruncated   bool                `json:"stdout_truncated"`
+	JSON              executionJSON       `json:"-"`
 }
 
 // executionJSON contains the JSON metadata for the struct [Execution]
 type executionJSON struct {
-	Command         apijson.Field
-	CreatedAt       apijson.Field
-	ExecutionID     apijson.Field
-	MachineID       apijson.Field
-	Status          apijson.Field
-	Artifacts       apijson.Field
-	CompletedAt     apijson.Field
-	Cwd             apijson.Field
-	EnvKeys         apijson.Field
-	ErrorCode       apijson.Field
-	ErrorMessage    apijson.Field
-	ExitCode        apijson.Field
-	ExpiresAt       apijson.Field
-	RetryAfterMs    apijson.Field
-	Signal          apijson.Field
-	StartedAt       apijson.Field
-	StderrBytes     apijson.Field
-	StderrTruncated apijson.Field
-	StdoutBytes     apijson.Field
-	StdoutTruncated apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
+	Command           apijson.Field
+	CreatedAt         apijson.Field
+	ExecutionID       apijson.Field
+	LogCapture        apijson.Field
+	MachineID         apijson.Field
+	Status            apijson.Field
+	Artifacts         apijson.Field
+	CompletedAt       apijson.Field
+	CreationRequestID apijson.Field
+	CreationTraceID   apijson.Field
+	Cwd               apijson.Field
+	EnvKeys           apijson.Field
+	ErrorCode         apijson.Field
+	ErrorMessage      apijson.Field
+	ExitCode          apijson.Field
+	ExpiresAt         apijson.Field
+	RetryAfterMs      apijson.Field
+	Signal            apijson.Field
+	StartedAt         apijson.Field
+	StderrBytes       apijson.Field
+	StderrTruncated   apijson.Field
+	StdoutBytes       apijson.Field
+	StdoutTruncated   apijson.Field
+	raw               string
+	ExtraFields       map[string]apijson.Field
 }
 
 func (r *Execution) UnmarshalJSON(data []byte) (err error) {
@@ -585,10 +573,11 @@ func (r ExecutionCreateParamsParam) MarshalJSON() (data []byte, err error) {
 }
 
 type MachineExecutionListParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	Cursor        param.Field[string] `query:"cursor"`
-	Limit         param.Field[int64]  `query:"limit"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string              `path:"machine_id" api:"required" json:"-"`
+	Cursor    param.Field[string] `query:"cursor"`
+	Limit     param.Field[int64]  `query:"limit"`
 }
 
 // URLQuery serializes [MachineExecutionListParams]'s query parameters as `url.Values`.
@@ -600,9 +589,10 @@ func (r MachineExecutionListParams) URLQuery() (v url.Values) {
 }
 
 type MachineExecutionNewParams struct {
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
 	MachineID             string                `path:"machine_id" api:"required" json:"-"`
 	ExecutionCreateParams ExecutionCreateParams `json:"execution_create_params" api:"required"`
-	XDedalusOrgID         param.Field[string]   `header:"X-Dedalus-Org-Id"`
 }
 
 func (r MachineExecutionNewParams) MarshalJSON() (data []byte, err error) {
@@ -610,29 +600,33 @@ func (r MachineExecutionNewParams) MarshalJSON() (data []byte, err error) {
 }
 
 type MachineExecutionGetParams struct {
-	ExecutionID   string              `path:"execution_id" api:"required" json:"-"`
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
 }
 
 type MachineExecutionDeleteParams struct {
-	ExecutionID   string              `path:"execution_id" api:"required" json:"-"`
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
 }
 
 type MachineExecutionOutputParams struct {
-	ExecutionID   string              `path:"execution_id" api:"required" json:"-"`
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
 }
 
 type MachineExecutionEventsParams struct {
-	ExecutionID   string              `path:"execution_id" api:"required" json:"-"`
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	Cursor        param.Field[string] `query:"cursor"`
-	Limit         param.Field[int64]  `query:"limit"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string              `path:"machine_id" api:"required" json:"-"`
+	Cursor    param.Field[string] `query:"cursor"`
+	Limit     param.Field[int64]  `query:"limit"`
 }
 
 // URLQuery serializes [MachineExecutionEventsParams]'s query parameters as `url.Values`.
@@ -641,4 +635,46 @@ func (r MachineExecutionEventsParams) URLQuery() (v url.Values) {
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
 	})
+}
+
+type ExecutionLogCapture struct {
+	Code             string                   `json:"code"`
+	LostBytes        string                   `json:"lost_bytes"`
+	State            ExecutionLogCaptureState `json:"state"`
+	UnconfirmedBytes string                   `json:"unconfirmed_bytes"`
+	JSON             executionLogCaptureJSON  `json:"-"`
+}
+
+// executionLogCaptureJSON contains the JSON metadata for the struct [ExecutionLogCapture]
+type executionLogCaptureJSON struct {
+	Code             apijson.Field
+	LostBytes        apijson.Field
+	State            apijson.Field
+	UnconfirmedBytes apijson.Field
+	raw              string
+	ExtraFields      map[string]apijson.Field
+}
+
+func (r *ExecutionLogCapture) UnmarshalJSON(data []byte) (err error) {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+func (r executionLogCaptureJSON) RawJSON() string {
+	return r.raw
+}
+
+type ExecutionLogCaptureState string
+
+const (
+	ExecutionLogCaptureStatePending     ExecutionLogCaptureState = "pending"
+	ExecutionLogCaptureStateIncomplete  ExecutionLogCaptureState = "incomplete"
+	ExecutionLogCaptureStateUnavailable ExecutionLogCaptureState = "unavailable"
+)
+
+func (r ExecutionLogCaptureState) IsKnown() bool {
+	switch r {
+	case ExecutionLogCaptureStatePending, ExecutionLogCaptureStateIncomplete, ExecutionLogCaptureStateUnavailable:
+		return true
+	}
+	return false
 }

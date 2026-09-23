@@ -19,8 +19,6 @@ import (
 type Client struct {
 	Options  []option.RequestOption
 	Machines *MachineService
-	Networks *NetworkService
-	Usage    *UsageService
 }
 
 // DefaultClientOptions read from the environment. This should be used to initialize
@@ -74,8 +72,6 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r = &Client{Options: opts}
 
 	r.Machines = NewMachineService(opts...)
-	r.Networks = NewNetworkService(opts...)
-	r.Usage = NewUsageService(opts...)
 
 	return
 }

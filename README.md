@@ -11,7 +11,6 @@ The full API of this library can be found in [api.md](./api.md).
 - [Installation](#installation)
 - [Usage](#usage)
 - [API Reference](./api.md)
-- [Streaming](#streaming)
 - [Authentication](#authentication)
 - [Errors](#errors)
 - [Client Options](#client-options)
@@ -73,27 +72,6 @@ See the [API reference](./api.md) for every available operation.
 
 <br />
 
-## Streaming
-
-Streaming endpoints return an async iterator that yields results as the server emits them.
-
-```go
-stream := client.Machines.WatchStreaming(context.Background(), sdk.MachineWatchParams{
-	MachineID: "machineID",
-})
-defer stream.Close()
-
-for stream.Next() {
-	event := stream.Current()
-	fmt.Println(event)
-}
-if err := stream.Err(); err != nil {
-	panic(err)
-}
-```
-
-<br />
-
 ## Authentication
 
 Pass credentials to the generated client constructor. Environment variables are read automatically when supported by the target runtime.
@@ -140,7 +118,7 @@ if err != nil {
 // imports: "context", "errors", "fmt", sdk "github.com/dedalus-labs/dedalus-go"
 ```
 
-Documented error statuses: `400`, `401`, `403`, `409`, `429`, `500`, `502`, `503`, `default`.
+Documented error statuses: `401`, `403`, `409`, `429`, `503`, `default`.
 
 <br />
 

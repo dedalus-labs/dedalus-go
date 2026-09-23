@@ -50,7 +50,7 @@ func NewMachineSSHService(opts ...option.RequestOption) (r *MachineSSHService) {
 // Example:
 //
 //	page, err := client.Machines.SSH.List(context.Background(), sdk.MachineSSHListParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -59,9 +59,6 @@ func NewMachineSSHService(opts ...option.RequestOption) (r *MachineSSHService) {
 //	fmt.Println(page)
 func (r *MachineSSHService) List(ctx context.Context, query MachineSSHListParams, opts ...option.RequestOption) (res *pagination.CursorPage[SSHSession], err error) {
 	var raw *http.Response
-	if query.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", query.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	if query.MachineID == "" {
@@ -105,7 +102,7 @@ func (r *MachineSSHService) ListAutoPaging(ctx context.Context, query MachineSSH
 // Example:
 //
 //	ssh, err := client.Machines.SSH.New(context.Background(), sdk.MachineSSHNewParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //		SSHSessionCreateParams: sdk.SSHSessionCreateParams{
 //			PublicKey: sdk.F[string](""),
 //		},
@@ -116,9 +113,6 @@ func (r *MachineSSHService) ListAutoPaging(ctx context.Context, query MachineSSH
 //
 //	fmt.Println(ssh.SessionID)
 func (r *MachineSSHService) New(ctx context.Context, body MachineSSHNewParams, opts ...option.RequestOption) (res *SSHSession, err error) {
-	if body.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", body.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if body.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -144,7 +138,7 @@ func (r *MachineSSHService) New(ctx context.Context, body MachineSSHNewParams, o
 // Example:
 //
 //	ssh, err := client.Machines.SSH.Get(context.Background(), sdk.MachineSSHGetParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //		SessionID: "sessionID",
 //	})
 //	if err != nil {
@@ -153,9 +147,6 @@ func (r *MachineSSHService) New(ctx context.Context, body MachineSSHNewParams, o
 //
 //	fmt.Println(ssh.SessionID)
 func (r *MachineSSHService) Get(ctx context.Context, params MachineSSHGetParams, opts ...option.RequestOption) (res *SSHSession, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -185,7 +176,7 @@ func (r *MachineSSHService) Get(ctx context.Context, params MachineSSHGetParams,
 // Example:
 //
 //	ssh, err := client.Machines.SSH.Delete(context.Background(), sdk.MachineSSHDeleteParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //		SessionID: "sessionID",
 //	})
 //	if err != nil {
@@ -194,9 +185,6 @@ func (r *MachineSSHService) Get(ctx context.Context, params MachineSSHGetParams,
 //
 //	fmt.Println(ssh.SessionID)
 func (r *MachineSSHService) Delete(ctx context.Context, params MachineSSHDeleteParams, opts ...option.RequestOption) (res *SSHSession, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -221,7 +209,7 @@ func (r SSHSessionCreateParams) MarshalJSON() (data []byte, err error) {
 
 type SSHSession struct {
 	CreatedAt    time.Time        `json:"created_at" api:"required" format:"date-time"`
-	MachineID    string           `json:"machine_id" api:"required"`
+	MachineID    string           `json:"machine_id" api:"required" format:"uuid"`
 	SessionID    string           `json:"session_id" api:"required"`
 	Status       SSHSessionStatus `json:"status" api:"required"`
 	Connection   SSHConnection    `json:"connection"`
@@ -261,6 +249,7 @@ type SSHSessionStatus string
 
 const (
 	SSHSessionStatusWakeInProgress SSHSessionStatus = "wake_in_progress"
+	SSHSessionStatusSSHInProgress  SSHSessionStatus = "ssh_in_progress"
 	SSHSessionStatusReady          SSHSessionStatus = "ready"
 	SSHSessionStatusClosed         SSHSessionStatus = "closed"
 	SSHSessionStatusExpired        SSHSessionStatus = "expired"
@@ -269,7 +258,7 @@ const (
 
 func (r SSHSessionStatus) IsKnown() bool {
 	switch r {
-	case SSHSessionStatusWakeInProgress, SSHSessionStatusReady, SSHSessionStatusClosed, SSHSessionStatusExpired, SSHSessionStatusFailed:
+	case SSHSessionStatusWakeInProgress, SSHSessionStatusSSHInProgress, SSHSessionStatusReady, SSHSessionStatusClosed, SSHSessionStatusExpired, SSHSessionStatusFailed:
 		return true
 	}
 	return false
@@ -372,10 +361,11 @@ func (r SSHSessionCreateParamsParam) MarshalJSON() (data []byte, err error) {
 }
 
 type MachineSSHListParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	Cursor        param.Field[string] `query:"cursor"`
-	Limit         param.Field[int64]  `query:"limit"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string              `path:"machine_id" api:"required" json:"-"`
+	Cursor    param.Field[string] `query:"cursor"`
+	Limit     param.Field[int64]  `query:"limit"`
 }
 
 // URLQuery serializes [MachineSSHListParams]'s query parameters as `url.Values`.
@@ -387,9 +377,10 @@ func (r MachineSSHListParams) URLQuery() (v url.Values) {
 }
 
 type MachineSSHNewParams struct {
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
 	MachineID              string                 `path:"machine_id" api:"required" json:"-"`
 	SSHSessionCreateParams SSHSessionCreateParams `json:"ssh_session_create_params" api:"required"`
-	XDedalusOrgID          param.Field[string]    `header:"X-Dedalus-Org-Id"`
 }
 
 func (r MachineSSHNewParams) MarshalJSON() (data []byte, err error) {
@@ -397,13 +388,15 @@ func (r MachineSSHNewParams) MarshalJSON() (data []byte, err error) {
 }
 
 type MachineSSHGetParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	SessionID     string              `path:"session_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	SessionID string `path:"session_id" api:"required" json:"-"`
 }
 
 type MachineSSHDeleteParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	SessionID     string              `path:"session_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	SessionID string `path:"session_id" api:"required" json:"-"`
 }

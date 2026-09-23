@@ -17,7 +17,6 @@ import (
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
 	"github.com/dedalus-labs/dedalus-go/packages/pagination"
-	"github.com/dedalus-labs/dedalus-go/packages/ssestream"
 )
 
 // MachineService contains methods and other services that help with interacting
@@ -25,9 +24,6 @@ import (
 // the [NewMachineService] method instead.
 type MachineService struct {
 	Options    []option.RequestOption
-	Network    *MachineNetworkService
-	Artifacts  *MachineArtifactService
-	Ports      *MachinePortService
 	SSH        *MachineSSHService
 	Executions *MachineExecutionService
 	Terminals  *MachineTerminalService
@@ -39,9 +35,6 @@ type MachineService struct {
 func NewMachineService(opts ...option.RequestOption) (r *MachineService) {
 	r = &MachineService{}
 	r.Options = opts
-	r.Network = NewMachineNetworkService(opts...)
-	r.Artifacts = NewMachineArtifactService(opts...)
-	r.Ports = NewMachinePortService(opts...)
 	r.SSH = NewMachineSSHService(opts...)
 	r.Executions = NewMachineExecutionService(opts...)
 	r.Terminals = NewMachineTerminalService(opts...)
@@ -70,9 +63,6 @@ func NewMachineService(opts ...option.RequestOption) (r *MachineService) {
 //	fmt.Println(page)
 func (r *MachineService) List(ctx context.Context, query MachineListParams, opts ...option.RequestOption) (res *pagination.CursorPage[MachineListItem], err error) {
 	var raw *http.Response
-	if query.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", query.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
 	path := "v1/machines"
@@ -125,9 +115,6 @@ func (r *MachineService) ListAutoPaging(ctx context.Context, query MachineListPa
 //
 //	fmt.Println(machine.MachineID)
 func (r *MachineService) New(ctx context.Context, body MachineNewParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if body.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", body.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/machines"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
@@ -149,7 +136,7 @@ func (r *MachineService) New(ctx context.Context, body MachineNewParams, opts ..
 // Example:
 //
 //	machine, err := client.Machines.Get(context.Background(), sdk.MachineGetParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -157,9 +144,6 @@ func (r *MachineService) New(ctx context.Context, body MachineNewParams, opts ..
 //
 //	fmt.Println(machine.MachineID)
 func (r *MachineService) Get(ctx context.Context, params MachineGetParams, opts ...option.RequestOption) (res *MachineGetResponse, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -185,7 +169,7 @@ func (r *MachineService) Get(ctx context.Context, params MachineGetParams, opts 
 // Example:
 //
 //	machine, err := client.Machines.Update(context.Background(), sdk.MachineUpdateParams{
-//		MachineID:    "machineID",
+//		MachineID:    "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //		UpdateParams: sdk.UpdateParams{},
 //	})
 //	if err != nil {
@@ -194,9 +178,6 @@ func (r *MachineService) Get(ctx context.Context, params MachineGetParams, opts 
 //
 //	fmt.Println(machine.MachineID)
 func (r *MachineService) Update(ctx context.Context, body MachineUpdateParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if body.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", body.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if body.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -222,7 +203,7 @@ func (r *MachineService) Update(ctx context.Context, body MachineUpdateParams, o
 // Example:
 //
 //	machine, err := client.Machines.Delete(context.Background(), sdk.MachineDeleteParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -230,9 +211,6 @@ func (r *MachineService) Update(ctx context.Context, body MachineUpdateParams, o
 //
 //	fmt.Println(machine.MachineID)
 func (r *MachineService) Delete(ctx context.Context, params MachineDeleteParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -241,54 +219,6 @@ func (r *MachineService) Delete(ctx context.Context, params MachineDeleteParams,
 	path := fmt.Sprintf("v1/machines/%s", url.PathEscape(params.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, &res, opts...)
 	return res, err
-}
-
-// Streams machine lifecycle updates over Server-Sent Events. Each `status` event contains a full `LifecycleResponse` payload. The stream closes after the machine reaches its current desired state.
-//
-// Parameters:
-//
-//	ctx: Context for the request.
-//	params: MachineWatchParams request parameters.
-//	opts: Options to apply to this request.
-//
-// Returns:
-//
-//	*ssestream.Stream[Machine]: Server-Sent Event stream (`text/event-stream`) of machine lifecycle updates.
-//
-// Example:
-//
-//	stream := client.Machines.WatchStreaming(context.Background(), sdk.MachineWatchParams{
-//		MachineID: "machineID",
-//	})
-//	defer stream.Close()
-//
-//	for stream.Next() {
-//		event := stream.Current()
-//		fmt.Println(event)
-//	}
-//	if err := stream.Err(); err != nil {
-//		panic(err)
-//	}
-func (r *MachineService) WatchStreaming(ctx context.Context, params MachineWatchParams, opts ...option.RequestOption) (stream *ssestream.Stream[Machine]) {
-	var (
-		raw *http.Response
-		err error
-	)
-	if params.LastEventID.Present {
-		opts = append(opts, option.WithHeader("Last-Event-ID", fmt.Sprintf("%v", params.LastEventID.Value)))
-	}
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
-	opts = slices.Concat(r.Options, opts)
-	opts = append([]option.RequestOption{option.WithHeader("Accept", "text/event-stream")}, opts...)
-	if params.MachineID == "" {
-		err = errors.New("missing required machine_id parameter")
-		return ssestream.NewStream[Machine](nil, err)
-	}
-	path := fmt.Sprintf("v1/machines/%s/status/stream", url.PathEscape(params.MachineID))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &raw, opts...)
-	return ssestream.NewStream[Machine](ssestream.NewDecoder(raw), err)
 }
 
 // Sleep a running machine
@@ -306,7 +236,7 @@ func (r *MachineService) WatchStreaming(ctx context.Context, params MachineWatch
 // Example:
 //
 //	machine, err := client.Machines.Sleep(context.Background(), sdk.MachineSleepParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -314,9 +244,6 @@ func (r *MachineService) WatchStreaming(ctx context.Context, params MachineWatch
 //
 //	fmt.Println(machine.MachineID)
 func (r *MachineService) Sleep(ctx context.Context, params MachineSleepParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -342,7 +269,7 @@ func (r *MachineService) Sleep(ctx context.Context, params MachineSleepParams, o
 // Example:
 //
 //	machine, err := client.Machines.Wake(context.Background(), sdk.MachineWakeParams{
-//		MachineID: "machineID",
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -350,9 +277,6 @@ func (r *MachineService) Sleep(ctx context.Context, params MachineSleepParams, o
 //
 //	fmt.Println(machine.MachineID)
 func (r *MachineService) Wake(ctx context.Context, params MachineWakeParams, opts ...option.RequestOption) (res *Machine, err error) {
-	if params.XDedalusOrgID.Present {
-		opts = append(opts, option.WithHeader("X-Dedalus-Org-Id", fmt.Sprintf("%v", params.XDedalusOrgID.Value)))
-	}
 	opts = slices.Concat(r.Options, opts)
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -367,7 +291,7 @@ type Machine struct {
 	// Seconds of inactivity before autosleep. 0 disables autosleep.
 	AutosleepSeconds int64               `json:"autosleep_seconds" api:"required"`
 	DesiredState     MachineDesiredState `json:"desired_state" api:"required"`
-	MachineID        string              `json:"machine_id" api:"required"`
+	MachineID        string              `json:"machine_id" api:"required" format:"uuid"`
 	// Memory in MiB.
 	MemoryMib  int64        `json:"memory_mib" api:"required"`
 	Phase      MachinePhase `json:"phase" api:"required"`
@@ -463,7 +387,7 @@ type MachineListItem struct {
 	AutosleepSeconds int64                       `json:"autosleep_seconds" api:"required"`
 	CreatedAt        time.Time                   `json:"created_at" api:"required" format:"date-time"`
 	DesiredState     MachineListItemDesiredState `json:"desired_state" api:"required"`
-	MachineID        string                      `json:"machine_id" api:"required"`
+	MachineID        string                      `json:"machine_id" api:"required" format:"uuid"`
 	// Memory in MiB.
 	MemoryMib  int64                `json:"memory_mib" api:"required"`
 	Phase      MachineListItemPhase `json:"phase" api:"required"`
@@ -566,27 +490,46 @@ func (r UpdateParams) MarshalJSON() (data []byte, err error) {
 }
 
 type LifecycleStatus struct {
-	LastProgressAt   time.Time            `json:"last_progress_at" api:"required" format:"date-time"`
-	LastTransitionAt time.Time            `json:"last_transition_at" api:"required" format:"date-time"`
-	Phase            LifecycleStatusPhase `json:"phase" api:"required"`
-	Reason           string               `json:"reason" api:"required"`
-	Retryable        bool                 `json:"retryable" api:"required"`
-	Revision         string               `json:"revision" api:"required"`
-	LastError        string               `json:"last_error"`
-	JSON             lifecycleStatusJSON  `json:"-"`
+	LastProgressAt   time.Time `json:"last_progress_at" api:"required" format:"date-time"`
+	LastTransitionAt time.Time `json:"last_transition_at" api:"required" format:"date-time"`
+	// Accepted RAM maximum, including completed automatic increases.
+	MemoryConfiguredMib int64                `json:"memory_configured_mib" api:"required"`
+	Phase               LifecycleStatusPhase `json:"phase" api:"required"`
+	Reason              string               `json:"reason" api:"required"`
+	Retryable           bool                 `json:"retryable" api:"required"`
+	Revision            string               `json:"revision" api:"required"`
+	LastError           string               `json:"last_error"`
+	// Last confirmed RAM allocation for the current running generation. Absent when
+	// the allocation is unknown or no longer current.
+	MemoryAssignedMib int64 `json:"memory_assigned_mib"`
+	// Time of the latest confirmed automatic RAM increase. Does not include explicit
+	// resizing or a complete change history.
+	MemoryLastAutoresizedAt time.Time `json:"memory_last_autoresized_at" format:"date-time"`
+	// Resize progress reported by the current runtime. A pending automatic target may
+	// not yet be applied by that runtime.
+	MemoryResizeState LifecycleStatusMemoryResizeState `json:"memory_resize_state"`
+	// Pending automatic RAM target, or the current runtime target when no automatic
+	// target is pending.
+	MemoryTargetMib int64               `json:"memory_target_mib"`
+	JSON            lifecycleStatusJSON `json:"-"`
 }
 
 // lifecycleStatusJSON contains the JSON metadata for the struct [LifecycleStatus]
 type lifecycleStatusJSON struct {
-	LastProgressAt   apijson.Field
-	LastTransitionAt apijson.Field
-	Phase            apijson.Field
-	Reason           apijson.Field
-	Retryable        apijson.Field
-	Revision         apijson.Field
-	LastError        apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
+	LastProgressAt          apijson.Field
+	LastTransitionAt        apijson.Field
+	MemoryConfiguredMib     apijson.Field
+	Phase                   apijson.Field
+	Reason                  apijson.Field
+	Retryable               apijson.Field
+	Revision                apijson.Field
+	LastError               apijson.Field
+	MemoryAssignedMib       apijson.Field
+	MemoryLastAutoresizedAt apijson.Field
+	MemoryResizeState       apijson.Field
+	MemoryTargetMib         apijson.Field
+	raw                     string
+	ExtraFields             map[string]apijson.Field
 }
 
 func (r *LifecycleStatus) UnmarshalJSON(data []byte) (err error) {
@@ -595,6 +538,22 @@ func (r *LifecycleStatus) UnmarshalJSON(data []byte) (err error) {
 
 func (r lifecycleStatusJSON) RawJSON() string {
 	return r.raw
+}
+
+type LifecycleStatusMemoryResizeState string
+
+const (
+	LifecycleStatusMemoryResizeStateStable          LifecycleStatusMemoryResizeState = "stable"
+	LifecycleStatusMemoryResizeStateError           LifecycleStatusMemoryResizeState = "error"
+	LifecycleStatusMemoryResizeStatePendingCapacity LifecycleStatusMemoryResizeState = "pending_capacity"
+)
+
+func (r LifecycleStatusMemoryResizeState) IsKnown() bool {
+	switch r {
+	case LifecycleStatusMemoryResizeStateStable, LifecycleStatusMemoryResizeStateError, LifecycleStatusMemoryResizeStatePendingCapacity:
+		return true
+	}
+	return false
 }
 
 type LifecycleStatusPhase string
@@ -655,7 +614,7 @@ type MachineGetResponse struct {
 	// Seconds of inactivity before autosleep. 0 disables autosleep.
 	AutosleepSeconds int64                          `json:"autosleep_seconds" api:"required"`
 	DesiredState     MachineGetResponseDesiredState `json:"desired_state" api:"required"`
-	MachineID        string                         `json:"machine_id" api:"required"`
+	MachineID        string                         `json:"machine_id" api:"required" format:"uuid"`
 	// Memory in MiB.
 	MemoryMib  int64           `json:"memory_mib" api:"required"`
 	Status     LifecycleStatus `json:"status" api:"required"`
@@ -703,9 +662,8 @@ func (r MachineGetResponseDesiredState) IsKnown() bool {
 }
 
 type MachineListParams struct {
-	Cursor        param.Field[string] `query:"cursor"`
-	Limit         param.Field[int64]  `query:"limit"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	Cursor param.Field[string] `query:"cursor"`
+	Limit  param.Field[int64]  `query:"limit"`
 }
 
 // URLQuery serializes [MachineListParams]'s query parameters as `url.Values`.
@@ -717,8 +675,7 @@ func (r MachineListParams) URLQuery() (v url.Values) {
 }
 
 type MachineNewParams struct {
-	CreateParams  CreateParams        `json:"create_params" api:"required"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	CreateParams CreateParams `json:"create_params" api:"required"`
 }
 
 func (r MachineNewParams) MarshalJSON() (data []byte, err error) {
@@ -726,14 +683,16 @@ func (r MachineNewParams) MarshalJSON() (data []byte, err error) {
 }
 
 type MachineGetParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
 }
 
 type MachineUpdateParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	UpdateParams  UpdateParams        `json:"update_params" api:"required"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID    string       `path:"machine_id" api:"required" json:"-"`
+	UpdateParams UpdateParams `json:"update_params" api:"required"`
 }
 
 func (r MachineUpdateParams) MarshalJSON() (data []byte, err error) {
@@ -741,25 +700,19 @@ func (r MachineUpdateParams) MarshalJSON() (data []byte, err error) {
 }
 
 type MachineDeleteParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
-}
-
-type MachineWatchParams struct {
-	// Machine identifier.
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
-	// Optional resourceVersion bookmark used to resume a previous stream.
-	LastEventID param.Field[string] `header:"Last-Event-ID"`
-	// Organization ID header applied to all DCS requests.
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id" format:"uuid"`
 }
 
 type MachineSleepParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
 }
 
 type MachineWakeParams struct {
-	MachineID     string              `path:"machine_id" api:"required" json:"-"`
-	XDedalusOrgID param.Field[string] `header:"X-Dedalus-Org-Id"`
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
 }
