@@ -24,6 +24,7 @@ import (
 // the [NewMachineExecutionService] method instead.
 type MachineExecutionService struct {
 	Options []option.RequestOption
+	Logs    *MachineExecutionLogService
 }
 
 // NewMachineExecutionService generates a new service that applies the given options to each request.
@@ -32,6 +33,7 @@ type MachineExecutionService struct {
 func NewMachineExecutionService(opts ...option.RequestOption) (r *MachineExecutionService) {
 	r = &MachineExecutionService{}
 	r.Options = opts
+	r.Logs = NewMachineExecutionLogService(opts...)
 	return
 }
 

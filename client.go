@@ -17,8 +17,9 @@ import (
 // interacting with the Dedalus API. You should not instantiate this client
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
-	Options  []option.RequestOption
-	Machines *MachineService
+	Options      []option.RequestOption
+	Machines     *MachineService
+	Organization *OrganizationService
 }
 
 // DefaultClientOptions read from the environment. This should be used to initialize
@@ -42,15 +43,6 @@ func DefaultClientOptions() []option.RequestOption {
 	if o, ok := os.LookupEnv("DEDALUS_ORG_ID"); ok {
 		defaults = append(defaults, option.WithDedalusOrgID(o))
 	}
-	if o, ok := os.LookupEnv("DEDALUS_PROVIDER"); ok {
-		defaults = append(defaults, option.WithProvider(o))
-	}
-	if o, ok := os.LookupEnv("DEDALUS_PROVIDER_KEY"); ok {
-		defaults = append(defaults, option.WithProviderKey(o))
-	}
-	if o, ok := os.LookupEnv("DEDALUS_PROVIDER_MODEL"); ok {
-		defaults = append(defaults, option.WithProviderModel(o))
-	}
 	if o, ok := os.LookupEnv("DEDALUS_CUSTOM_HEADERS"); ok {
 		for _, line := range strings.Split(o, "\n") {
 			colon := strings.Index(line, ":")
@@ -72,6 +64,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	r = &Client{Options: opts}
 
 	r.Machines = NewMachineService(opts...)
+	r.Organization = NewOrganizationService(opts...)
 
 	return
 }

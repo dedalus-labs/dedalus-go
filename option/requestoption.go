@@ -290,27 +290,3 @@ func WithDedalusOrgID(value string) RequestOption {
 		return nil
 	})
 }
-
-// WithProvider returns a RequestOption that sets the client setting "provider".
-func WithProvider(value string) RequestOption {
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		r.Request.Header.Set("X-Provider", value)
-		return nil
-	})
-}
-
-// WithProviderKey returns a RequestOption that sets the client setting "provider_key".
-func WithProviderKey(value string) RequestOption {
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		r.Request.Header.Set("X-Provider-Key", value)
-		return nil
-	})
-}
-
-// WithProviderModel returns a RequestOption that sets the client setting "provider_model".
-func WithProviderModel(value string) RequestOption {
-	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		r.Request.Header.Set("X-Provider-Model", value)
-		return nil
-	})
-}

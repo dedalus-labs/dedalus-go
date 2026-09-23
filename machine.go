@@ -23,10 +23,10 @@ import (
 // with the API. You should not instantiate this service directly, and instead use
 // the [NewMachineService] method instead.
 type MachineService struct {
-	Options    []option.RequestOption
-	SSH        *MachineSSHService
-	Executions *MachineExecutionService
-	Terminals  *MachineTerminalService
+	Options      []option.RequestOption
+	SSH          *MachineSSHService
+	Executions   *MachineExecutionService
+	Autoresizing *MachineAutoresizingService
 }
 
 // NewMachineService generates a new service that applies the given options to each request.
@@ -37,7 +37,7 @@ func NewMachineService(opts ...option.RequestOption) (r *MachineService) {
 	r.Options = opts
 	r.SSH = NewMachineSSHService(opts...)
 	r.Executions = NewMachineExecutionService(opts...)
-	r.Terminals = NewMachineTerminalService(opts...)
+	r.Autoresizing = NewMachineAutoresizingService(opts...)
 	return
 }
 
@@ -284,6 +284,39 @@ func (r *MachineService) Wake(ctx context.Context, params MachineWakeParams, opt
 	}
 	path := fmt.Sprintf("v1/machines/%s/wake", url.PathEscape(params.MachineID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	return res, err
+}
+
+// Checkpoints files and replaces the runtime. The machine ID and filesystem are preserved. RAM, processes, and temporary mounts are cleared. Poll the machine until its phase is running. Retry the same Idempotency-Key after a lost response.
+//
+// Parameters:
+//
+//	ctx: Context for the request.
+//	body: MachineRebootParams request parameters.
+//	opts: Options to apply to this request.
+//
+// Returns:
+//
+//	*Machine: OK
+//
+// Example:
+//
+//	machine, err := client.Machines.Reboot(context.Background(), sdk.MachineRebootParams{
+//		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+//	})
+//	if err != nil {
+//		panic(err)
+//	}
+//
+//	fmt.Println(machine)
+func (r *MachineService) Reboot(ctx context.Context, body MachineRebootParams, opts ...option.RequestOption) (res *Machine, err error) {
+	opts = slices.Concat(r.Options, opts)
+	if body.MachineID == "" {
+		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v1/machines/%s/reboot", url.PathEscape(body.MachineID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
@@ -715,4 +748,22 @@ type MachineWakeParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
+}
+
+type MachineRebootParams struct {
+	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
+	// unchanged.
+	MachineID string `path:"machine_id" api:"required" json:"-"`
+	// Recover from the last committed filesystem checkpoint without guest cooperation.
+	// Unpublished file writes are lost. The default checkpoints files before
+	// rebooting.
+	Force param.Field[bool] `query:"force"`
+}
+
+// URLQuery serializes [MachineRebootParams]'s query parameters as `url.Values`.
+func (r MachineRebootParams) URLQuery() (v url.Values) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
 }

@@ -32,9 +32,6 @@ Provide credentials using the options below. Environment variables are read auto
 - `option.WithXAPIKey` (env: `DEDALUS_X_API_KEY`) — Dedalus API key for X-API-Key header authentication.
 - `option.WithAsBaseURL` (env: `DEDALUS_AS_URL`) — MCP Authorization Server URL.
 - `option.WithDedalusOrgID` (env: `DEDALUS_ORG_ID`) — Organization ID for request scoping.
-- `option.WithProvider` (env: `DEDALUS_PROVIDER`) — Provider name for BYOK mode.
-- `option.WithProviderKey` (env: `DEDALUS_PROVIDER_KEY`) — Provider API key for BYOK mode.
-- `option.WithProviderModel` (env: `DEDALUS_PROVIDER_MODEL`) — Model identifier for BYOK provider.
 
 ## Calling operations
 
@@ -52,7 +49,7 @@ import (
 
 func main() {
 	client := sdk.NewClient(
-		option.WithAPIKey(os.Getenv("DEDALUS_API_KEY")),
+		option.WithXAPIKey(os.Getenv("DEDALUS_X_API_KEY")),
 	)
 
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{

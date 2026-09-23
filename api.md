@@ -12,6 +12,7 @@ Complete reference of every operation, grouped by resource. See [the README](./R
   - [Destroy machine](#destroy-machine)
   - [Sleep a running machine](#sleep-a-running-machine)
   - [Wake a sleeping machine](#wake-a-sleeping-machine)
+  - [Reboot a machine with fresh memory](#reboot-a-machine-with-fresh-memory)
   - [`Machines Ssh`](#machines-ssh)
     - [List SSH sessions](#list-ssh-sessions)
     - [Create SSH session](#create-ssh-session)
@@ -24,6 +25,17 @@ Complete reference of every operation, grouped by resource. See [the README](./R
     - [Delete execution](#delete-execution)
     - [Get execution output](#get-execution-output)
     - [List execution events](#list-execution-events)
+    - [`Machines Executions Logs`](#machines-executions-logs)
+      - [Get execution log status](#get-execution-log-status)
+      - [Reauthorize execution log publication](#reauthorize-execution-log-publication)
+      - [Create execution log read token](#create-execution-log-read-token)
+  - [`Machines Autoresizing`](#machines-autoresizing)
+    - [Read this machine's RAM autoresizing settings](#read-this-machines-ram-autoresizing-settings)
+    - [Set this machine's RAM autoresizing settings](#set-this-machines-ram-autoresizing-settings)
+- [`Organization`](#organization)
+  - [`Organization Autoresizing`](#organization-autoresizing)
+    - [Read organization RAM autoresizing policy](#read-organization-ram-autoresizing-policy)
+    - [Set organization RAM autoresizing policy](#set-organization-ram-autoresizing-policy)
 
 ## Setup
 
@@ -168,6 +180,26 @@ if err != nil {
 }
 
 fmt.Println(machine.MachineID)
+```
+
+### Reboot a machine with fresh memory
+
+Checkpoints files and replaces the runtime. The machine ID and filesystem are preserved. RAM, processes, and temporary mounts are cleared. Poll the machine until its phase is running. Retry the same Idempotency-Key after a lost response.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachineRebootParams`](./machine.go) |
+| Response | [`Machine`](./machine.go) |
+
+```go
+machine, err := client.Machines.Reboot(context.Background(), sdk.MachineRebootParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(machine)
 ```
 
 ### `Machines Ssh`
@@ -364,4 +396,143 @@ if err != nil {
 }
 
 fmt.Println(page)
+```
+
+#### `Machines Executions Logs`
+
+##### Get execution log status
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachineExecutionLogGetParams`](./machineexecutionlog.go) |
+| Response | [`Status`](./machineexecutionlog.go) |
+
+```go
+log, err := client.Machines.Executions.Logs.Get(context.Background(), sdk.MachineExecutionLogGetParams{
+	ExecutionID: "executionID",
+	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(log)
+```
+
+##### Reauthorize execution log publication
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachineExecutionLogReauthorizeParams`](./machineexecutionlog.go) |
+| Response | [`Status`](./machineexecutionlog.go) |
+
+```go
+log, err := client.Machines.Executions.Logs.Reauthorize(context.Background(), sdk.MachineExecutionLogReauthorizeParams{
+	ExecutionID: "executionID",
+	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(log)
+```
+
+##### Create execution log read token
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachineExecutionLogNewTokenParams`](./machineexecutionlog.go) |
+| Response | [`ReadToken`](./machineexecutionlog.go) |
+
+```go
+log, err := client.Machines.Executions.Logs.NewToken(context.Background(), sdk.MachineExecutionLogNewTokenParams{
+	ExecutionID: "executionID",
+	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(log)
+```
+
+### `Machines Autoresizing`
+
+#### Read this machine's RAM autoresizing settings
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachineAutoresizingGetParams`](./machineautoresizing.go) |
+| Response | [`Settings`](./machineautoresizing.go) |
+
+```go
+autoresizing, err := client.Machines.Autoresizing.Get(context.Background(), sdk.MachineAutoresizingGetParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(autoresizing)
+```
+
+#### Set this machine's RAM autoresizing settings
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachineAutoresizingUpdateParams`](./machineautoresizing.go) |
+| Response | [`Settings`](./machineautoresizing.go) |
+
+```go
+autoresizing, err := client.Machines.Autoresizing.Update(context.Background(), sdk.MachineAutoresizingUpdateParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	Settings: sdk.SettingsParam{
+		Enabled: sdk.F[bool](false),
+	},
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(autoresizing)
+```
+
+## `Organization`
+
+### `Organization Autoresizing`
+
+#### Read organization RAM autoresizing policy
+
+| Direction | Type |
+| --- | --- |
+| Response | [`Policy`](./organizationautoresizing.go) |
+
+```go
+autoresizing, err := client.Organization.Autoresizing.Get(context.Background())
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(autoresizing)
+```
+
+#### Set organization RAM autoresizing policy
+
+| Direction | Type |
+| --- | --- |
+| Request | [`OrganizationAutoresizingUpdateParams`](./organizationautoresizing.go) |
+| Response | [`Policy`](./organizationautoresizing.go) |
+
+```go
+autoresizing, err := client.Organization.Autoresizing.Update(context.Background(), sdk.OrganizationAutoresizingUpdateParams{
+	Policy: sdk.PolicyParam{
+		Enabled: sdk.F[bool](false),
+	},
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(autoresizing)
 ```

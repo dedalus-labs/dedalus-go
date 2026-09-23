@@ -47,7 +47,7 @@ import (
 
 func main() {
 	client := sdk.NewClient(
-		option.WithAPIKey(os.Getenv("DEDALUS_API_KEY")),
+		option.WithXAPIKey(os.Getenv("DEDALUS_X_API_KEY")),
 	)
 
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
@@ -82,15 +82,11 @@ Pass credentials to the generated client constructor. Environment variables are 
 | `option.WithXAPIKey` | `string \| provider` | - | Dedalus API key for X-API-Key header authentication. Defaults to DEDALUS_X_API_KEY. |
 | `option.WithAsBaseURL` | `string \| provider` | - | MCP Authorization Server URL. Defaults to DEDALUS_AS_URL. |
 | `option.WithDedalusOrgID` | `string \| provider` | - | Organization ID for request scoping. Defaults to DEDALUS_ORG_ID. |
-| `option.WithProvider` | `string \| provider` | - | Provider name for BYOK mode. Defaults to DEDALUS_PROVIDER. |
-| `option.WithProviderKey` | `string \| provider` | - | Provider API key for BYOK mode. Defaults to DEDALUS_PROVIDER_KEY. |
-| `option.WithProviderModel` | `string \| provider` | - | Model identifier for BYOK provider. Defaults to DEDALUS_PROVIDER_MODEL. |
 
 Declared schemes:
 
 - `ApiKeyAuth` API key in header `x-api-key`
 - `BearerAuth` bearer token
-- `Bearer` bearer token
 
 <br />
 
@@ -142,9 +138,6 @@ client := sdk.NewClient(
 | `option.WithXAPIKey` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_X_API_KEY")` | Dedalus API key for X-API-Key header authentication. |
 | `option.WithAsBaseURL` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_AS_URL")` | MCP Authorization Server URL. |
 | `option.WithDedalusOrgID` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_ORG_ID")` | Organization ID for request scoping. |
-| `option.WithProvider` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_PROVIDER")` | Provider name for BYOK mode. |
-| `option.WithProviderKey` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_PROVIDER_KEY")` | Provider API key for BYOK mode. |
-| `option.WithProviderModel` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_PROVIDER_MODEL")` | Model identifier for BYOK provider. |
 | `option.WithEnvironmentProduction` | `func() option.RequestOption` | - | Select the production API environment. |
 | `option.WithBaseURL` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_BASE_URL")` | Override the default API base URL. |
 | `option.WithRequestTimeout` | `func(time.Duration) option.RequestOption` | - | Maximum time to wait for each request attempt. |
