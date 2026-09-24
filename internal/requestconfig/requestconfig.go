@@ -197,7 +197,8 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	}
 	if method != http.MethodGet {
 		// Note this can be overridden with `option.WithHeader("Idempotency-Key", myIdempotencyKey)`
-		req.Header.Set("Idempotency-Key", "scalar-go-"+uuid.New().String())
+		// @custom: The API requires compact UUIDv7 retry keys.
+		req.Header.Set("Idempotency-Key", strings.ReplaceAll(uuid.Must(uuid.NewV7()).String(), "-", ""))
 	}
 
 	cfg := RequestConfig{
@@ -664,7 +665,7 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 	// replay (e.g. body-cursor pagination over POST). GET requests never carry a
 	// key (see NewRequestConfig), so there is nothing to refresh.
 	if req.Method != http.MethodGet {
-		new.Request.Header.Set("Idempotency-Key", "scalar-go-"+uuid.New().String())
+		new.Request.Header.Set("Idempotency-Key", strings.ReplaceAll(uuid.Must(uuid.NewV7()).String(), "-", ""))
 	}
 
 	return new
