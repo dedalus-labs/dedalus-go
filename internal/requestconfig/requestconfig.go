@@ -1,4 +1,4 @@
-// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+// File generated from our OpenAPI spec by Scalar. See README.md for details.
 
 package requestconfig
 
@@ -7,6 +7,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"math"
 	"math/rand"
@@ -22,7 +23,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/internal/apierror"
 	"github.com/dedalus-labs/dedalus-go/internal/apiform"
 	"github.com/dedalus-labs/dedalus-go/internal/apiquery"
-	"github.com/google/uuid"
+	"github.com/dedalus-labs/dedalus-go/internal/param"
 )
 
 func getDefaultHeaders() map[string]string {
@@ -69,12 +70,12 @@ func getNormalizedArchitecture() string {
 
 func getPlatformProperties() map[string]string {
 	return map[string]string{
-		"X-Stainless-Lang":            "go",
-		"X-Stainless-Package-Version": internal.PackageVersion,
-		"X-Stainless-OS":              getNormalizedOS(),
-		"X-Stainless-Arch":            getNormalizedArchitecture(),
-		"X-Stainless-Runtime":         "go",
-		"X-Stainless-Runtime-Version": runtime.Version(),
+		"X-Scalar-Lang":            "go",
+		"X-Scalar-Package-Version": internal.PackageVersion,
+		"X-Scalar-OS":              getNormalizedOS(),
+		"X-Scalar-Arch":            getNormalizedArchitecture(),
+		"X-Scalar-Runtime":         "go",
+		"X-Scalar-Runtime-Version": runtime.Version(),
 	}
 }
 
@@ -88,7 +89,35 @@ type PreRequestOptionFunc func(*RequestConfig) error
 func (s RequestOptionFunc) Apply(r *RequestConfig) error    { return s(r) }
 func (s PreRequestOptionFunc) Apply(r *RequestConfig) error { return s(r) }
 
-func NewRequestConfig(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) (*RequestConfig, error) {
+// firstDotSegment reports the first `.` or `..` segment in a request path, if any.
+//
+// These are RFC 3986 dot-segments. BaseURL.Parse below resolves the path as a reference
+// against the base, which applies remove_dot_segments and walks up — so a path param
+// carrying `..` retargets the request at a different endpoint no matter how the rest of
+// it is escaped. url.PathEscape does not encode `.`, and PathEscapeReserved deliberately
+// keeps `/`, so neither escaper stops this on its own.
+//
+// The query and fragment are excluded: only the path participates in dot-segment removal,
+// and a `..` inside a query value is an ordinary character.
+func firstDotSegment(path string) (string, bool) {
+	if index := strings.IndexAny(path, "?#"); index >= 0 {
+		path = path[:index]
+	}
+	for _, segment := range strings.Split(path, "/") {
+		if segment == "." || segment == ".." {
+			return segment, true
+		}
+	}
+	return "", false
+}
+
+func NewRequestConfig(ctx context.Context, method string, u string, body interface{}, dst interface{}, opts ...RequestOption) (*RequestConfig, error) {
+	// Reject before any request state is built: a dot-segment cannot be escaped into safety,
+	// so the only correct handling is to refuse the call rather than send it somewhere else.
+	if segment, found := firstDotSegment(u); found {
+		return nil, fmt.Errorf("path %q contains a %q segment, which would resolve to a different path", u, segment)
+	}
+
 	var reader io.Reader
 
 	contentType := "application/json"
@@ -116,11 +145,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	}
 	if body, ok := body.(apiquery.Queryer); ok {
 		hasSerializationFunc = true
-		q, err := body.URLQuery()
-		if err != nil {
-			return nil, err
-		}
-		params := q.Encode()
+		params := body.URLQuery().Encode()
 		if params != "" {
 			parsed, _ := url.Parse(u)
 			if parsed.RawQuery != "" {
@@ -159,13 +184,10 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	if reader != nil {
 		req.Header.Set("Content-Type", contentType)
 	}
-	if method != http.MethodGet {
-		// Note this can be overridden with `WithHeader("Idempotency-Key", myIdempotencyKey)`
-		req.Header.Set("Idempotency-Key", "stainless-go-"+uuid.New().String())
-	}
+
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("X-Stainless-Retry-Count", "0")
-	req.Header.Set("X-Stainless-Timeout", "0")
+	req.Header.Set("X-Scalar-Retry-Count", "0")
+	req.Header.Set("X-Scalar-Timeout", "0")
 	for k, v := range getDefaultHeaders() {
 		req.Header.Add(k, v)
 	}
@@ -173,6 +195,12 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	for k, v := range getPlatformProperties() {
 		req.Header.Add(k, v)
 	}
+	if method != http.MethodGet {
+		// Note this can be overridden with `option.WithHeader("Idempotency-Key", myIdempotencyKey)`
+		// @custom: The API requires compact UUIDv7 retry keys.
+		req.Header.Set("Idempotency-Key", strings.ReplaceAll(uuid.Must(uuid.NewV7()).String(), "-", ""))
+	}
+
 	cfg := RequestConfig{
 		MaxRetries: 2,
 		Context:    ctx,
@@ -189,15 +217,22 @@ func NewRequestConfig(ctx context.Context, method string, u string, body any, ds
 	// This must run after `cfg.Apply(...)` above in case the request timeout gets modified. We also only
 	// apply our own logic for it if it's still "0" from above. If it's not, then it was deleted or modified
 	// by the user and we should respect that.
-	if req.Header.Get("X-Stainless-Timeout") == "0" {
+	if req.Header.Get("X-Scalar-Timeout") == "0" {
 		if cfg.RequestTimeout == time.Duration(0) {
-			req.Header.Del("X-Stainless-Timeout")
+			req.Header.Del("X-Scalar-Timeout")
 		} else {
-			req.Header.Set("X-Stainless-Timeout", strconv.Itoa(int(cfg.RequestTimeout.Seconds())))
+			req.Header.Set("X-Scalar-Timeout", strconv.Itoa(int(cfg.RequestTimeout.Seconds())))
 		}
 	}
 
 	return &cfg, nil
+}
+
+func UseDefaultParam[T any](dst *param.Field[T], src *T) {
+	if !dst.Present && src != nil {
+		dst.Value = *src
+		dst.Present = true
+	}
 }
 
 // This interface is primarily used to describe an [*http.Client], but also
@@ -223,12 +258,10 @@ type RequestConfig struct {
 	HTTPClient     *http.Client
 	Middlewares    []middleware
 	APIKey         string
-	XAPIKey        string
-	DedalusOrgID   string
 	// If ResponseBodyInto not nil, then we will attempt to deserialize into
 	// ResponseBodyInto. If Destination is a []byte, then it will return the body as
 	// is.
-	ResponseBodyInto any
+	ResponseBodyInto interface{}
 	// ResponseInto copies the \*http.Response of the corresponding request into the
 	// given address
 	ResponseInto **http.Response
@@ -429,7 +462,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 	}
 
 	// Don't send the current retry count in the headers if the caller modified the header defaults.
-	shouldSendRetryCount := cfg.Request.Header.Get("X-Stainless-Retry-Count") == "0"
+	shouldSendRetryCount := cfg.Request.Header.Get("X-Scalar-Retry-Count") == "0"
 
 	var res *http.Response
 	var cancel context.CancelFunc
@@ -447,7 +480,7 @@ func (cfg *RequestConfig) Execute() (err error) {
 
 		req := cfg.Request.Clone(ctx)
 		if shouldSendRetryCount {
-			req.Header.Set("X-Stainless-Retry-Count", strconv.Itoa(retryCount))
+			req.Header.Set("X-Scalar-Retry-Count", strconv.Itoa(retryCount))
 		}
 
 		res, err = handler(req)
@@ -536,6 +569,9 @@ func (cfg *RequestConfig) Execute() (err error) {
 	if err != nil {
 		return fmt.Errorf("error reading response body: %w", err)
 	}
+	if len(contents) == 0 {
+		return nil
+	}
 
 	// If we are not json, return plaintext
 	contentType := res.Header.Get("content-type")
@@ -550,6 +586,9 @@ func (cfg *RequestConfig) Execute() (err error) {
 			*dst = &tmp
 		case *[]byte:
 			*dst = contents
+		case **[]byte:
+			tmp := contents
+			*dst = &tmp
 		default:
 			return fmt.Errorf("expected destination type of 'string' or '[]byte' for responses with content-type '%s' that is not 'application/json'", contentType)
 		}
@@ -560,6 +599,9 @@ func (cfg *RequestConfig) Execute() (err error) {
 	// If the response happens to be a byte array, deserialize the body as-is.
 	case *[]byte:
 		*dst = contents
+	case **[]byte:
+		tmp := contents
+		*dst = &tmp
 	default:
 		err = json.NewDecoder(bytes.NewReader(contents)).Decode(cfg.ResponseBodyInto)
 		if err != nil {
@@ -570,7 +612,25 @@ func (cfg *RequestConfig) Execute() (err error) {
 	return nil
 }
 
-func ExecuteNewRequest(ctx context.Context, method string, u string, body any, dst any, opts ...RequestOption) error {
+// PathEscapeReserved percent-encodes a path parameter while leaving `/` intact,
+// implementing RFC 6570 reserved expansion (`{+var}`) for parameters the OpenAPI
+// document flags with `allowReserved` — typically a file path or object key.
+//
+// The slash is part of the route shape for these values: `docs/example.txt` must
+// stay nested under `.../files/docs/example.txt` rather than collapsing into a
+// single `docs%2Fexample.txt` segment that addresses a different backend path.
+// Every `/`-separated segment still goes through url.PathEscape, so all other
+// URL-significant characters are encoded by exactly the same rules as a plain
+// path param and a reserved value cannot smuggle in `?` or `#`.
+func PathEscapeReserved(value string) string {
+	segments := strings.Split(value, "/")
+	for i, segment := range segments {
+		segments[i] = url.PathEscape(segment)
+	}
+	return strings.Join(segments, "/")
+}
+
+func ExecuteNewRequest(ctx context.Context, method string, u string, body interface{}, dst interface{}, opts ...RequestOption) error {
 	cfg, err := NewRequestConfig(ctx, method, u, body, dst, opts...)
 	if err != nil {
 		return err
@@ -599,10 +659,15 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 		HTTPClient:     cfg.HTTPClient,
 		Middlewares:    cfg.Middlewares,
 		APIKey:         cfg.APIKey,
-		XAPIKey:        cfg.XAPIKey,
-		DedalusOrgID:   cfg.DedalusOrgID,
 	}
-	new.Request.Header.Set("Idempotency-Key", "stainless-go-"+uuid.New().String())
+	// Request.Clone copies headers, so a non-GET clone would otherwise reuse the
+	// original idempotency key and the server would dedupe the next request as a
+	// replay (e.g. body-cursor pagination over POST). GET requests never carry a
+	// key (see NewRequestConfig), so there is nothing to refresh.
+	if req.Method != http.MethodGet {
+		new.Request.Header.Set("Idempotency-Key", strings.ReplaceAll(uuid.Must(uuid.NewV7()).String(), "-", ""))
+	}
+
 	return new
 }
 
