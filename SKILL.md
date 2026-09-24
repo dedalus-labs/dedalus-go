@@ -31,7 +31,7 @@ Provide credentials using the options below. Environment variables are read auto
 - `option.WithAPIKey` (env: `DEDALUS_API_KEY`) — Dedalus API key for Bearer token authentication.
 - `option.WithXAPIKey` (env: `DEDALUS_X_API_KEY`) — Dedalus API key for X-API-Key header authentication.
 - `option.WithAsBaseURL` (env: `DEDALUS_AS_URL`) — MCP Authorization Server URL.
-- `option.WithDedalusOrgID` (env: `DEDALUS_ORG_ID`) — Organization ID for request scoping.
+- `option.WithDedalusOrgID` (env: `DEDALUS_ORG_ID`) — Optional organization assertion. Must match the organization identified by the API credential.
 
 ## Calling operations
 

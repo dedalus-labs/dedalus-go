@@ -286,7 +286,7 @@ func WithAsBaseURL(value string) RequestOption {
 // WithDedalusOrgID returns a RequestOption that sets the client setting "dedalus_org_id".
 func WithDedalusOrgID(value string) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		_ = value
+		r.Request.Header.Set("X-Dedalus-Org-Id", value)
 		return nil
 	})
 }

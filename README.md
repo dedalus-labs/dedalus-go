@@ -81,7 +81,7 @@ Pass credentials to the generated client constructor. Environment variables are 
 | `option.WithAPIKey` | `string \| provider` | - | Dedalus API key for Bearer token authentication. Defaults to DEDALUS_API_KEY. |
 | `option.WithXAPIKey` | `string \| provider` | - | Dedalus API key for X-API-Key header authentication. Defaults to DEDALUS_X_API_KEY. |
 | `option.WithAsBaseURL` | `string \| provider` | - | MCP Authorization Server URL. Defaults to DEDALUS_AS_URL. |
-| `option.WithDedalusOrgID` | `string \| provider` | - | Organization ID for request scoping. Defaults to DEDALUS_ORG_ID. |
+| `option.WithDedalusOrgID` | `string \| provider` | - | Optional organization assertion. Must match the organization identified by the API credential. Defaults to DEDALUS_ORG_ID. |
 
 Declared schemes:
 
@@ -137,7 +137,7 @@ client := sdk.NewClient(
 | `option.WithAPIKey` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_API_KEY")` | Dedalus API key for Bearer token authentication. |
 | `option.WithXAPIKey` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_X_API_KEY")` | Dedalus API key for X-API-Key header authentication. |
 | `option.WithAsBaseURL` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_AS_URL")` | MCP Authorization Server URL. |
-| `option.WithDedalusOrgID` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_ORG_ID")` | Organization ID for request scoping. |
+| `option.WithDedalusOrgID` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_ORG_ID")` | Optional organization assertion. Must match the organization identified by the API credential. |
 | `option.WithEnvironmentProduction` | `func() option.RequestOption` | - | Select the production API environment. |
 | `option.WithBaseURL` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_BASE_URL")` | Override the default API base URL. |
 | `option.WithRequestTimeout` | `func(time.Duration) option.RequestOption` | - | Maximum time to wait for each request attempt. |
