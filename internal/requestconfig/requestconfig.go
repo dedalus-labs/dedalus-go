@@ -5,9 +5,9 @@ package requestconfig
 import (
 	"bytes"
 	"context"
+	cryptorand "crypto/rand"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"math"
 	"math/rand"
@@ -18,6 +18,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/dedalus-labs/dedalus-go/internal"
 	"github.com/dedalus-labs/dedalus-go/internal/apierror"
@@ -191,7 +193,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	for k, v := range getDefaultHeaders() {
 		req.Header.Add(k, v)
 	}
-
+	req.Header.Set("X-SDK-Version", "1.0.0")
 	for k, v := range getPlatformProperties() {
 		req.Header.Add(k, v)
 	}
@@ -258,6 +260,10 @@ type RequestConfig struct {
 	HTTPClient     *http.Client
 	Middlewares    []middleware
 	APIKey         string
+	XAPIKey        string
+	AsBaseURL      string
+	DedalusOrgID   string
+	BrowserToken   string
 	// If ResponseBodyInto not nil, then we will attempt to deserialize into
 	// ResponseBodyInto. If Destination is a []byte, then it will return the body as
 	// is.
@@ -659,6 +665,10 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 		HTTPClient:     cfg.HTTPClient,
 		Middlewares:    cfg.Middlewares,
 		APIKey:         cfg.APIKey,
+		XAPIKey:        cfg.XAPIKey,
+		AsBaseURL:      cfg.AsBaseURL,
+		DedalusOrgID:   cfg.DedalusOrgID,
+		BrowserToken:   cfg.BrowserToken,
 	}
 	// Request.Clone copies headers, so a non-GET clone would otherwise reuse the
 	// original idempotency key and the server would dedupe the next request as a
@@ -669,6 +679,24 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 	}
 
 	return new
+}
+
+// newUUIDv4 returns a random (version 4) UUID in its canonical lowercase
+// 8-4-4-4-12 hex form, the value each idempotency key carries.
+func newUUIDv4() string {
+	var b [16]byte
+	// crypto/rand, not math/rand: a predictable key could collide with, or be
+	// guessed from, another request and be deduplicated as its replay.
+	if _, err := cryptorand.Read(b[:]); err != nil {
+		// The system randomness source failing is unrecoverable; panic rather than
+		// send a guessable key.
+		panic(err)
+	}
+	// RFC 9562: the high nibble of byte 6 is the version (4) and the top two bits
+	// of byte 8 are the variant (10).
+	b[6] = (b[6] & 0x0f) | 0x40
+	b[8] = (b[8] & 0x3f) | 0x80
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }
 
 func (cfg *RequestConfig) Apply(opts ...RequestOption) error {

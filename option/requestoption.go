@@ -166,12 +166,16 @@ func existingJSONBody(r *requestconfig.RequestConfig) ([]byte, error) {
 }
 
 // replaceJSONBody updates request bookkeeping so Execute sends the merged JSON body.
+// A content type already on the request is kept, since the body it describes (for example
+// one set with WithRequestBody) is the one the merge edited.
 func replaceJSONBody(r *requestconfig.RequestConfig, body []byte) {
 	r.Body = bytes.NewBuffer(body)
 	if r.Request == nil {
 		return
 	}
-	r.Request.Header.Set("Content-Type", "application/json")
+	if r.Request.Header.Get("Content-Type") == "" {
+		r.Request.Header.Set("Content-Type", "application/json")
+	}
 	r.Request.Body = nil
 	r.Request.GetBody = nil
 	r.Request.ContentLength = 0
@@ -194,10 +198,11 @@ func WithJSONSet(key string, value interface{}) RequestOption {
 }
 
 // WithJSONDel returns a RequestOption that deletes the body's JSON value associated with the key.
+// A request without a body has nothing to delete from and is left unchanged.
 func WithJSONDel(key string) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) (err error) {
 		body, err := existingJSONBody(r)
-		if err != nil {
+		if err != nil || body == nil {
 			return err
 		}
 		body, err = sjson.DeleteBytes(body, key)
@@ -262,23 +267,23 @@ func WithEnvironmentProduction() RequestOption {
 // WithAPIKey returns a RequestOption that sets the client setting "api_key".
 func WithAPIKey(value string) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		r.Request.Header.Set("Authorization", "Bearer "+value)
-		return nil
+		r.APIKey = value
+		return r.Apply(WithHeader("authorization", fmt.Sprintf("Bearer %s", r.APIKey)))
 	})
 }
 
 // WithXAPIKey returns a RequestOption that sets the client setting "x_api_key".
 func WithXAPIKey(value string) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		r.Request.Header.Set("x-api-key", value)
-		return nil
+		r.XAPIKey = value
+		return r.Apply(WithHeader("x-api-key", r.XAPIKey))
 	})
 }
 
 // WithAsBaseURL returns a RequestOption that sets the client setting "as_base_url".
 func WithAsBaseURL(value string) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		_ = value
+		r.AsBaseURL = value
 		return nil
 	})
 }
@@ -286,7 +291,15 @@ func WithAsBaseURL(value string) RequestOption {
 // WithDedalusOrgID returns a RequestOption that sets the client setting "dedalus_org_id".
 func WithDedalusOrgID(value string) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
-		r.Request.Header.Set("X-Dedalus-Org-Id", value)
-		return nil
+		r.DedalusOrgID = value
+		return r.Apply(WithHeader("X-Dedalus-Org-Id", value))
+	})
+}
+
+// WithBrowserToken returns a RequestOption that sets the client setting "browser_token".
+func WithBrowserToken(value string) RequestOption {
+	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
+		r.BrowserToken = value
+		return r.Apply(WithHeader("authorization", fmt.Sprintf("Bearer %s", r.BrowserToken)))
 	})
 }

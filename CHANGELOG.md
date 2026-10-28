@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.6.0...v0.7.0) (2026-10-28)
+
+
+### Features
+
+* **api:** add auth scheme BrowserAuth (+1 more change) ([27e40ad](https://github.com/dedalus-labs/dedalus-go/commit/27e40adccf636f9474c2b01a9d15c009309e0bb1))
+
+
+### Chores
+
+* **api:** update generated SDK content ([8d00f11](https://github.com/dedalus-labs/dedalus-go/commit/8d00f1184b70145f037eb34703417e9bc3072f6c))
+
 ## [0.6.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.5.0...v0.6.0) (2026-09-24)
 
 

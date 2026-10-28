@@ -32,6 +32,7 @@ Provide credentials using the options below. Environment variables are read auto
 - `option.WithXAPIKey` (env: `DEDALUS_X_API_KEY`) — Dedalus API key for X-API-Key header authentication.
 - `option.WithAsBaseURL` (env: `DEDALUS_AS_URL`) — MCP Authorization Server URL.
 - `option.WithDedalusOrgID` (env: `DEDALUS_ORG_ID`) — Optional organization assertion. Must match the organization identified by the API credential.
+- `option.WithBrowserToken` (env: `DEDALUS_BROWSER_TOKEN`) — Browser session access token managed by dedalus login.
 
 ## Calling operations
 
@@ -49,7 +50,7 @@ import (
 
 func main() {
 	client := sdk.NewClient(
-		option.WithXAPIKey(os.Getenv("DEDALUS_X_API_KEY")),
+		option.WithBrowserToken(os.Getenv("DEDALUS_BROWSER_TOKEN")),
 	)
 
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
@@ -72,15 +73,31 @@ Method names, parameter shapes, and response types are generated from the API de
 
 ## Pagination
 
-List endpoints return paginated results you can iterate directly; the SDK fetches subsequent pages for you.
+Paginated list methods return one page per call. A method that returns a page type has a sibling `<Method>AutoPaging` method returning an iterator that fetches the next page as the loop reaches it:
+
+```go
+iter := client.Machines.ListAutoPaging(context.Background(), sdk.MachineListParams{})
+for iter.Next() {
+	fmt.Printf("%+v\n", iter.Current())
+}
+if err := iter.Err(); err != nil {
+	panic(err)
+}
+```
+
+To walk the pages yourself, range over the page's items and advance it with `GetNextPage()`, which returns a nil page after the last one:
 
 ```go
 page, err := client.Machines.List(context.Background(), sdk.MachineListParams{})
+for page != nil {
+	for _, item := range page.Items {
+		fmt.Printf("%+v\n", item)
+	}
+	page, err = page.GetNextPage()
+}
 if err != nil {
 	panic(err)
 }
-
-fmt.Println(page)
 ```
 
 ## Error handling
@@ -99,7 +116,7 @@ machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 if err != nil {
 	var apiErr *sdk.Error
 	if errors.As(err, &apiErr) {
-		fmt.Println(apiErr.StatusCode, apiErr.RawJSON())
+		fmt.Println(apiErr.StatusCode, apiErr.JSON.RawJSON())
 	}
 	panic(err)
 }

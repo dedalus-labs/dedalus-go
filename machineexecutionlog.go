@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
 )
@@ -58,12 +57,12 @@ func NewMachineExecutionLogService(opts ...option.RequestOption) (r *MachineExec
 //	fmt.Println(log)
 func (r *MachineExecutionLogService) Get(ctx context.Context, params MachineExecutionLogGetParams, opts ...option.RequestOption) (res *Status, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.ExecutionID == "" {
-		err = errors.New("missing required execution_id parameter")
-		return nil, err
-	}
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	if params.ExecutionID == "" {
+		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/machines/%s/executions/%s/logs", url.PathEscape(params.MachineID), url.PathEscape(params.ExecutionID))
@@ -96,12 +95,12 @@ func (r *MachineExecutionLogService) Get(ctx context.Context, params MachineExec
 //	fmt.Println(log)
 func (r *MachineExecutionLogService) Reauthorize(ctx context.Context, params MachineExecutionLogReauthorizeParams, opts ...option.RequestOption) (res *Status, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.ExecutionID == "" {
-		err = errors.New("missing required execution_id parameter")
-		return nil, err
-	}
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	if params.ExecutionID == "" {
+		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/machines/%s/executions/%s/logs/reauthorize", url.PathEscape(params.MachineID), url.PathEscape(params.ExecutionID))
@@ -134,12 +133,12 @@ func (r *MachineExecutionLogService) Reauthorize(ctx context.Context, params Mac
 //	fmt.Println(log)
 func (r *MachineExecutionLogService) NewToken(ctx context.Context, params MachineExecutionLogNewTokenParams, opts ...option.RequestOption) (res *ReadToken, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.ExecutionID == "" {
-		err = errors.New("missing required execution_id parameter")
-		return nil, err
-	}
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	if params.ExecutionID == "" {
+		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/machines/%s/executions/%s/logs/token", url.PathEscape(params.MachineID), url.PathEscape(params.ExecutionID))
@@ -246,17 +245,6 @@ func (r StatusPublicationState) IsKnown() bool {
 		return true
 	}
 	return false
-}
-
-type StatusPublicationParam struct {
-	Complete       param.Field[bool]                   `json:"complete" api:"required"`
-	QueuedMessages param.Field[int64]                  `json:"queued_messages" api:"required"`
-	State          param.Field[StatusPublicationState] `json:"state" api:"required"`
-	Code           param.Field[string]                 `json:"code"`
-}
-
-func (r StatusPublicationParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 type MachineExecutionLogGetParams struct {

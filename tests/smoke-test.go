@@ -19,7 +19,7 @@ import (
 // Smoke test: calls every generated operation once to confirm the SDK can reach each endpoint.
 // Run it from this repo with `go run tests/smoke-test.go`. The generator also runs this file
 // against a mock server and reads the JSON report produced via SCALAR_SMOKE_REPORT.
-var client = sdk.NewClient(option.WithAPIKey("test"), option.WithXAPIKey("test"), option.WithAsBaseURL("test"), option.WithDedalusOrgID("test"), option.WithHeader("x-api-key", "test"), option.WithHeader("Authorization", "Bearer test"), option.WithMaxRetries(2), option.WithRequestTimeout(10*time.Second))
+var client = sdk.NewClient(option.WithAPIKey("test"), option.WithXAPIKey("test"), option.WithAsBaseURL("test"), option.WithDedalusOrgID("test"), option.WithBrowserToken("test"), option.WithHeader("x-api-key", "test"), option.WithHeader("Authorization", "Bearer test"), option.WithHeader("Authorization", "Bearer test"), option.WithMaxRetries(2), option.WithRequestTimeout(10*time.Second))
 
 type smokeResult struct {
 	Operation  string `json:"operation"`
