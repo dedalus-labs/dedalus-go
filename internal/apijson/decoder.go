@@ -631,10 +631,9 @@ func (d *decoderBuilder) newTimeTypeDecoder(t reflect.Type) decoderFunc {
 			return nil
 		}
 
-		if guardStrict(state, true) {
-			return err
-		}
-
+		// A value in one of the fallback layouts below is still a timestamp, so
+		// the layouts are tried in strict mode too. Strict mode only decides which
+		// error a value that matches none of them returns.
 		layouts := []string{
 			"2006-01-02",
 			"2006-01-02T15:04:05Z07:00",
@@ -648,9 +647,18 @@ func (d *decoderBuilder) newTimeTypeDecoder(t reflect.Type) decoderFunc {
 		for _, layout := range layouts {
 			parsed, err := time.Parse(layout, n.Str)
 			if err == nil {
+				// Outside strict mode a fallback layout ranks as a loose match, so a
+				// union prefers a variant that decoded the value exactly.
+				if !state.strict {
+					state.exactness = loose
+				}
 				v.Set(reflect.ValueOf(parsed).Convert(t))
 				return nil
 			}
+		}
+
+		if guardStrict(state, true) {
+			return err
 		}
 
 		return fmt.Errorf("unable to leniently parse date-time string: %s", n.Str)

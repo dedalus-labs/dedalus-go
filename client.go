@@ -43,6 +43,9 @@ func DefaultClientOptions() []option.RequestOption {
 	if o, ok := os.LookupEnv("DEDALUS_ORG_ID"); ok {
 		defaults = append(defaults, option.WithDedalusOrgID(o))
 	}
+	if o, ok := os.LookupEnv("DEDALUS_BROWSER_TOKEN"); ok {
+		defaults = append(defaults, option.WithBrowserToken(o))
+	}
 	if o, ok := os.LookupEnv("DEDALUS_CUSTOM_HEADERS"); ok {
 		for _, line := range strings.Split(o, "\n") {
 			colon := strings.Index(line, ":")

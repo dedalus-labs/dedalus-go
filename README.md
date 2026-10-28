@@ -47,7 +47,7 @@ import (
 
 func main() {
 	client := sdk.NewClient(
-		option.WithXAPIKey(os.Getenv("DEDALUS_X_API_KEY")),
+		option.WithBrowserToken(os.Getenv("DEDALUS_BROWSER_TOKEN")),
 	)
 
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
@@ -78,15 +78,17 @@ Pass credentials to the generated client constructor. Environment variables are 
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `option.WithAPIKey` | `string \| provider` | - | Dedalus API key for Bearer token authentication. Defaults to DEDALUS_API_KEY. |
-| `option.WithXAPIKey` | `string \| provider` | - | Dedalus API key for X-API-Key header authentication. Defaults to DEDALUS_X_API_KEY. |
-| `option.WithAsBaseURL` | `string \| provider` | - | MCP Authorization Server URL. Defaults to DEDALUS_AS_URL. |
-| `option.WithDedalusOrgID` | `string \| provider` | - | Optional organization assertion. Must match the organization identified by the API credential. Defaults to DEDALUS_ORG_ID. |
+| `option.WithAPIKey` | `func(string) option.RequestOption` | - | Dedalus API key for Bearer token authentication. Defaults to DEDALUS_API_KEY. |
+| `option.WithXAPIKey` | `func(string) option.RequestOption` | - | Dedalus API key for X-API-Key header authentication. Defaults to DEDALUS_X_API_KEY. |
+| `option.WithAsBaseURL` | `func(string) option.RequestOption` | - | MCP Authorization Server URL. Defaults to DEDALUS_AS_URL. |
+| `option.WithDedalusOrgID` | `func(string) option.RequestOption` | - | Optional organization assertion. Must match the organization identified by the API credential. Defaults to DEDALUS_ORG_ID. |
+| `option.WithBrowserToken` | `func(string) option.RequestOption` | - | Browser session access token managed by dedalus login. Defaults to DEDALUS_BROWSER_TOKEN. |
 
 Declared schemes:
 
 - `ApiKeyAuth` API key in header `x-api-key`
 - `BearerAuth` bearer token
+- `BrowserAuth` OAuth2/OpenID Connect
 
 <br />
 
@@ -106,7 +108,7 @@ machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 if err != nil {
 	var apiErr *sdk.Error
 	if errors.As(err, &apiErr) {
-		fmt.Println(apiErr.StatusCode, apiErr.RawJSON())
+		fmt.Println(apiErr.StatusCode, apiErr.JSON.RawJSON())
 	}
 	panic(err)
 }
@@ -138,6 +140,7 @@ client := sdk.NewClient(
 | `option.WithXAPIKey` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_X_API_KEY")` | Dedalus API key for X-API-Key header authentication. |
 | `option.WithAsBaseURL` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_AS_URL")` | MCP Authorization Server URL. |
 | `option.WithDedalusOrgID` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_ORG_ID")` | Optional organization assertion. Must match the organization identified by the API credential. |
+| `option.WithBrowserToken` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_BROWSER_TOKEN")` | Browser session access token managed by dedalus login. |
 | `option.WithEnvironmentProduction` | `func() option.RequestOption` | - | Select the production API environment. |
 | `option.WithBaseURL` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_BASE_URL")` | Override the default API base URL. |
 | `option.WithRequestTimeout` | `func(time.Duration) option.RequestOption` | - | Maximum time to wait for each request attempt. |
@@ -166,15 +169,31 @@ Generated clients support request timeouts and retry temporary failures such as 
 
 ## Pagination
 
-List endpoints return paginated results you can iterate directly; the SDK fetches subsequent pages for you.
+Paginated list methods return one page per call. A method that returns a page type has a sibling `<Method>AutoPaging` method returning an iterator that fetches the next page as the loop reaches it:
+
+```go
+iter := client.Machines.ListAutoPaging(context.Background(), sdk.MachineListParams{})
+for iter.Next() {
+	fmt.Printf("%+v\n", iter.Current())
+}
+if err := iter.Err(); err != nil {
+	panic(err)
+}
+```
+
+To walk the pages yourself, range over the page's items and advance it with `GetNextPage()`, which returns a nil page after the last one:
 
 ```go
 page, err := client.Machines.List(context.Background(), sdk.MachineListParams{})
+for page != nil {
+	for _, item := range page.Items {
+		fmt.Printf("%+v\n", item)
+	}
+	page, err = page.GetNextPage()
+}
 if err != nil {
 	panic(err)
 }
-
-fmt.Println(page)
 ```
 
 <br />
@@ -182,7 +201,7 @@ fmt.Println(page)
 ## Helpers
 
 - Pass `option.WithResponseInto(&raw)` to capture the underlying `*http.Response` for a request.
-- Use the generated `String`, `Int`, `Bool`, `Float`, `Time`, `Opt`, and `Ptr` helpers when setting optional params.
+- Use the generated `F`, `Null`, `Raw`, `Int`, `String`, `Float`, `Bool`, and `FileParam` helpers when setting optional params.
 
 <br />
 

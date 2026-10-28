@@ -11,13 +11,17 @@ permissions:
   contents: read
 
 jobs:
+  # Runs on the latest stable release: that is the toolchain consumers should build with, and it
+  # still receives standard-library security fixes after the declared floor ages out of support.
+  # Two named jobs rather than a matrix so `verify` keeps the check name branch protection may
+  # already require.
   verify:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.22"
+          go-version: stable
       - run: go build ./...
       - run: go vet ./...
       # Verification only, never auto-fix: the SDK is generated gofmt-clean, so a listed file means
@@ -29,3 +33,15 @@ jobs:
           if [ -n "$unformatted" ]; then
             echo "::error::gofmt would reformat:"; echo "$unformatted"; exit 1
           fi
+
+  # Proves the `go` line in go.mod is honest: the SDK still builds and vets on the oldest release
+  # it claims to support. Formatting is checked once, on `verify`.
+  verify-minimum:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: "1.22"
+      - run: go build ./...
+      - run: go vet ./...

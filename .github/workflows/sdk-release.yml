@@ -21,9 +21,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+      # The warm-up only resolves and downloads the module, so it needs no compatibility floor;
+      # the latest stable toolchain keeps it on a release that still receives security fixes.
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: "1.22"
+          go-version: stable
       # Go modules publish via the git tag itself — there is nothing to upload. This asks the
       # public Go module proxy for the just-tagged version so it is cached (and the release is
       # indexed on pkg.go.dev) immediately instead of on the first consumer's fetch. The module

@@ -611,38 +611,6 @@ func (r LifecycleStatusPhase) IsKnown() bool {
 	return false
 }
 
-type CreateParamsParam struct {
-	// Idle window before autosleep. Accepts fixed duration units like 30s, 30m, 2h,
-	// 7d3h4s, or 1w3d, raw seconds ("1800"), or never to disable.
-	Autosleep param.Field[string] `json:"autosleep"`
-	// Memory in MiB.
-	MemoryMib param.Field[int64] `json:"memory_mib"`
-	// Storage in GiB.
-	StorageGib param.Field[int64] `json:"storage_gib"`
-	// CPU in vCPUs.
-	Vcpu param.Field[float64] `json:"vcpu"`
-}
-
-func (r CreateParamsParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
-type UpdateParamsParam struct {
-	// Idle window before autosleep. Accepts fixed duration units like 30s, 30m, 2h,
-	// 7d3h4s, or 1w3d, raw seconds ("1800"), or never to disable.
-	Autosleep param.Field[string] `json:"autosleep"`
-	// Memory in MiB.
-	MemoryMib param.Field[int64] `json:"memory_mib"`
-	// Storage in GiB.
-	StorageGib param.Field[int64] `json:"storage_gib"`
-	// CPU in vCPUs.
-	Vcpu param.Field[float64] `json:"vcpu"`
-}
-
-func (r UpdateParamsParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 type MachineGetResponse struct {
 	// Seconds of inactivity before autosleep. 0 disables autosleep.
 	AutosleepSeconds int64                          `json:"autosleep_seconds" api:"required"`
