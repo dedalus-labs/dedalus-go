@@ -50,7 +50,7 @@ import (
 
 func main() {
 	client := sdk.NewClient(
-		option.WithAPIKey(os.Getenv("DEDALUS_API_KEY")),
+		option.WithBrowserToken(os.Getenv("DEDALUS_BROWSER_TOKEN")),
 	)
 
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
