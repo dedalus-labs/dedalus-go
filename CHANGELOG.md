@@ -1,5 +1,99 @@
 # Changelog
 
+## [0.6.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.5.0...v0.6.0) (2026-09-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **api:** 3 breaking changes to the SDK surface.
+    - Removed `bearer` auth scheme `Bearer`.
+    - Removed operation `machines.terminals.connect` (`GET /v1/machines/{machine_id}/terminals/{terminal_id}/stream`).
+    - Removed optional property `RetrieveResponseHeaders.ETag`.
+* **api:** 72 breaking changes to the SDK surface.
+    - Configuration of `bearer` auth scheme `BearerAuth` changed.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.list`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.create`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.retrieve`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.update`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.delete`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.sleep`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.wake`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.ssh.list`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.ssh.create`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.ssh.retrieve`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.ssh.delete`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.executions.list`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.executions.create`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.executions.retrieve`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.executions.delete`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.executions.output`.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.executions.events`.
+    - Serialization or defaults of path param `machine_id` on `machines.terminals.connect` changed.
+    - Serialization or defaults of path param `terminal_id` on `machines.terminals.connect` changed.
+    - Removed header param `X-Dedalus-Org-Id` from `machines.terminals.connect`.
+    - Removed operation `machines.watch` (`GET /v1/machines/{machine_id}/status/stream`).
+    - Removed operation `machines.network.retrieve` (`GET /v1/machines/{machine_id}/network`).
+    - Removed operation `machines.artifacts.list` (`GET /v1/machines/{machine_id}/artifacts`).
+    - Removed operation `machines.artifacts.retrieve` (`GET /v1/machines/{machine_id}/artifacts/{artifact_id}`).
+    - Removed operation `machines.artifacts.delete` (`DELETE /v1/machines/{machine_id}/artifacts/{artifact_id}`).
+    - Removed operation `machines.ports.list` (`GET /v1/machines/{machine_id}/ports`).
+    - Removed operation `machines.ports.create` (`POST /v1/machines/{machine_id}/ports`).
+    - Removed operation `machines.ports.retrieve` (`GET /v1/machines/{machine_id}/ports/{port_id}`).
+    - Removed operation `machines.ports.delete` (`DELETE /v1/machines/{machine_id}/ports/{port_id}`).
+    - Removed operation `machines.terminals.list` (`GET /v1/machines/{machine_id}/terminals`).
+    - Removed operation `machines.terminals.create` (`POST /v1/machines/{machine_id}/terminals`).
+    - Removed operation `machines.terminals.retrieve` (`GET /v1/machines/{machine_id}/terminals/{terminal_id}`).
+    - Removed operation `machines.terminals.delete` (`DELETE /v1/machines/{machine_id}/terminals/{terminal_id}`).
+    - Removed operation `networks.retrieve` (`GET /v1/networks/{network_id}`).
+    - Removed operation `usage.retrieve` (`GET /v1/usage`).
+    - Removed operation `usage.machineCompute` (`GET /v1/usage/machines/compute`).
+    - Removed operation `usage.machineStorage` (`GET /v1/usage/machines/storage`).
+    - Added required property `execution.log_capture`.
+    - Property `execution.machine_id` type changed from `string` to `string<uuid>`.
+    - Property `machine.machine_id` type changed from `string` to `string<uuid>`.
+    - Added required property `lifecycle_status.memory_configured_mib`.
+    - Property `machine_detail_response.machine_id` type changed from `string` to `string<uuid>`.
+    - Schema `machine_id_path_segment` shape changed.
+    - Property `machine_list_item.machine_id` type changed from `string` to `string<uuid>`.
+    - Property `ssh_session.machine_id` type changed from `string` to `string<uuid>`.
+    - Property `ssh_session.status` type changed from `enum(wake_in_progress | ready | closed | …)` to `enum(wake_in_progress | ssh_in_progress | ready | …)`.
+    - Removed optional property `CreateResponseHeaders.ETag`.
+    - Removed optional property `CreateResponseHeaders.X-Dedalus-Storage-Operation-Id`.
+    - Removed schema `artifact_list`.
+    - Removed schema `artifact`.
+    - Removed schema `port_create_params`.
+    - Removed schema `terminal_create_params`.
+    - Removed schema `machine_compute_usage`.
+    - Removed schema `machine_compute_usage_row`.
+    - Removed schema `machine_network`.
+    - Removed schema `machine_storage_usage`.
+    - Removed schema `machine_storage_usage_row`.
+    - Removed schema `network_gateway`.
+    - Removed schema `network`.
+    - Removed schema `port_list`.
+    - Removed schema `port`.
+    - Removed schema `terminal_client_event`.
+    - Removed schema `terminal_closed_event`.
+    - Removed schema `terminal_error_event`.
+    - Removed schema `terminal_input_event`.
+    - Removed schema `terminal_list`.
+    - Removed schema `terminal_output_event`.
+    - Removed schema `terminal_resize_event`.
+    - Removed schema `terminal`.
+    - Removed schema `terminal_server_event`.
+    - Removed schema `org_usage`.
+
+### Features
+
+* **api:** initial SDK generation ([9022c5d](https://github.com/dedalus-labs/dedalus-go/commit/9022c5da91f3c8cf9e3b9456032a54dbf19461d7))
+* **api:** remove auth scheme Bearer (+25 more changes) ([3cc365d](https://github.com/dedalus-labs/dedalus-go/commit/3cc365d036a91426924757459165fe9a931a22b1))
+* **api:** update auth scheme BearerAuth (+122 more changes) ([42e1cd5](https://github.com/dedalus-labs/dedalus-go/commit/42e1cd5dc56f30599748e0e0327dfbce774488dc))
+
+
+### Chores
+
+* **api:** update generated SDK content ([e8ebb95](https://github.com/dedalus-labs/dedalus-go/commit/e8ebb9529a06e4628cbd12b3d7e0054281fb1d4a))
+
 ## 0.5.0 (2026-09-01)
 
 Full Changelog: [v0.4.0...v0.5.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.4.0...v0.5.0)
