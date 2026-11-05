@@ -61,8 +61,18 @@ const (
 	// Some values had to fudged a bit, for example by converting a string to an
 	// int, or an enum with extra values.
 	loose exactness = iota
+	// Both extras and lenient at once. It ranks below either alone, so a variant
+	// that only has the extra fields still beats one that also needed a lenient
+	// spelling, as it would without the extra fields.
+	lenientExtras
 	// There are some extra arguments, but other wise it matches the union.
 	extras
+	// Every value has the right type, but one is in a lenient spelling, such as
+	// a timestamp in a fallback layout. It ranks below an exact match, so a
+	// plain string arm still wins such a value, and above loose and extras, so
+	// how a timestamp is spelled never outweighs an enum value that is unknown
+	// to a variant or fields a variant does not declare.
+	lenient
 	// Exactly right.
 	exact
 )
@@ -278,7 +288,13 @@ func (d *decoderBuilder) newUnionDecoder(t reflect.Type) decoderFunc {
 			return errors.New("apijson: was not able to coerce type as union")
 		}
 
-		if guardStrict(state, bestExactness != exact) {
+		// A union whose best variant only needed a lenient spelling passes that
+		// rank up through [markLenient], so an enclosing union still ranks the
+		// variant holding it above one that ranks loose. Any other inexact pick
+		// ranks the enclosing value loose.
+		if bestExactness == lenient {
+			markLenient(state)
+		} else if guardStrict(state, bestExactness != exact) {
 			return errors.New("apijson: was not able to coerce type as union strictly")
 		}
 
@@ -523,8 +539,8 @@ func (d *decoderBuilder) newStructTypeDecoder(t reflect.Type) decoderFunc {
 		}
 
 		// Set exactness to 'extras' if there are untyped, extra fields.
-		if len(untypedExtraFields) > 0 && state.exactness > extras {
-			state.exactness = extras
+		if len(untypedExtraFields) > 0 {
+			markExtras(state)
 		}
 
 		if metadata := getSubField(value, []int{-1}, "ExtraFields"); metadata.IsValid() && len(untypedExtraFields) > 0 {
@@ -647,10 +663,12 @@ func (d *decoderBuilder) newTimeTypeDecoder(t reflect.Type) decoderFunc {
 		for _, layout := range layouts {
 			parsed, err := time.Parse(layout, n.Str)
 			if err == nil {
-				// Outside strict mode a fallback layout ranks as a loose match, so a
-				// union prefers a variant that decoded the value exactly.
+				// Outside strict mode a fallback layout ranks as a lenient match: a
+				// union still prefers a variant that decoded the value exactly (a plain
+				// string arm beats a date-time arm), and does not tie with a variant
+				// that ranks loose or extras for a reason of its own.
 				if !state.strict {
-					state.exactness = loose
+					markLenient(state)
 				}
 				v.Set(reflect.ValueOf(parsed).Convert(t))
 				return nil
@@ -667,6 +685,30 @@ func (d *decoderBuilder) newTimeTypeDecoder(t reflect.Type) decoderFunc {
 
 func setUnexportedField(field reflect.Value, value interface{}) {
 	reflect.NewAt(field.Type(), unsafe.Pointer(field.UnsafeAddr())).Elem().Set(reflect.ValueOf(value))
+}
+
+// markLenient lowers the state to record a value decoded in a lenient spelling.
+// The state is shared by every field of the enclosing struct and the structs
+// nested in it, so the rank only ever moves down and keeps what other fields
+// recorded: extras become lenientExtras, and loose stays loose.
+func markLenient(state *decoderState) {
+	switch state.exactness {
+	case exact:
+		state.exactness = lenient
+	case extras:
+		state.exactness = lenientExtras
+	}
+}
+
+// markExtras lowers the state to record a struct with untyped, extra fields,
+// keeping a lenient value already recorded (see [markLenient]).
+func markExtras(state *decoderState) {
+	switch state.exactness {
+	case exact:
+		state.exactness = extras
+	case lenient:
+		state.exactness = lenientExtras
+	}
 }
 
 func guardStrict(state *decoderState, cond bool) bool {

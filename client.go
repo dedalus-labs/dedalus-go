@@ -72,8 +72,9 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 	return
 }
 
-// Execute makes a request with the given context, method, URL, request params,
-// response, and request options.
+// Execute makes a request with the given context, method, path, request params,
+// response, and request options. The path is resolved against the base URL; an
+// absolute URL must be on the base URL's origin (option.WithBaseURL changes it).
 func (r *Client) Execute(ctx context.Context, method string, path string, params interface{}, res interface{}, opts ...option.RequestOption) error {
 	opts = slices.Concat(r.Options, opts)
 	return requestconfig.ExecuteNewRequest(ctx, method, path, params, res, opts...)

@@ -3,6 +3,7 @@
 package pagination
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
@@ -44,6 +45,9 @@ func (r *CursorPage[T]) GetNextPage() (res *CursorPage[T], err error) {
 	next := r.NextCursor
 	if len(next) == 0 {
 		return nil, nil
+	}
+	if r.cfg.Request.URL.Query().Get("cursor") == next {
+		return nil, repeatedCursorError("cursor")
 	}
 	cfg := r.cfg.Clone(r.cfg.Context)
 	err = cfg.Apply(option.WithQuery("cursor", next))
@@ -111,4 +115,10 @@ func (r *CursorPageAutoPager[T]) Err() error {
 
 func (r *CursorPageAutoPager[T]) Index() int {
 	return r.run
+}
+
+// repeatedCursorError reports a next cursor equal to the one the current page
+// was requested with: following it would fetch the same page forever.
+func repeatedCursorError(param string) error {
+	return fmt.Errorf("pagination: the response's next %q cursor is the one this page was requested with, so the next page would repeat it", param)
 }

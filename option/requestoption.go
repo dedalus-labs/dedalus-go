@@ -45,6 +45,15 @@ type HTTPClient interface {
 
 // WithHTTPClient returns a RequestOption that changes the underlying http client used to make this
 // request, which by default is [http.DefaultClient].
+//
+// An [*http.Client] is sent through a copy that follows redirects by the SDK's policy: at most 10,
+// never from https to http, and with every credential header (and query credential) dropped once a
+// redirect leaves the base URL's origin. A CheckRedirect the client sets runs after that policy,
+// on the already-stripped request, so it can stop a redirect and is not handed the dropped
+// credentials.
+// Any other HTTPClient follows redirects however it was built to, and the SDK cannot
+// stop it: such an implementation must not follow redirects itself, or must drop the credential
+// headers on a redirect to another origin, or the API's credentials go wherever a redirect points.
 func WithHTTPClient(client HTTPClient) RequestOption {
 	return requestconfig.RequestOptionFunc(func(r *requestconfig.RequestConfig) error {
 		if client == nil {
