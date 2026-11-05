@@ -5,7 +5,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/textproto"
-	"path"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strconv"
@@ -130,30 +130,30 @@ func (e *encoder) newPrimitiveTypeEncoder(t reflect.Type) encoderFunc {
 	// code more and this current code shouldn't cause any issues
 	case reflect.String:
 		return func(key string, v reflect.Value, writer *multipart.Writer) error {
-			return writer.WriteField(key, v.String())
+			return writeField(writer, key, v.String())
 		}
 	case reflect.Bool:
 		return func(key string, v reflect.Value, writer *multipart.Writer) error {
 			if v.Bool() {
-				return writer.WriteField(key, "true")
+				return writeField(writer, key, "true")
 			}
-			return writer.WriteField(key, "false")
+			return writeField(writer, key, "false")
 		}
 	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64:
 		return func(key string, v reflect.Value, writer *multipart.Writer) error {
-			return writer.WriteField(key, strconv.FormatInt(v.Int(), 10))
+			return writeField(writer, key, strconv.FormatInt(v.Int(), 10))
 		}
 	case reflect.Uint, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		return func(key string, v reflect.Value, writer *multipart.Writer) error {
-			return writer.WriteField(key, strconv.FormatUint(v.Uint(), 10))
+			return writeField(writer, key, strconv.FormatUint(v.Uint(), 10))
 		}
 	case reflect.Float32:
 		return func(key string, v reflect.Value, writer *multipart.Writer) error {
-			return writer.WriteField(key, strconv.FormatFloat(v.Float(), 'f', -1, 32))
+			return writeField(writer, key, strconv.FormatFloat(v.Float(), 'f', -1, 32))
 		}
 	case reflect.Float64:
 		return func(key string, v reflect.Value, writer *multipart.Writer) error {
-			return writer.WriteField(key, strconv.FormatFloat(v.Float(), 'f', -1, 64))
+			return writeField(writer, key, strconv.FormatFloat(v.Float(), 'f', -1, 64))
 		}
 	default:
 		return func(key string, v reflect.Value, writer *multipart.Writer) error {
@@ -290,7 +290,7 @@ func (e *encoder) newFieldTypeEncoder(t reflect.Type) encoderFunc {
 func (e *encoder) newTimeTypeEncoder() encoderFunc {
 	format := e.dateFormat
 	return func(key string, value reflect.Value, writer *multipart.Writer) error {
-		return writer.WriteField(key, value.Convert(reflect.TypeOf(time.Time{})).Interface().(time.Time).Format(format))
+		return writeField(writer, key, value.Convert(reflect.TypeOf(time.Time{})).Interface().(time.Time).Format(format))
 	}
 }
 
@@ -304,10 +304,38 @@ func (e encoder) newInterfaceEncoder() encoderFunc {
 	}
 }
 
-var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+// quoteEscaper escapes the two characters a quoted `Content-Disposition` parameter cannot
+// hold as they are, and drops the line breaks and NUL that would end the header, so a field
+// or file name (a map key, a caller's filename) cannot add a part header of its own.
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"", "\r", "", "\n", "", "\x00", "")
 
 func escapeQuotes(s string) string {
 	return quoteEscaper.Replace(s)
+}
+
+// writeField writes one plain form field. It replaces [multipart.Writer.WriteField], whose
+// name escaping leaves line breaks in, with the escaping file parts get.
+func writeField(writer *multipart.Writer, key string, value string) error {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"`, escapeQuotes(key)))
+	part, err := writer.CreatePart(h)
+	if err != nil {
+		return err
+	}
+	_, err = io.WriteString(part, value)
+	return err
+}
+
+// checkPartContentType refuses a file part's content type that no header can carry: one
+// holding a control character other than a tab, such as the line break that would start a
+// header of the caller's choosing.
+func checkPartContentType(contentType string) error {
+	for i := 0; i < len(contentType); i++ {
+		if c := contentType[i]; c != '\t' && (c < 0x20 || c == 0x7f) {
+			return fmt.Errorf("apiform: the file content type %q is not a valid header value", contentType)
+		}
+	}
+	return nil
 }
 
 func (e *encoder) newReaderTypeEncoder() encoderFunc {
@@ -318,10 +346,13 @@ func (e *encoder) newReaderTypeEncoder() encoderFunc {
 		if named, ok := reader.(interface{ Filename() string }); ok {
 			filename = named.Filename()
 		} else if named, ok := reader.(interface{ Name() string }); ok {
-			filename = path.Base(named.Name())
+			filename = filepath.Base(named.Name())
 		}
 		if typed, ok := reader.(interface{ ContentType() string }); ok {
 			contentType = typed.ContentType()
+		}
+		if err := checkPartContentType(contentType); err != nil {
+			return err
 		}
 
 		// Below is taken almost 1-for-1 from [multipart.CreateFormFile]
