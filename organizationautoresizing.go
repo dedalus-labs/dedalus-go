@@ -29,7 +29,7 @@ func NewOrganizationAutoresizingService(opts ...option.RequestOption) (r *Organi
 	return
 }
 
-// Read organization RAM autoresizing policy
+// Read organization autoresizing policy
 //
 // Parameters:
 //
@@ -55,7 +55,7 @@ func (r *OrganizationAutoresizingService) Get(ctx context.Context, opts ...optio
 	return res, err
 }
 
-// Set organization RAM autoresizing policy
+// Changes defaults copied to new Machines. Existing Machines retain their own policy.
 //
 // Parameters:
 //
@@ -69,11 +69,7 @@ func (r *OrganizationAutoresizingService) Get(ctx context.Context, opts ...optio
 //
 // Example:
 //
-//	autoresizing, err := client.Organization.Autoresizing.Update(context.Background(), sdk.OrganizationAutoresizingUpdateParams{
-//		Policy: sdk.PolicyParam{
-//			Enabled: sdk.F[bool](false),
-//		},
-//	})
+//	autoresizing, err := client.Organization.Autoresizing.Update(context.Background(), sdk.OrganizationAutoresizingUpdateParams{})
 //	if err != nil {
 //		panic(err)
 //	}
@@ -82,46 +78,47 @@ func (r *OrganizationAutoresizingService) Get(ctx context.Context, opts ...optio
 func (r *OrganizationAutoresizingService) Update(ctx context.Context, body OrganizationAutoresizingUpdateParams, opts ...option.RequestOption) (res *Policy, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/organization/autoresizing"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
-type Policy struct {
-	// Allow automatic RAM increases for all organization machines. Disabling preserves
-	// applied RAM and already admitted resizes.
-	Enabled bool       `json:"enabled" api:"required"`
-	JSON    policyJSON `json:"-"`
-}
-
-// policyJSON contains the JSON metadata for the struct [Policy]
-type policyJSON struct {
-	Enabled     apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Policy) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r policyJSON) RawJSON() string {
-	return r.raw
-}
-
-type PolicyParam struct {
-	// Allow automatic RAM increases for all organization machines. Disabling preserves
-	// applied RAM and already admitted resizes.
-	Enabled param.Field[bool] `json:"enabled" api:"required"`
-}
-
-func (r PolicyParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 type OrganizationAutoresizingUpdateParams struct {
-	Policy PolicyParam `json:"policy" api:"required"`
+	CPU          param.Field[OrganizationAutoresizingUpdateParamsCPU]    `json:"cpu"`
+	CPUMaxVcpu   param.Field[float64]                                    `json:"cpu_max_vcpu"`
+	Memory       param.Field[OrganizationAutoresizingUpdateParamsMemory] `json:"memory"`
+	MemoryMaxMib param.Field[int64]                                      `json:"memory_max_mib"`
 }
 
 func (r OrganizationAutoresizingUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r.Policy)
+	return apijson.MarshalRoot(r)
+}
+
+type OrganizationAutoresizingUpdateParamsCPU string
+
+const (
+	OrganizationAutoresizingUpdateParamsCPUOn  OrganizationAutoresizingUpdateParamsCPU = "on"
+	OrganizationAutoresizingUpdateParamsCPUOff OrganizationAutoresizingUpdateParamsCPU = "off"
+)
+
+func (r OrganizationAutoresizingUpdateParamsCPU) IsKnown() bool {
+	switch r {
+	case OrganizationAutoresizingUpdateParamsCPUOn, OrganizationAutoresizingUpdateParamsCPUOff:
+		return true
+	}
+	return false
+}
+
+type OrganizationAutoresizingUpdateParamsMemory string
+
+const (
+	OrganizationAutoresizingUpdateParamsMemoryOn  OrganizationAutoresizingUpdateParamsMemory = "on"
+	OrganizationAutoresizingUpdateParamsMemoryOff OrganizationAutoresizingUpdateParamsMemory = "off"
+)
+
+func (r OrganizationAutoresizingUpdateParamsMemory) IsKnown() bool {
+	switch r {
+	case OrganizationAutoresizingUpdateParamsMemoryOn, OrganizationAutoresizingUpdateParamsMemoryOff:
+		return true
+	}
+	return false
 }

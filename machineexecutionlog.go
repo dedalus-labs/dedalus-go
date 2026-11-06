@@ -70,44 +70,6 @@ func (r *MachineExecutionLogService) Get(ctx context.Context, params MachineExec
 	return res, err
 }
 
-// Reauthorize execution log publication
-//
-// Parameters:
-//
-//	ctx: Context for the request.
-//	params: MachineExecutionLogReauthorizeParams request parameters.
-//	opts: Options to apply to this request.
-//
-// Returns:
-//
-//	*Status: OK
-//
-// Example:
-//
-//	log, err := client.Machines.Executions.Logs.Reauthorize(context.Background(), sdk.MachineExecutionLogReauthorizeParams{
-//		ExecutionID: "executionID",
-//		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-//	})
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	fmt.Println(log)
-func (r *MachineExecutionLogService) Reauthorize(ctx context.Context, params MachineExecutionLogReauthorizeParams, opts ...option.RequestOption) (res *Status, err error) {
-	opts = slices.Concat(r.Options, opts)
-	if params.MachineID == "" {
-		err = errors.New("missing required machine_id parameter")
-		return nil, err
-	}
-	if params.ExecutionID == "" {
-		err = errors.New("missing required execution_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v1/machines/%s/executions/%s/logs/reauthorize", url.PathEscape(params.MachineID), url.PathEscape(params.ExecutionID))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
-	return res, err
-}
-
 // Create execution log read token
 //
 // Parameters:
@@ -147,20 +109,16 @@ func (r *MachineExecutionLogService) NewToken(ctx context.Context, params Machin
 }
 
 type Status struct {
-	Capture     StatusCapture     `json:"capture" api:"required"`
-	ExecutionID string            `json:"execution_id" api:"required"`
-	Code        string            `json:"code"`
-	Publication StatusPublication `json:"publication"`
-	StreamID    string            `json:"stream_id"`
-	JSON        statusJSON        `json:"-"`
+	Capture     StatusCapture `json:"capture" api:"required"`
+	ExecutionID string        `json:"execution_id" api:"required"`
+	StreamID    string        `json:"stream_id"`
+	JSON        statusJSON    `json:"-"`
 }
 
 // statusJSON contains the JSON metadata for the struct [Status]
 type statusJSON struct {
 	Capture     apijson.Field
 	ExecutionID apijson.Field
-	Code        apijson.Field
-	Publication apijson.Field
 	StreamID    apijson.Field
 	raw         string
 	ExtraFields map[string]apijson.Field
@@ -204,57 +162,7 @@ func (r readTokenJSON) RawJSON() string {
 	return r.raw
 }
 
-type StatusPublication struct {
-	Complete       bool                   `json:"complete" api:"required"`
-	QueuedMessages int64                  `json:"queued_messages" api:"required"`
-	State          StatusPublicationState `json:"state" api:"required"`
-	Code           string                 `json:"code"`
-	JSON           statusPublicationJSON  `json:"-"`
-}
-
-// statusPublicationJSON contains the JSON metadata for the struct [StatusPublication]
-type statusPublicationJSON struct {
-	Complete       apijson.Field
-	QueuedMessages apijson.Field
-	State          apijson.Field
-	Code           apijson.Field
-	raw            string
-	ExtraFields    map[string]apijson.Field
-}
-
-func (r *StatusPublication) UnmarshalJSON(data []byte) (err error) {
-	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r statusPublicationJSON) RawJSON() string {
-	return r.raw
-}
-
-type StatusPublicationState string
-
-const (
-	StatusPublicationStateActive    StatusPublicationState = "active"
-	StatusPublicationStateFinishing StatusPublicationState = "finishing"
-	StatusPublicationStateFailed    StatusPublicationState = "failed"
-	StatusPublicationStateClosed    StatusPublicationState = "closed"
-)
-
-func (r StatusPublicationState) IsKnown() bool {
-	switch r {
-	case StatusPublicationStateActive, StatusPublicationStateFinishing, StatusPublicationStateFailed, StatusPublicationStateClosed:
-		return true
-	}
-	return false
-}
-
 type MachineExecutionLogGetParams struct {
-	ExecutionID string `path:"execution_id" api:"required" json:"-"`
-	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
-	// unchanged.
-	MachineID string `path:"machine_id" api:"required" json:"-"`
-}
-
-type MachineExecutionLogReauthorizeParams struct {
 	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.

@@ -116,7 +116,7 @@ if err != nil {
 // imports: "context", "errors", "fmt", sdk "github.com/dedalus-labs/dedalus-go"
 ```
 
-Documented error statuses: `401`, `403`, `409`, `429`, `503`, `default`.
+Documented error statuses: `400`, `401`, `402`, `403`, `404`, `409`, `422`, `429`, `500`, `503`, `504`, `default`.
 
 <br />
 
