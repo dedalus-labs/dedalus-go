@@ -20,6 +20,7 @@ type Client struct {
 	Options      []option.RequestOption
 	Machines     *MachineService
 	Organization *OrganizationService
+	Images       *ImageService
 }
 
 // DefaultClientOptions read from the environment. This should be used to initialize
@@ -68,6 +69,7 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 
 	r.Machines = NewMachineService(opts...)
 	r.Organization = NewOrganizationService(opts...)
+	r.Images = NewImageService(opts...)
 
 	return
 }

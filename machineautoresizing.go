@@ -32,7 +32,7 @@ func NewMachineAutoresizingService(opts ...option.RequestOption) (r *MachineAuto
 	return
 }
 
-// Read this machine's RAM autoresizing settings
+// Read this machine's autoresizing settings
 //
 // Parameters:
 //
@@ -42,7 +42,7 @@ func NewMachineAutoresizingService(opts ...option.RequestOption) (r *MachineAuto
 //
 // Returns:
 //
-//	*Settings: OK
+//	*Policy: OK
 //
 // Example:
 //
@@ -54,7 +54,7 @@ func NewMachineAutoresizingService(opts ...option.RequestOption) (r *MachineAuto
 //	}
 //
 //	fmt.Println(autoresizing)
-func (r *MachineAutoresizingService) Get(ctx context.Context, params MachineAutoresizingGetParams, opts ...option.RequestOption) (res *Settings, err error) {
+func (r *MachineAutoresizingService) Get(ctx context.Context, params MachineAutoresizingGetParams, opts ...option.RequestOption) (res *Policy, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
@@ -65,7 +65,7 @@ func (r *MachineAutoresizingService) Get(ctx context.Context, params MachineAuto
 	return res, err
 }
 
-// Set this machine's RAM autoresizing settings
+// Changes RAM, CPU or both for this machine. An absent resource keeps its setting.
 //
 // Parameters:
 //
@@ -75,58 +75,132 @@ func (r *MachineAutoresizingService) Get(ctx context.Context, params MachineAuto
 //
 // Returns:
 //
-//	*Settings: OK
+//	*Policy: OK
 //
 // Example:
 //
 //	autoresizing, err := client.Machines.Autoresizing.Update(context.Background(), sdk.MachineAutoresizingUpdateParams{
 //		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-//		Settings: sdk.SettingsParam{
-//			Enabled: sdk.F[bool](false),
-//		},
 //	})
 //	if err != nil {
 //		panic(err)
 //	}
 //
 //	fmt.Println(autoresizing)
-func (r *MachineAutoresizingService) Update(ctx context.Context, body MachineAutoresizingUpdateParams, opts ...option.RequestOption) (res *Settings, err error) {
+func (r *MachineAutoresizingService) Update(ctx context.Context, body MachineAutoresizingUpdateParams, opts ...option.RequestOption) (res *Policy, err error) {
 	opts = slices.Concat(r.Options, opts)
 	if body.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/machines/%s/autoresizing", url.PathEscape(body.MachineID))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPut, path, body, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPatch, path, body, &res, opts...)
 	return res, err
 }
 
-type Settings struct {
-	Enabled bool         `json:"enabled" api:"required"`
-	JSON    settingsJSON `json:"-"`
+type Policy struct {
+	// Permit automatic CPU growth independently of RAM.
+	CPU            PolicyCPU            `json:"cpu" api:"required"`
+	CPULimitSource PolicyCPULimitSource `json:"cpu_limit_source" api:"required"`
+	// Configured CPU growth limit in 0.25-vCPU steps. Null uses the plan limit.
+	CPUMaxVcpu float64 `json:"cpu_max_vcpu" api:"required,nullable"`
+	// Largest automatic CPU size allowed by this policy, plan and platform.
+	EffectiveCPUMaxVcpu float64 `json:"effective_cpu_max_vcpu" api:"required"`
+	// Largest automatic RAM size allowed by this policy and plan, in MiB.
+	EffectiveMemoryMaxMib int64 `json:"effective_memory_max_mib" api:"required"`
+	// Deprecated RAM permission alias. Use memory.
+	Enabled bool `json:"enabled" api:"required"`
+	// Permit automatic RAM growth. Automatic shrink remains internal.
+	Memory            PolicyMemory            `json:"memory" api:"required"`
+	MemoryLimitSource PolicyMemoryLimitSource `json:"memory_limit_source" api:"required"`
+	// Configured RAM growth limit in MiB. Null uses the plan limit.
+	MemoryMaxMib int64      `json:"memory_max_mib" api:"required,nullable"`
+	JSON         policyJSON `json:"-"`
 }
 
-// settingsJSON contains the JSON metadata for the struct [Settings]
-type settingsJSON struct {
-	Enabled     apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
+// policyJSON contains the JSON metadata for the struct [Policy]
+type policyJSON struct {
+	CPU                   apijson.Field
+	CPULimitSource        apijson.Field
+	CPUMaxVcpu            apijson.Field
+	EffectiveCPUMaxVcpu   apijson.Field
+	EffectiveMemoryMaxMib apijson.Field
+	Enabled               apijson.Field
+	Memory                apijson.Field
+	MemoryLimitSource     apijson.Field
+	MemoryMaxMib          apijson.Field
+	raw                   string
+	ExtraFields           map[string]apijson.Field
 }
 
-func (r *Settings) UnmarshalJSON(data []byte) (err error) {
+func (r *Policy) UnmarshalJSON(data []byte) (err error) {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r settingsJSON) RawJSON() string {
+func (r policyJSON) RawJSON() string {
 	return r.raw
 }
 
-type SettingsParam struct {
-	Enabled param.Field[bool] `json:"enabled" api:"required"`
+type PolicyCPU string
+
+const (
+	PolicyCPUOn  PolicyCPU = "on"
+	PolicyCPUOff PolicyCPU = "off"
+)
+
+func (r PolicyCPU) IsKnown() bool {
+	switch r {
+	case PolicyCPUOn, PolicyCPUOff:
+		return true
+	}
+	return false
 }
 
-func (r SettingsParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+type PolicyCPULimitSource string
+
+const (
+	PolicyCPULimitSourcePlan       PolicyCPULimitSource = "plan"
+	PolicyCPULimitSourceConfigured PolicyCPULimitSource = "configured"
+	PolicyCPULimitSourcePlatform   PolicyCPULimitSource = "platform"
+)
+
+func (r PolicyCPULimitSource) IsKnown() bool {
+	switch r {
+	case PolicyCPULimitSourcePlan, PolicyCPULimitSourceConfigured, PolicyCPULimitSourcePlatform:
+		return true
+	}
+	return false
+}
+
+type PolicyMemory string
+
+const (
+	PolicyMemoryOn  PolicyMemory = "on"
+	PolicyMemoryOff PolicyMemory = "off"
+)
+
+func (r PolicyMemory) IsKnown() bool {
+	switch r {
+	case PolicyMemoryOn, PolicyMemoryOff:
+		return true
+	}
+	return false
+}
+
+type PolicyMemoryLimitSource string
+
+const (
+	PolicyMemoryLimitSourcePlan       PolicyMemoryLimitSource = "plan"
+	PolicyMemoryLimitSourceConfigured PolicyMemoryLimitSource = "configured"
+	PolicyMemoryLimitSourcePlatform   PolicyMemoryLimitSource = "platform"
+)
+
+func (r PolicyMemoryLimitSource) IsKnown() bool {
+	switch r {
+	case PolicyMemoryLimitSourcePlan, PolicyMemoryLimitSourceConfigured, PolicyMemoryLimitSourcePlatform:
+		return true
+	}
+	return false
 }
 
 type MachineAutoresizingGetParams struct {
@@ -138,10 +212,43 @@ type MachineAutoresizingGetParams struct {
 type MachineAutoresizingUpdateParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string        `path:"machine_id" api:"required" json:"-"`
-	Settings  SettingsParam `json:"settings" api:"required"`
+	MachineID    string                                             `path:"machine_id" api:"required" json:"-"`
+	CPU          param.Field[MachineAutoresizingUpdateParamsCPU]    `json:"cpu"`
+	CPUMaxVcpu   param.Field[float64]                               `json:"cpu_max_vcpu"`
+	Memory       param.Field[MachineAutoresizingUpdateParamsMemory] `json:"memory"`
+	MemoryMaxMib param.Field[int64]                                 `json:"memory_max_mib"`
 }
 
 func (r MachineAutoresizingUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r.Settings)
+	return apijson.MarshalRoot(r)
+}
+
+type MachineAutoresizingUpdateParamsCPU string
+
+const (
+	MachineAutoresizingUpdateParamsCPUOn  MachineAutoresizingUpdateParamsCPU = "on"
+	MachineAutoresizingUpdateParamsCPUOff MachineAutoresizingUpdateParamsCPU = "off"
+)
+
+func (r MachineAutoresizingUpdateParamsCPU) IsKnown() bool {
+	switch r {
+	case MachineAutoresizingUpdateParamsCPUOn, MachineAutoresizingUpdateParamsCPUOff:
+		return true
+	}
+	return false
+}
+
+type MachineAutoresizingUpdateParamsMemory string
+
+const (
+	MachineAutoresizingUpdateParamsMemoryOn  MachineAutoresizingUpdateParamsMemory = "on"
+	MachineAutoresizingUpdateParamsMemoryOff MachineAutoresizingUpdateParamsMemory = "off"
+)
+
+func (r MachineAutoresizingUpdateParamsMemory) IsKnown() bool {
+	switch r {
+	case MachineAutoresizingUpdateParamsMemoryOn, MachineAutoresizingUpdateParamsMemoryOff:
+		return true
+	}
+	return false
 }
