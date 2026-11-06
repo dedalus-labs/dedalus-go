@@ -1,5 +1,56 @@
 # Changelog
 
+## [0.7.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.6.0...v0.7.0) (2026-11-06)
+
+
+### ⚠ BREAKING CHANGES
+
+* **api:** 30 breaking changes to the SDK surface.
+    - Removed body field `memory_mib` from `machines.update`.
+    - Removed body field `vcpu` from `machines.update`.
+    - Response of `machines.autoresizing.retrieve` changed from `settings` to `policy`.
+    - Operation `machines.autoresizing.update` route changed from `PUT /v1/machines/{machine_id}/autoresizing` to `PATCH /v1/machines/{machine_id}/autoresizing`.
+    - Removed body field `enabled` from `machines.autoresizing.update`.
+    - Response of `machines.autoresizing.update` changed from `settings` to `policy`.
+    - Operation `organization.autoresizing.update` route changed from `PUT /v1/organization/autoresizing` to `PATCH /v1/organization/autoresizing`.
+    - Removed body field `enabled` from `organization.autoresizing.update`.
+    - Removed operation `machines.executions.logs.reauthorize` (`POST /v1/machines/{machine_id}/executions/{execution_id}/logs/reauthorize`).
+    - Added required property `policy.cpu`.
+    - Added required property `policy.cpu_limit_source`.
+    - Added required property `policy.cpu_max_vcpu`.
+    - Added required property `policy.effective_cpu_max_vcpu`.
+    - Added required property `policy.effective_memory_max_mib`.
+    - Added required property `policy.memory`.
+    - Added required property `policy.memory_limit_source`.
+    - Added required property `policy.memory_max_mib`.
+    - Removed optional property `status.code`.
+    - Removed optional property `status.publication`.
+    - Added required property `lifecycle_status.autoresize`.
+    - Removed optional property `lifecycle_status.memory_assigned_mib`.
+    - Removed required property `lifecycle_status.memory_configured_mib`.
+    - Removed optional property `lifecycle_status.memory_last_autoresized_at`.
+    - Removed optional property `lifecycle_status.memory_resize_state`.
+    - Removed optional property `lifecycle_status.memory_target_mib`.
+    - Removed optional property `update_params.memory_mib`.
+    - Removed optional property `update_params.vcpu`.
+    - Removed schema `settings`.
+    - Removed schema `publication`.
+    - Removed schema `ReauthorizeResponseHeaders`.
+
+### Features
+
+* **api:** add auth scheme BrowserAuth (+1 more change) ([27e40ad](https://github.com/dedalus-labs/dedalus-go/commit/27e40adccf636f9474c2b01a9d15c009309e0bb1))
+* **api:** integrate regenerated custom image contract ([a999826](https://github.com/dedalus-labs/dedalus-go/commit/a99982642d4bbe379174a8c7089ba3d097af79ef))
+* **api:** update SDK surface (76 changes) ([41fb9f5](https://github.com/dedalus-labs/dedalus-go/commit/41fb9f58b008324c49b81e99689f5171d14caa13))
+* **images:** add go import workflows ([41bc6e8](https://github.com/dedalus-labs/dedalus-go/commit/41bc6e82b417656b2223ca34ede7015383b3a5b5))
+* **images:** regenerate SDK with Go image workflows ([#18](https://github.com/dedalus-labs/dedalus-go/issues/18)) ([9148b23](https://github.com/dedalus-labs/dedalus-go/commit/9148b23d7269ed9971bf9124bd8bdb4666ede3fb))
+
+
+### Chores
+
+* **api:** regenerate SDK ([a096a39](https://github.com/dedalus-labs/dedalus-go/commit/a096a3940d690d908c7f286eea412df2417b03a3))
+* **api:** update generated SDK content ([8d00f11](https://github.com/dedalus-labs/dedalus-go/commit/8d00f1184b70145f037eb34703417e9bc3072f6c))
+
 ## [0.6.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.5.0...v0.6.0) (2026-09-24)
 
 
