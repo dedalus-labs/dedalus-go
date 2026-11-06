@@ -70,6 +70,12 @@ Storage uploads use a separate HTTP client without API credentials and reject
 redirects. The image API must be deployed and enabled for your organization;
 these helpers do not bypass access controls.
 
+Custom image imports currently require an Ubuntu 24.04 `linux/amd64` Docker-save
+archive. On Apple silicon, build or pull with `--platform linux/amd64` before
+saving the archive. The image provides the filesystem; container entrypoint,
+CMD, environment, working directory, and user settings are not applied. Start
+processes using Machine exec or SSH after the Machine reaches running.
+
 ## Usage
 
 ```go
@@ -155,7 +161,7 @@ if err != nil {
 // imports: "context", "errors", "fmt", sdk "github.com/dedalus-labs/dedalus-go"
 ```
 
-Documented error statuses: `401`, `403`, `409`, `429`, `503`, `default`.
+Documented error statuses: `400`, `401`, `402`, `403`, `404`, `409`, `422`, `429`, `500`, `503`, `504`, `default`.
 
 <br />
 

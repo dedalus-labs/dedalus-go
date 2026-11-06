@@ -13,6 +13,7 @@ Complete reference of every operation, grouped by resource. See [the README](./R
   - [Sleep a running machine](#sleep-a-running-machine)
   - [Wake a sleeping machine](#wake-a-sleeping-machine)
   - [Reboot a machine with fresh memory](#reboot-a-machine-with-fresh-memory)
+  - [Resize machine](#resize-machine)
   - [`Machines Ssh`](#machines-ssh)
     - [List SSH sessions](#list-ssh-sessions)
     - [Create SSH session](#create-ssh-session)
@@ -27,15 +28,22 @@ Complete reference of every operation, grouped by resource. See [the README](./R
     - [List execution events](#list-execution-events)
     - [`Machines Executions Logs`](#machines-executions-logs)
       - [Get execution log status](#get-execution-log-status)
-      - [Reauthorize execution log publication](#reauthorize-execution-log-publication)
       - [Create execution log read token](#create-execution-log-read-token)
   - [`Machines Autoresizing`](#machines-autoresizing)
-    - [Read this machine's RAM autoresizing settings](#read-this-machines-ram-autoresizing-settings)
-    - [Set this machine's RAM autoresizing settings](#set-this-machines-ram-autoresizing-settings)
+    - [Read this machine's autoresizing settings](#read-this-machines-autoresizing-settings)
+    - [Set this machine's autoresizing settings](#set-this-machines-autoresizing-settings)
 - [`Organization`](#organization)
   - [`Organization Autoresizing`](#organization-autoresizing)
-    - [Read organization RAM autoresizing policy](#read-organization-ram-autoresizing-policy)
-    - [Set organization RAM autoresizing policy](#set-organization-ram-autoresizing-policy)
+    - [Read organization autoresizing policy](#read-organization-autoresizing-policy)
+    - [Set organization autoresizing policy](#set-organization-autoresizing-policy)
+- [`Images`](#images)
+  - [List image IDs owned by the authenticated organization](#list-image-ids-owned-by-the-authenticated-organization)
+  - [Register an immutable OCI image for preparation](#register-an-immutable-oci-image-for-preparation)
+  - [Read preparation status for an organization-owned image](#read-preparation-status-for-an-organization-owned-image)
+  - [Rename an organization-owned image](#rename-an-organization-owned-image)
+  - [Delete an organization-owned image](#delete-an-organization-owned-image)
+  - [`Images Uploads`](#images-uploads)
+    - [Reserve an immutable Docker image archive upload](#reserve-an-immutable-docker-image-archive-upload)
 
 ## Setup
 
@@ -110,6 +118,8 @@ fmt.Println(machine.MachineID)
 ```
 
 ### Update machine
+
+Changes settings such as autosleep.
 
 | Direction | Type |
 | --- | --- |
@@ -193,6 +203,26 @@ Checkpoints files and replaces the runtime. The machine ID and filesystem are pr
 
 ```go
 machine, err := client.Machines.Reboot(context.Background(), sdk.MachineRebootParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(machine)
+```
+
+### Resize machine
+
+Wakes a sleeping Machine, then waits up to 30 seconds for the host to confirm CPU and RAM. Returns the Machine with its confirmed size. After RESIZE_TIMEOUT, repeat the same request and Idempotency-Key to wait again.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachineResizeParams`](./machine.go) |
+| Response | [`MachineResizeResponse`](./machine.go) |
+
+```go
+machine, err := client.Machines.Resize(context.Background(), sdk.MachineResizeParams{
 	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 })
 if err != nil {
@@ -419,25 +449,6 @@ if err != nil {
 fmt.Println(log)
 ```
 
-##### Reauthorize execution log publication
-
-| Direction | Type |
-| --- | --- |
-| Request | [`MachineExecutionLogReauthorizeParams`](./machineexecutionlog.go) |
-| Response | [`Status`](./machineexecutionlog.go) |
-
-```go
-log, err := client.Machines.Executions.Logs.Reauthorize(context.Background(), sdk.MachineExecutionLogReauthorizeParams{
-	ExecutionID: "executionID",
-	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-})
-if err != nil {
-	panic(err)
-}
-
-fmt.Println(log)
-```
-
 ##### Create execution log read token
 
 | Direction | Type |
@@ -459,12 +470,12 @@ fmt.Println(log)
 
 ### `Machines Autoresizing`
 
-#### Read this machine's RAM autoresizing settings
+#### Read this machine's autoresizing settings
 
 | Direction | Type |
 | --- | --- |
 | Request | [`MachineAutoresizingGetParams`](./machineautoresizing.go) |
-| Response | [`Settings`](./machineautoresizing.go) |
+| Response | [`Policy`](./machineautoresizing.go) |
 
 ```go
 autoresizing, err := client.Machines.Autoresizing.Get(context.Background(), sdk.MachineAutoresizingGetParams{
@@ -477,19 +488,18 @@ if err != nil {
 fmt.Println(autoresizing)
 ```
 
-#### Set this machine's RAM autoresizing settings
+#### Set this machine's autoresizing settings
+
+Changes RAM, CPU or both for this machine. An absent resource keeps its setting.
 
 | Direction | Type |
 | --- | --- |
 | Request | [`MachineAutoresizingUpdateParams`](./machineautoresizing.go) |
-| Response | [`Settings`](./machineautoresizing.go) |
+| Response | [`Policy`](./machineautoresizing.go) |
 
 ```go
 autoresizing, err := client.Machines.Autoresizing.Update(context.Background(), sdk.MachineAutoresizingUpdateParams{
 	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-	Settings: sdk.SettingsParam{
-		Enabled: sdk.F[bool](false),
-	},
 })
 if err != nil {
 	panic(err)
@@ -502,11 +512,11 @@ fmt.Println(autoresizing)
 
 ### `Organization Autoresizing`
 
-#### Read organization RAM autoresizing policy
+#### Read organization autoresizing policy
 
 | Direction | Type |
 | --- | --- |
-| Response | [`Policy`](./organizationautoresizing.go) |
+| Response | [`Policy`](./machineautoresizing.go) |
 
 ```go
 autoresizing, err := client.Organization.Autoresizing.Get(context.Background())
@@ -517,22 +527,148 @@ if err != nil {
 fmt.Println(autoresizing)
 ```
 
-#### Set organization RAM autoresizing policy
+#### Set organization autoresizing policy
+
+Changes defaults copied to new Machines. Existing Machines retain their own policy.
 
 | Direction | Type |
 | --- | --- |
 | Request | [`OrganizationAutoresizingUpdateParams`](./organizationautoresizing.go) |
-| Response | [`Policy`](./organizationautoresizing.go) |
+| Response | [`Policy`](./machineautoresizing.go) |
 
 ```go
-autoresizing, err := client.Organization.Autoresizing.Update(context.Background(), sdk.OrganizationAutoresizingUpdateParams{
-	Policy: sdk.PolicyParam{
-		Enabled: sdk.F[bool](false),
-	},
-})
+autoresizing, err := client.Organization.Autoresizing.Update(context.Background(), sdk.OrganizationAutoresizingUpdateParams{})
 if err != nil {
 	panic(err)
 }
 
 fmt.Println(autoresizing)
+```
+
+## `Images`
+
+### List image IDs owned by the authenticated organization
+
+Pages through the organization's images in ID order. A deleted image is left out; it still reads by ID.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ImageListParams`](./image.go) |
+| Response | [`ImageList`](./image.go) |
+
+```go
+image, err := client.Images.List(context.Background(), sdk.ImageListParams{
+	Limit: sdk.F[int64](100),
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(image)
+```
+
+### Register an immutable OCI image for preparation
+
+Requires an entitled organization and linux/amd64 on the current fleet. Acceptance queues preparation; only a ready image can launch a machine. Private registry credentials are not yet supported.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ImageNewParams`](./image.go) |
+| Response | [`Image`](./image.go) |
+
+```go
+image, err := client.Images.New(context.Background(), sdk.ImageNewParams{
+	Platform: sdk.F[sdk.ImageNewParamsPlatform](sdk.ImageNewParamsPlatform("linux/amd64")),
+	Source: sdk.F[sdk.SourceParam](sdk.SourceParam{
+		Kind: sdk.F[string](""),
+	}),
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(image)
+```
+
+### Read preparation status for an organization-owned image
+
+A preparing image reports its stage, the worker's last step and an estimated percent of the whole preparation. A failed image names the cause: IMAGE_OS_UNSUPPORTED, IMAGE_SOURCE_INVALID, IMAGE_SOURCE_NOT_FOUND and IMAGE_SOURCE_UNAUTHORIZED describe the image or its reference and are final; IMAGE_SOURCE_UNAVAILABLE, IMAGE_REGISTRY_UNREACHABLE, IMAGE_REGISTRY_RATE_LIMITED, IMAGE_ARCHIVE_UNAVAILABLE and IMAGE_EXECUTION_FAILED describe this attempt and are retryable with a new idempotency key.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ImageGetParams`](./image.go) |
+| Response | [`Image`](./image.go) |
+
+```go
+image, err := client.Images.Get(context.Background(), sdk.ImageGetParams{
+	ImageID: "imageID",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(image)
+```
+
+### Rename an organization-owned image
+
+Changes only the name. The image's source, platform and state are immutable.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ImageUpdateParams`](./image.go) |
+| Response | [`Image`](./image.go) |
+
+```go
+image, err := client.Images.Update(context.Background(), sdk.ImageUpdateParams{
+	ImageID: "imageID",
+	Name:    sdk.F[string](""),
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(image)
+```
+
+### Delete an organization-owned image
+
+The image can create no new Machine and no longer counts against the organization's image limit. Machines already running from it keep working. The image stays readable, and deleting it again returns the same image.
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ImageDeleteParams`](./image.go) |
+| Response | [`Image`](./image.go) |
+
+```go
+image, err := client.Images.Delete(context.Background(), sdk.ImageDeleteParams{
+	ImageID: "imageID",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(image)
+```
+
+### `Images Uploads`
+
+#### Reserve an immutable Docker image archive upload
+
+| Direction | Type |
+| --- | --- |
+| Request | [`ImageUploadNewParams`](./imageupload.go) |
+| Response | [`Reservation`](./imageupload.go) |
+
+```go
+upload, err := client.Images.Uploads.New(context.Background(), sdk.ImageUploadNewParams{
+	Platform:  sdk.F[string](""),
+	Sha256:    sdk.F[string](""),
+	SizeBytes: sdk.F[int64](0),
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(upload)
 ```

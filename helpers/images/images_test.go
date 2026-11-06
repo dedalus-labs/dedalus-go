@@ -71,6 +71,15 @@ func setup(t *testing.T, states ...string) *fixture {
 			}
 			return response(r, 200, f.grant), nil
 		}
+		if r.URL.Path == "/v1/machines" {
+			var body map[string]interface{}
+			if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body["image_id"] != imageID {
+				t.Fatalf("machine image ID not preserved: %v, %v", body, err)
+			}
+			return response(r, 200, map[string]interface{}{"machine_id": "fixture", "lifecycle_status": map[string]interface{}{"autoresize": map[string]interface{}{
+				"cpu": map[string]string{"blocked_reason": "MACHINE_QUOTA_EXCEEDED", "blocked_at": "2026-01-01T00:00:00Z"}, "memory": nil,
+			}}}), nil
+		}
 		state, id := "submitted", imageID
 		if r.Method == http.MethodGet {
 			state = "preparing"
@@ -241,5 +250,82 @@ func TestInvalidInputMakesNoRequests(t *testing.T) {
 	}
 	if len(f.requests) != 0 {
 		t.Fatal("invalid input made API request")
+	}
+}
+
+func TestReadyImageToGeneratedMachine(t *testing.T) {
+	f := setup(t, "ready")
+	ready, err := images.Import(context.Background(), f.client, archive(t), images.ImportOptions{UploadTransport: f.storage, PollOptions: images.PollOptions{PollInterval: time.Millisecond}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	machine, err := f.client.Machines.New(context.Background(), dedalus.MachineNewParams{CreateParams: dedalus.CreateParams{ImageID: dedalus.F(ready.ImageID)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if machine.MachineID != "fixture" {
+		t.Fatalf("lost refusal: %+v", machine)
+	}
+	if len(f.requests) != 4 || f.requests[3] != "POST /v1/machines" {
+		t.Fatalf("unexpected workflow: %v", f.requests)
+	}
+}
+
+func TestGeneratedPatchResizeAndFlatErrors(t *testing.T) {
+	requests := []string{}
+	envelope := map[string]interface{}{"error_code": "IMAGE_SOURCE_INVALID", "message": "archive rejected", "retryable": false, "details": map[string]string{"stage": "validation"}, "retry_after_ms": 500}
+	client := dedalus.NewClient(option.WithAPIKey("fixture"), option.WithBaseURL("https://api.example"), option.WithMaxRetries(0), option.WithHTTPClient(&http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
+		requests = append(requests, r.Method+" "+r.URL.Path)
+		if strings.Contains(r.URL.Path, "/images/") {
+			return response(r, 422, envelope), nil
+		}
+		return response(r, 200, map[string]interface{}{"status": map[string]interface{}{"autoresize": map[string]interface{}{"cpu": map[string]string{"blocked_reason": "MACHINE_QUOTA_EXCEEDED"}, "memory": nil}}}), nil
+	})}))
+	ctx := context.Background()
+	if _, err := client.Machines.Autoresizing.Update(ctx, dedalus.MachineAutoresizingUpdateParams{MachineID: imageID}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.Organization.Autoresizing.Update(ctx, dedalus.OrganizationAutoresizingUpdateParams{}); err != nil {
+		t.Fatal(err)
+	}
+	resized, err := client.Machines.Resize(ctx, dedalus.MachineResizeParams{MachineID: imageID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resized.Status.Autoresize.CPU.BlockedReason != "MACHINE_QUOTA_EXCEEDED" {
+		t.Fatalf("lost refusal: %+v", resized.Status)
+	}
+	_, err = client.Images.Get(ctx, dedalus.ImageGetParams{ImageID: imageID})
+	var apiErr *dedalus.Error
+	if !errors.As(err, &apiErr) || !strings.Contains(err.Error(), "archive rejected") {
+		t.Fatalf("missing flat error: %v", err)
+	}
+	var decoded map[string]interface{}
+	if err := json.Unmarshal([]byte(apiErr.JSON.RawJSON()), &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if decoded["error_code"] != envelope["error_code"] || decoded["retryable"] != false || decoded["retry_after_ms"] != float64(500) {
+		t.Fatalf("lost fields: %v", decoded)
+	}
+	if requests[0] != "PATCH /v1/machines/"+imageID+"/autoresizing" || requests[1] != "PATCH /v1/organization/autoresizing" || requests[2] != "POST /v1/machines/"+imageID+"/resize" {
+		t.Fatalf("wrong methods: %v", requests)
+	}
+}
+
+func TestPreparationFailureRetainsRetryMetadata(t *testing.T) {
+	var failure images.Failure
+	if err := json.Unmarshal([]byte(`{"error_code":"IMAGE_SOURCE_UNAVAILABLE","message":"registry offline","retryable":true,"retry_after_ms":500,"details":{"stage":"download"}}`), &failure); err != nil {
+		t.Fatal(err)
+	}
+	if !failure.Retryable || failure.RetryAfterMs == nil || *failure.RetryAfterMs != 500 || failure.Details["stage"] != "download" {
+		t.Fatalf("lost failure metadata: %+v", failure)
+	}
+}
+
+func TestUnsupportedPlatformNeverReserves(t *testing.T) {
+	f := setup(t)
+	_, err := images.Import(context.Background(), f.client, archive(t), images.ImportOptions{Platform: "linux/arm64", UploadTransport: f.storage})
+	if err == nil || !strings.Contains(err.Error(), "linux/amd64") || len(f.requests) != 0 || f.uploads != 0 {
+		t.Fatalf("unsupported platform caused IO: %v", err)
 	}
 }

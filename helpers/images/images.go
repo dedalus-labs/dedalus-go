@@ -34,8 +34,11 @@ type Image struct {
 
 // Failure describes why preparation failed.
 type Failure struct {
-	Code    string `json:"error_code"`
-	Message string `json:"message"`
+	Code         string            `json:"error_code"`
+	Message      string            `json:"message"`
+	Retryable    bool              `json:"retryable"`
+	Details      map[string]string `json:"details,omitempty"`
+	RetryAfterMs *int64            `json:"retry_after_ms,omitempty"`
 }
 
 // PreparationError preserves the image ID on failure, timeout, or cancellation.
@@ -60,7 +63,7 @@ type ImportOptions struct {
 	PollOptions
 	NoWait         bool // Return after upload and registration; default is to wait.
 	Name           string
-	Platform       string // Default: linux/amd64; also accepts linux/arm64.
+	Platform       string // Default and currently supported platform: linux/amd64.
 	IdempotencyKey string // Reuse for retries of the same archive and options.
 	// Optional storage transport, separate from the authenticated API client.
 	UploadTransport http.RoundTripper
@@ -242,8 +245,8 @@ func Import(ctx context.Context, client *dedalus.Client, path string, options Im
 	if platform == "" {
 		platform = "linux/amd64"
 	}
-	if platform != "linux/amd64" && platform != "linux/arm64" {
-		return nil, errors.New("platform must be linux/amd64 or linux/arm64")
+	if platform != "linux/amd64" {
+		return nil, errors.New("custom images currently require linux/amd64")
 	}
 	key := options.IdempotencyKey
 	if key == "" {

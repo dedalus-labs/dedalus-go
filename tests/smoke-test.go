@@ -67,6 +67,23 @@ func _smokeCase1() {
 }
 
 func _smokeCase2() {
+	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
+		CreateParams: sdk.CreateParams{
+			Autosleep:  sdk.F[string]("300s"),
+			ImageID:    sdk.F[string]("x"),
+			MemoryMib:  sdk.F[int64](4096),
+			StorageGib: sdk.F[int64](10),
+			Vcpu:       sdk.F[float64](1),
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(machine.MachineID)
+}
+
+func _smokeCase3() {
 	machine, err := client.Machines.Get(context.Background(), sdk.MachineGetParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
@@ -77,7 +94,7 @@ func _smokeCase2() {
 	fmt.Println(machine.MachineID)
 }
 
-func _smokeCase3() {
+func _smokeCase4() {
 	machine, err := client.Machines.Update(context.Background(), sdk.MachineUpdateParams{
 		MachineID:    "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		UpdateParams: sdk.UpdateParams{},
@@ -89,14 +106,12 @@ func _smokeCase3() {
 	fmt.Println(machine.MachineID)
 }
 
-func _smokeCase4() {
+func _smokeCase5() {
 	machine, err := client.Machines.Update(context.Background(), sdk.MachineUpdateParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		UpdateParams: sdk.UpdateParams{
 			Autosleep:  sdk.F[string](""),
-			MemoryMib:  sdk.F[int64](0),
 			StorageGib: sdk.F[int64](0),
-			Vcpu:       sdk.F[float64](0),
 		},
 	})
 	if err != nil {
@@ -106,7 +121,7 @@ func _smokeCase4() {
 	fmt.Println(machine.MachineID)
 }
 
-func _smokeCase5() {
+func _smokeCase6() {
 	machine, err := client.Machines.Delete(context.Background(), sdk.MachineDeleteParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
@@ -117,7 +132,19 @@ func _smokeCase5() {
 	fmt.Println(machine.MachineID)
 }
 
-func _smokeCase6() {
+func _smokeCase7() {
+	machine, err := client.Machines.Delete(context.Background(), sdk.MachineDeleteParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		Force:     sdk.F[bool](true),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(machine.MachineID)
+}
+
+func _smokeCase8() {
 	machine, err := client.Machines.Sleep(context.Background(), sdk.MachineSleepParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
@@ -128,7 +155,7 @@ func _smokeCase6() {
 	fmt.Println(machine.MachineID)
 }
 
-func _smokeCase7() {
+func _smokeCase9() {
 	machine, err := client.Machines.Wake(context.Background(), sdk.MachineWakeParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
@@ -139,7 +166,7 @@ func _smokeCase7() {
 	fmt.Println(machine.MachineID)
 }
 
-func _smokeCase8() {
+func _smokeCase10() {
 	machine, err := client.Machines.Reboot(context.Background(), sdk.MachineRebootParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
@@ -150,7 +177,7 @@ func _smokeCase8() {
 	fmt.Println(machine)
 }
 
-func _smokeCase9() {
+func _smokeCase11() {
 	machine, err := client.Machines.Reboot(context.Background(), sdk.MachineRebootParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		Force:     sdk.F[bool](true),
@@ -162,7 +189,31 @@ func _smokeCase9() {
 	fmt.Println(machine)
 }
 
-func _smokeCase10() {
+func _smokeCase12() {
+	machine, err := client.Machines.Resize(context.Background(), sdk.MachineResizeParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(machine)
+}
+
+func _smokeCase13() {
+	machine, err := client.Machines.Resize(context.Background(), sdk.MachineResizeParams{
+		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		MemoryMib: sdk.F[int64](0),
+		Vcpu:      sdk.F[float64](0),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(machine)
+}
+
+func _smokeCase14() {
 	page, err := client.Machines.SSH.List(context.Background(), sdk.MachineSSHListParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
@@ -173,7 +224,7 @@ func _smokeCase10() {
 	fmt.Println(page)
 }
 
-func _smokeCase11() {
+func _smokeCase15() {
 	ssh, err := client.Machines.SSH.New(context.Background(), sdk.MachineSSHNewParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		SSHSessionCreateParams: sdk.SSHSessionCreateParams{
@@ -187,7 +238,7 @@ func _smokeCase11() {
 	fmt.Println(ssh.SessionID)
 }
 
-func _smokeCase12() {
+func _smokeCase16() {
 	ssh, err := client.Machines.SSH.Get(context.Background(), sdk.MachineSSHGetParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		SessionID: "sessionID",
@@ -199,7 +250,7 @@ func _smokeCase12() {
 	fmt.Println(ssh.SessionID)
 }
 
-func _smokeCase13() {
+func _smokeCase17() {
 	ssh, err := client.Machines.SSH.Delete(context.Background(), sdk.MachineSSHDeleteParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		SessionID: "sessionID",
@@ -211,7 +262,7 @@ func _smokeCase13() {
 	fmt.Println(ssh.SessionID)
 }
 
-func _smokeCase14() {
+func _smokeCase18() {
 	page, err := client.Machines.Executions.List(context.Background(), sdk.MachineExecutionListParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
@@ -222,7 +273,7 @@ func _smokeCase14() {
 	fmt.Println(page)
 }
 
-func _smokeCase15() {
+func _smokeCase19() {
 	execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		ExecutionCreateParams: sdk.ExecutionCreateParams{
@@ -236,7 +287,7 @@ func _smokeCase15() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase16() {
+func _smokeCase20() {
 	execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		ExecutionCreateParams: sdk.ExecutionCreateParams{
@@ -254,7 +305,7 @@ func _smokeCase16() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase17() {
+func _smokeCase21() {
 	execution, err := client.Machines.Executions.Get(context.Background(), sdk.MachineExecutionGetParams{
 		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
@@ -266,7 +317,7 @@ func _smokeCase17() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase18() {
+func _smokeCase22() {
 	execution, err := client.Machines.Executions.Delete(context.Background(), sdk.MachineExecutionDeleteParams{
 		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
@@ -278,7 +329,7 @@ func _smokeCase18() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase19() {
+func _smokeCase23() {
 	execution, err := client.Machines.Executions.Output(context.Background(), sdk.MachineExecutionOutputParams{
 		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
@@ -290,7 +341,7 @@ func _smokeCase19() {
 	fmt.Println(execution.ExecutionID)
 }
 
-func _smokeCase20() {
+func _smokeCase24() {
 	page, err := client.Machines.Executions.Events(context.Background(), sdk.MachineExecutionEventsParams{
 		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
@@ -302,7 +353,7 @@ func _smokeCase20() {
 	fmt.Println(page)
 }
 
-func _smokeCase21() {
+func _smokeCase25() {
 	log, err := client.Machines.Executions.Logs.Get(context.Background(), sdk.MachineExecutionLogGetParams{
 		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
@@ -314,19 +365,7 @@ func _smokeCase21() {
 	fmt.Println(log)
 }
 
-func _smokeCase22() {
-	log, err := client.Machines.Executions.Logs.Reauthorize(context.Background(), sdk.MachineExecutionLogReauthorizeParams{
-		ExecutionID: "executionID",
-		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(log)
-}
-
-func _smokeCase23() {
+func _smokeCase26() {
 	log, err := client.Machines.Executions.Logs.NewToken(context.Background(), sdk.MachineExecutionLogNewTokenParams{
 		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
@@ -338,7 +377,7 @@ func _smokeCase23() {
 	fmt.Println(log)
 }
 
-func _smokeCase24() {
+func _smokeCase27() {
 	autoresizing, err := client.Machines.Autoresizing.Get(context.Background(), sdk.MachineAutoresizingGetParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	})
@@ -349,12 +388,9 @@ func _smokeCase24() {
 	fmt.Println(autoresizing)
 }
 
-func _smokeCase25() {
+func _smokeCase28() {
 	autoresizing, err := client.Machines.Autoresizing.Update(context.Background(), sdk.MachineAutoresizingUpdateParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-		Settings: sdk.SettingsParam{
-			Enabled: sdk.F[bool](false),
-		},
 	})
 	if err != nil {
 		panic(err)
@@ -363,7 +399,22 @@ func _smokeCase25() {
 	fmt.Println(autoresizing)
 }
 
-func _smokeCase26() {
+func _smokeCase29() {
+	autoresizing, err := client.Machines.Autoresizing.Update(context.Background(), sdk.MachineAutoresizingUpdateParams{
+		MachineID:    "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		CPU:          sdk.F[sdk.MachineAutoresizingUpdateParamsCPU](sdk.MachineAutoresizingUpdateParamsCPU("on")),
+		CPUMaxVcpu:   sdk.F[float64](0.25),
+		Memory:       sdk.F[sdk.MachineAutoresizingUpdateParamsMemory](sdk.MachineAutoresizingUpdateParamsMemory("on")),
+		MemoryMaxMib: sdk.F[int64](256),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(autoresizing)
+}
+
+func _smokeCase30() {
 	autoresizing, err := client.Organization.Autoresizing.Get(context.Background())
 	if err != nil {
 		panic(err)
@@ -372,17 +423,127 @@ func _smokeCase26() {
 	fmt.Println(autoresizing)
 }
 
-func _smokeCase27() {
+func _smokeCase31() {
+	autoresizing, err := client.Organization.Autoresizing.Update(context.Background(), sdk.OrganizationAutoresizingUpdateParams{})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(autoresizing)
+}
+
+func _smokeCase32() {
 	autoresizing, err := client.Organization.Autoresizing.Update(context.Background(), sdk.OrganizationAutoresizingUpdateParams{
-		Policy: sdk.PolicyParam{
-			Enabled: sdk.F[bool](false),
-		},
+		CPU:          sdk.F[sdk.OrganizationAutoresizingUpdateParamsCPU](sdk.OrganizationAutoresizingUpdateParamsCPU("on")),
+		CPUMaxVcpu:   sdk.F[float64](0.25),
+		Memory:       sdk.F[sdk.OrganizationAutoresizingUpdateParamsMemory](sdk.OrganizationAutoresizingUpdateParamsMemory("on")),
+		MemoryMaxMib: sdk.F[int64](256),
 	})
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(autoresizing)
+}
+
+func _smokeCase33() {
+	image, err := client.Images.List(context.Background(), sdk.ImageListParams{
+		Limit: sdk.F[int64](100),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(image)
+}
+
+func _smokeCase34() {
+	image, err := client.Images.List(context.Background(), sdk.ImageListParams{
+		Cursor: sdk.F[string]("cursor"),
+		Limit:  sdk.F[int64](100),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(image)
+}
+
+func _smokeCase35() {
+	image, err := client.Images.New(context.Background(), sdk.ImageNewParams{
+		Platform: sdk.F[sdk.ImageNewParamsPlatform](sdk.ImageNewParamsPlatform("linux/amd64")),
+		Source: sdk.F[sdk.SourceParam](sdk.SourceParam{
+			Kind: sdk.F[string](""),
+		}),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(image)
+}
+
+func _smokeCase36() {
+	image, err := client.Images.New(context.Background(), sdk.ImageNewParams{
+		Platform: sdk.F[sdk.ImageNewParamsPlatform](sdk.ImageNewParamsPlatform("linux/amd64")),
+		Source: sdk.F[sdk.SourceParam](sdk.SourceParam{
+			Kind: sdk.F[string](""),
+		}),
+		CredentialRef: sdk.F[string](""),
+		Name:          sdk.F[string](""),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(image)
+}
+
+func _smokeCase37() {
+	image, err := client.Images.Get(context.Background(), sdk.ImageGetParams{
+		ImageID: "imageID",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(image)
+}
+
+func _smokeCase38() {
+	image, err := client.Images.Update(context.Background(), sdk.ImageUpdateParams{
+		ImageID: "imageID",
+		Name:    sdk.F[string](""),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(image)
+}
+
+func _smokeCase39() {
+	image, err := client.Images.Delete(context.Background(), sdk.ImageDeleteParams{
+		ImageID: "imageID",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(image)
+}
+
+func _smokeCase40() {
+	upload, err := client.Images.Uploads.New(context.Background(), sdk.ImageUploadNewParams{
+		Platform:  sdk.F[string](""),
+		Sha256:    sdk.F[string](""),
+		SizeBytes: sdk.F[int64](0),
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(upload)
 }
 
 var cases = []smokeCase{
@@ -397,21 +558,22 @@ var cases = []smokeCase{
 		Operation: "create",
 		Method:    "POST",
 		Path:      "/v1/machines",
+		Label:     "required params",
 		Run:       _smokeCase1,
+	},
+
+	{
+		Operation: "create",
+		Method:    "POST",
+		Path:      "/v1/machines",
+		Label:     "all params",
+		Run:       _smokeCase2,
 	},
 
 	{
 		Operation: "retrieve",
 		Method:    "GET",
 		Path:      "/v1/machines/{machine_id}",
-		Run:       _smokeCase2,
-	},
-
-	{
-		Operation: "update",
-		Method:    "PATCH",
-		Path:      "/v1/machines/{machine_id}",
-		Label:     "required params",
 		Run:       _smokeCase3,
 	},
 
@@ -419,29 +581,46 @@ var cases = []smokeCase{
 		Operation: "update",
 		Method:    "PATCH",
 		Path:      "/v1/machines/{machine_id}",
-		Label:     "all params",
+		Label:     "required params",
 		Run:       _smokeCase4,
+	},
+
+	{
+		Operation: "update",
+		Method:    "PATCH",
+		Path:      "/v1/machines/{machine_id}",
+		Label:     "all params",
+		Run:       _smokeCase5,
 	},
 
 	{
 		Operation: "delete",
 		Method:    "DELETE",
 		Path:      "/v1/machines/{machine_id}",
-		Run:       _smokeCase5,
+		Label:     "required params",
+		Run:       _smokeCase6,
+	},
+
+	{
+		Operation: "delete",
+		Method:    "DELETE",
+		Path:      "/v1/machines/{machine_id}",
+		Label:     "all params",
+		Run:       _smokeCase7,
 	},
 
 	{
 		Operation: "sleep",
 		Method:    "POST",
 		Path:      "/v1/machines/{machine_id}/sleep",
-		Run:       _smokeCase6,
+		Run:       _smokeCase8,
 	},
 
 	{
 		Operation: "wake",
 		Method:    "POST",
 		Path:      "/v1/machines/{machine_id}/wake",
-		Run:       _smokeCase7,
+		Run:       _smokeCase9,
 	},
 
 	{
@@ -449,7 +628,7 @@ var cases = []smokeCase{
 		Method:    "POST",
 		Path:      "/v1/machines/{machine_id}/reboot",
 		Label:     "required params",
-		Run:       _smokeCase8,
+		Run:       _smokeCase10,
 	},
 
 	{
@@ -457,42 +636,58 @@ var cases = []smokeCase{
 		Method:    "POST",
 		Path:      "/v1/machines/{machine_id}/reboot",
 		Label:     "all params",
-		Run:       _smokeCase9,
-	},
-
-	{
-		Operation: "list",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ssh",
-		Run:       _smokeCase10,
-	},
-
-	{
-		Operation: "create",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/ssh",
 		Run:       _smokeCase11,
 	},
 
 	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
+		Operation: "resize",
+		Method:    "POST",
+		Path:      "/v1/machines/{machine_id}/resize",
+		Label:     "required params",
 		Run:       _smokeCase12,
 	},
 
 	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
+		Operation: "resize",
+		Method:    "POST",
+		Path:      "/v1/machines/{machine_id}/resize",
+		Label:     "all params",
 		Run:       _smokeCase13,
 	},
 
 	{
 		Operation: "list",
 		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions",
+		Path:      "/v1/machines/{machine_id}/ssh",
 		Run:       _smokeCase14,
+	},
+
+	{
+		Operation: "create",
+		Method:    "POST",
+		Path:      "/v1/machines/{machine_id}/ssh",
+		Run:       _smokeCase15,
+	},
+
+	{
+		Operation: "retrieve",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
+		Run:       _smokeCase16,
+	},
+
+	{
+		Operation: "delete",
+		Method:    "DELETE",
+		Path:      "/v1/machines/{machine_id}/ssh/{session_id}",
+		Run:       _smokeCase17,
+	},
+
+	{
+		Operation: "list",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/executions",
+		Run:       _smokeCase18,
 	},
 
 	{
@@ -500,7 +695,7 @@ var cases = []smokeCase{
 		Method:    "POST",
 		Path:      "/v1/machines/{machine_id}/executions",
 		Label:     "required params",
-		Run:       _smokeCase15,
+		Run:       _smokeCase19,
 	},
 
 	{
@@ -508,84 +703,155 @@ var cases = []smokeCase{
 		Method:    "POST",
 		Path:      "/v1/machines/{machine_id}/executions",
 		Label:     "all params",
-		Run:       _smokeCase16,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
-		Run:       _smokeCase17,
-	},
-
-	{
-		Operation: "delete",
-		Method:    "DELETE",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
-		Run:       _smokeCase18,
-	},
-
-	{
-		Operation: "output",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/output",
-		Run:       _smokeCase19,
-	},
-
-	{
-		Operation: "events",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/events",
 		Run:       _smokeCase20,
 	},
 
 	{
 		Operation: "retrieve",
 		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/logs",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
 		Run:       _smokeCase21,
 	},
 
 	{
-		Operation: "reauthorize",
-		Method:    "POST",
-		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/logs/reauthorize",
+		Operation: "delete",
+		Method:    "DELETE",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}",
 		Run:       _smokeCase22,
+	},
+
+	{
+		Operation: "output",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/output",
+		Run:       _smokeCase23,
+	},
+
+	{
+		Operation: "events",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/events",
+		Run:       _smokeCase24,
+	},
+
+	{
+		Operation: "retrieve",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/logs",
+		Run:       _smokeCase25,
 	},
 
 	{
 		Operation: "createToken",
 		Method:    "POST",
 		Path:      "/v1/machines/{machine_id}/executions/{execution_id}/logs/token",
-		Run:       _smokeCase23,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/machines/{machine_id}/autoresizing",
-		Run:       _smokeCase24,
-	},
-
-	{
-		Operation: "update",
-		Method:    "PUT",
-		Path:      "/v1/machines/{machine_id}/autoresizing",
-		Run:       _smokeCase25,
-	},
-
-	{
-		Operation: "retrieve",
-		Method:    "GET",
-		Path:      "/v1/organization/autoresizing",
 		Run:       _smokeCase26,
 	},
 
 	{
-		Operation: "update",
-		Method:    "PUT",
-		Path:      "/v1/organization/autoresizing",
+		Operation: "retrieve",
+		Method:    "GET",
+		Path:      "/v1/machines/{machine_id}/autoresizing",
 		Run:       _smokeCase27,
+	},
+
+	{
+		Operation: "update",
+		Method:    "PATCH",
+		Path:      "/v1/machines/{machine_id}/autoresizing",
+		Label:     "required params",
+		Run:       _smokeCase28,
+	},
+
+	{
+		Operation: "update",
+		Method:    "PATCH",
+		Path:      "/v1/machines/{machine_id}/autoresizing",
+		Label:     "all params",
+		Run:       _smokeCase29,
+	},
+
+	{
+		Operation: "retrieve",
+		Method:    "GET",
+		Path:      "/v1/organization/autoresizing",
+		Run:       _smokeCase30,
+	},
+
+	{
+		Operation: "update",
+		Method:    "PATCH",
+		Path:      "/v1/organization/autoresizing",
+		Label:     "required params",
+		Run:       _smokeCase31,
+	},
+
+	{
+		Operation: "update",
+		Method:    "PATCH",
+		Path:      "/v1/organization/autoresizing",
+		Label:     "all params",
+		Run:       _smokeCase32,
+	},
+
+	{
+		Operation: "list",
+		Method:    "GET",
+		Path:      "/v1/images",
+		Label:     "required params",
+		Run:       _smokeCase33,
+	},
+
+	{
+		Operation: "list",
+		Method:    "GET",
+		Path:      "/v1/images",
+		Label:     "all params",
+		Run:       _smokeCase34,
+	},
+
+	{
+		Operation: "create",
+		Method:    "POST",
+		Path:      "/v1/images",
+		Label:     "required params",
+		Run:       _smokeCase35,
+	},
+
+	{
+		Operation: "create",
+		Method:    "POST",
+		Path:      "/v1/images",
+		Label:     "all params",
+		Run:       _smokeCase36,
+	},
+
+	{
+		Operation: "retrieve",
+		Method:    "GET",
+		Path:      "/v1/images/{image_id}",
+		Run:       _smokeCase37,
+	},
+
+	{
+		Operation: "update",
+		Method:    "PATCH",
+		Path:      "/v1/images/{image_id}",
+		Run:       _smokeCase38,
+	},
+
+	{
+		Operation: "delete",
+		Method:    "DELETE",
+		Path:      "/v1/images/{image_id}",
+		Run:       _smokeCase39,
+	},
+
+	{
+		Operation: "create",
+		Method:    "POST",
+		Path:      "/v1/images/uploads",
+		Run:       _smokeCase40,
 	},
 }
 
