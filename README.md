@@ -10,6 +10,7 @@ The full API of this library can be found in [api.md](./api.md).
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Image import](#image-import)
 - [API Reference](./api.md)
 - [Authentication](#authentication)
 - [Errors](#errors)
@@ -31,6 +32,50 @@ go get github.com/dedalus-labs/dedalus-go
 
 <br />
 
+## Image import
+
+Import and readiness polling are available in the `helpers/images` package:
+
+```go
+import (
+    "context"
+
+    sdk "github.com/dedalus-labs/dedalus-go"
+    "github.com/dedalus-labs/dedalus-go/helpers/images"
+)
+
+func importArchive(ctx context.Context) (*images.Image, error) {
+    client := sdk.NewClient()
+    return images.Import(ctx, client, "my-app.tar", images.ImportOptions{
+        Name: "my-app",
+        Platform: "linux/amd64",
+    })
+}
+```
+
+`Import` hashes and streams a `docker save` archive, registers it, and waits until
+ready by default. Set `NoWait: true` to return after registration; call
+`images.Poll(ctx, client, image.ImageID, images.PollOptions{})` to wait later.
+
+`ImportOptions` embeds `PollOptions`: `Timeout` defaults to one hour for the entire
+import, `PollInterval` defaults to two seconds, and `OnProgress` receives each
+observed image. A caller's earlier context deadline takes precedence. Cancellation
+stops the client without deleting the image or cancelling accepted preparation.
+`PreparationError.Image` preserves the image ID on preparation failure or interrupted
+polling, and `errors.Is` recognizes context cancellation and deadline expiry.
+
+Use the same `IdempotencyKey` when retrying unchanged input. The SDK's API retry
+policy is retained. Archives must be regular, nonempty files of at most 5 GiB.
+Storage uploads use a separate HTTP client without API credentials and reject
+redirects. The image API must be deployed and enabled for your organization;
+these helpers do not bypass access controls.
+
+Custom image imports currently require an Ubuntu 24.04 `linux/amd64` Docker-save
+archive. On Apple silicon, build or pull with `--platform linux/amd64` before
+saving the archive. The image provides the filesystem; container entrypoint,
+CMD, environment, working directory, and user settings are not applied. Start
+processes using Machine exec or SSH after the Machine reaches running.
+
 ## Usage
 
 ```go
@@ -47,7 +92,7 @@ import (
 
 func main() {
 	client := sdk.NewClient(
-		option.WithXAPIKey(os.Getenv("DEDALUS_X_API_KEY")),
+		option.WithBrowserToken(os.Getenv("DEDALUS_BROWSER_TOKEN")),
 	)
 
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
@@ -78,15 +123,17 @@ Pass credentials to the generated client constructor. Environment variables are 
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `option.WithAPIKey` | `string \| provider` | - | Dedalus API key for Bearer token authentication. Defaults to DEDALUS_API_KEY. |
-| `option.WithXAPIKey` | `string \| provider` | - | Dedalus API key for X-API-Key header authentication. Defaults to DEDALUS_X_API_KEY. |
-| `option.WithAsBaseURL` | `string \| provider` | - | MCP Authorization Server URL. Defaults to DEDALUS_AS_URL. |
-| `option.WithDedalusOrgID` | `string \| provider` | - | Optional organization assertion. Must match the organization identified by the API credential. Defaults to DEDALUS_ORG_ID. |
+| `option.WithAPIKey` | `func(string) option.RequestOption` | - | Dedalus API key for Bearer token authentication. Defaults to DEDALUS_API_KEY. |
+| `option.WithXAPIKey` | `func(string) option.RequestOption` | - | Dedalus API key for X-API-Key header authentication. Defaults to DEDALUS_X_API_KEY. |
+| `option.WithAsBaseURL` | `func(string) option.RequestOption` | - | MCP Authorization Server URL. Defaults to DEDALUS_AS_URL. |
+| `option.WithDedalusOrgID` | `func(string) option.RequestOption` | - | Optional organization assertion. Must match the organization identified by the API credential. Defaults to DEDALUS_ORG_ID. |
+| `option.WithBrowserToken` | `func(string) option.RequestOption` | - | Browser session access token managed by dedalus login. Defaults to DEDALUS_BROWSER_TOKEN. |
 
 Declared schemes:
 
 - `ApiKeyAuth` API key in header `x-api-key`
 - `BearerAuth` bearer token
+- `BrowserAuth` OAuth2/OpenID Connect
 
 <br />
 
@@ -106,7 +153,7 @@ machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 if err != nil {
 	var apiErr *sdk.Error
 	if errors.As(err, &apiErr) {
-		fmt.Println(apiErr.StatusCode, apiErr.RawJSON())
+		fmt.Println(apiErr.StatusCode, apiErr.JSON.RawJSON())
 	}
 	panic(err)
 }
@@ -114,7 +161,7 @@ if err != nil {
 // imports: "context", "errors", "fmt", sdk "github.com/dedalus-labs/dedalus-go"
 ```
 
-Documented error statuses: `401`, `403`, `409`, `429`, `503`, `default`.
+Documented error statuses: `400`, `401`, `402`, `403`, `404`, `409`, `422`, `429`, `500`, `503`, `504`, `default`.
 
 <br />
 
@@ -138,6 +185,7 @@ client := sdk.NewClient(
 | `option.WithXAPIKey` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_X_API_KEY")` | Dedalus API key for X-API-Key header authentication. |
 | `option.WithAsBaseURL` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_AS_URL")` | MCP Authorization Server URL. |
 | `option.WithDedalusOrgID` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_ORG_ID")` | Optional organization assertion. Must match the organization identified by the API credential. |
+| `option.WithBrowserToken` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_BROWSER_TOKEN")` | Browser session access token managed by dedalus login. |
 | `option.WithEnvironmentProduction` | `func() option.RequestOption` | - | Select the production API environment. |
 | `option.WithBaseURL` | `func(string) option.RequestOption` | `os.Getenv("DEDALUS_BASE_URL")` | Override the default API base URL. |
 | `option.WithRequestTimeout` | `func(time.Duration) option.RequestOption` | - | Maximum time to wait for each request attempt. |
@@ -166,15 +214,31 @@ Generated clients support request timeouts and retry temporary failures such as 
 
 ## Pagination
 
-List endpoints return paginated results you can iterate directly; the SDK fetches subsequent pages for you.
+Paginated list methods return one page per call. A method that returns a page type has a sibling `<Method>AutoPaging` method returning an iterator that fetches the next page as the loop reaches it:
+
+```go
+iter := client.Machines.ListAutoPaging(context.Background(), sdk.MachineListParams{})
+for iter.Next() {
+	fmt.Printf("%+v\n", iter.Current())
+}
+if err := iter.Err(); err != nil {
+	panic(err)
+}
+```
+
+To walk the pages yourself, range over the page's items and advance it with `GetNextPage()`, which returns a nil page after the last one:
 
 ```go
 page, err := client.Machines.List(context.Background(), sdk.MachineListParams{})
+for page != nil {
+	for _, item := range page.Items {
+		fmt.Printf("%+v\n", item)
+	}
+	page, err = page.GetNextPage()
+}
 if err != nil {
 	panic(err)
 }
-
-fmt.Println(page)
 ```
 
 <br />
@@ -182,7 +246,7 @@ fmt.Println(page)
 ## Helpers
 
 - Pass `option.WithResponseInto(&raw)` to capture the underlying `*http.Response` for a request.
-- Use the generated `String`, `Int`, `Bool`, `Float`, `Time`, `Opt`, and `Ptr` helpers when setting optional params.
+- Use the generated `F`, `Null`, `Raw`, `Int`, `String`, `Float`, `Bool`, and `FileParam` helpers when setting optional params.
 
 <br />
 

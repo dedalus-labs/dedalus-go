@@ -20,6 +20,7 @@ type Client struct {
 	Options      []option.RequestOption
 	Machines     *MachineService
 	Organization *OrganizationService
+	Images       *ImageService
 }
 
 // DefaultClientOptions read from the environment. This should be used to initialize
@@ -43,6 +44,9 @@ func DefaultClientOptions() []option.RequestOption {
 	if o, ok := os.LookupEnv("DEDALUS_ORG_ID"); ok {
 		defaults = append(defaults, option.WithDedalusOrgID(o))
 	}
+	if o, ok := os.LookupEnv("DEDALUS_BROWSER_TOKEN"); ok {
+		defaults = append(defaults, option.WithBrowserToken(o))
+	}
 	if o, ok := os.LookupEnv("DEDALUS_CUSTOM_HEADERS"); ok {
 		for _, line := range strings.Split(o, "\n") {
 			colon := strings.Index(line, ":")
@@ -65,12 +69,14 @@ func NewClient(opts ...option.RequestOption) (r *Client) {
 
 	r.Machines = NewMachineService(opts...)
 	r.Organization = NewOrganizationService(opts...)
+	r.Images = NewImageService(opts...)
 
 	return
 }
 
-// Execute makes a request with the given context, method, URL, request params,
-// response, and request options.
+// Execute makes a request with the given context, method, path, request params,
+// response, and request options. The path is resolved against the base URL; an
+// absolute URL must be on the base URL's origin (option.WithBaseURL changes it).
 func (r *Client) Execute(ctx context.Context, method string, path string, params interface{}, res interface{}, opts ...option.RequestOption) error {
 	opts = slices.Concat(r.Options, opts)
 	return requestconfig.ExecuteNewRequest(ctx, method, path, params, res, opts...)

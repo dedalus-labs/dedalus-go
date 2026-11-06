@@ -150,12 +150,12 @@ func (r *MachineExecutionService) New(ctx context.Context, body MachineExecution
 //	fmt.Println(execution.ExecutionID)
 func (r *MachineExecutionService) Get(ctx context.Context, params MachineExecutionGetParams, opts ...option.RequestOption) (res *Execution, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.ExecutionID == "" {
-		err = errors.New("missing required execution_id parameter")
-		return nil, err
-	}
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	if params.ExecutionID == "" {
+		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/machines/%s/executions/%s", url.PathEscape(params.MachineID), url.PathEscape(params.ExecutionID))
@@ -188,12 +188,12 @@ func (r *MachineExecutionService) Get(ctx context.Context, params MachineExecuti
 //	fmt.Println(execution.ExecutionID)
 func (r *MachineExecutionService) Delete(ctx context.Context, params MachineExecutionDeleteParams, opts ...option.RequestOption) (res *Execution, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.ExecutionID == "" {
-		err = errors.New("missing required execution_id parameter")
-		return nil, err
-	}
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	if params.ExecutionID == "" {
+		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/machines/%s/executions/%s", url.PathEscape(params.MachineID), url.PathEscape(params.ExecutionID))
@@ -226,12 +226,12 @@ func (r *MachineExecutionService) Delete(ctx context.Context, params MachineExec
 //	fmt.Println(execution.ExecutionID)
 func (r *MachineExecutionService) Output(ctx context.Context, params MachineExecutionOutputParams, opts ...option.RequestOption) (res *ExecutionOutput, err error) {
 	opts = slices.Concat(r.Options, opts)
-	if params.ExecutionID == "" {
-		err = errors.New("missing required execution_id parameter")
-		return nil, err
-	}
 	if params.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	if params.ExecutionID == "" {
+		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/machines/%s/executions/%s/output", url.PathEscape(params.MachineID), url.PathEscape(params.ExecutionID))
@@ -266,12 +266,12 @@ func (r *MachineExecutionService) Events(ctx context.Context, query MachineExecu
 	var raw *http.Response
 	opts = slices.Concat(r.Options, opts)
 	opts = append([]option.RequestOption{option.WithResponseInto(&raw)}, opts...)
-	if query.ExecutionID == "" {
-		err = errors.New("missing required execution_id parameter")
-		return nil, err
-	}
 	if query.MachineID == "" {
 		err = errors.New("missing required machine_id parameter")
+		return nil, err
+	}
+	if query.ExecutionID == "" {
+		err = errors.New("missing required execution_id parameter")
 		return nil, err
 	}
 	path := fmt.Sprintf("v1/machines/%s/executions/%s/events", url.PathEscape(query.MachineID), url.PathEscape(query.ExecutionID))
@@ -560,18 +560,6 @@ func (r *ArtifactRef) UnmarshalJSON(data []byte) (err error) {
 
 func (r artifactRefJSON) RawJSON() string {
 	return r.raw
-}
-
-type ExecutionCreateParamsParam struct {
-	Command   param.Field[[]string]          `json:"command" api:"required"`
-	Cwd       param.Field[string]            `json:"cwd"`
-	Env       param.Field[map[string]string] `json:"env"`
-	Stdin     param.Field[string]            `json:"stdin"`
-	TimeoutMs param.Field[int64]             `json:"timeout_ms"`
-}
-
-func (r ExecutionCreateParamsParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
 }
 
 type MachineExecutionListParams struct {

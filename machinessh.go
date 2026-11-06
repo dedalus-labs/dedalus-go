@@ -352,14 +352,6 @@ func (r SSHHostTrustKind) IsKnown() bool {
 	return false
 }
 
-type SSHSessionCreateParamsParam struct {
-	PublicKey param.Field[string] `json:"public_key" api:"required"`
-}
-
-func (r SSHSessionCreateParamsParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
-}
-
 type MachineSSHListParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.

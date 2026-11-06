@@ -30,6 +30,13 @@ func RegisterUnion(typ reflect.Type, discriminator string, variants ...UnionVari
 	}
 }
 
+// IsUnion reports whether typ is a union registered with RegisterUnion, which only this package
+// can decode into.
+func IsUnion(typ reflect.Type) bool {
+	_, ok := unionRegistry[typ]
+	return ok
+}
+
 // Useful to wrap a union type to force it to use [apijson.UnmarshalJSON] since you cannot define an
 // UnmarshalJSON function on the interface itself.
 type UnionUnmarshaler[T any] struct {
