@@ -10,6 +10,7 @@ The full API of this library can be found in [api.md](./api.md).
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Image import](#image-import)
 - [API Reference](./api.md)
 - [Authentication](#authentication)
 - [Errors](#errors)
@@ -30,6 +31,50 @@ go get github.com/dedalus-labs/dedalus-go
 ```
 
 <br />
+
+## Image import
+
+Import and readiness polling are available in the `helpers/images` package:
+
+```go
+import (
+    "context"
+
+    sdk "github.com/dedalus-labs/dedalus-go"
+    "github.com/dedalus-labs/dedalus-go/helpers/images"
+)
+
+func importArchive(ctx context.Context) (*images.Image, error) {
+    client := sdk.NewClient()
+    return images.Import(ctx, &client, "my-app.tar", images.ImportOptions{
+        Name: "my-app",
+        Platform: "linux/amd64",
+    })
+}
+```
+
+`Import` hashes and streams a `docker save` archive, registers it, and waits until
+ready by default. Set `NoWait: true` to return after registration; call
+`images.Poll(ctx, &client, image.ImageID, images.PollOptions{})` to wait later.
+
+`ImportOptions` embeds `PollOptions`: `Timeout` defaults to one hour for the entire
+import, `PollInterval` defaults to two seconds, and `OnProgress` receives each
+observed image. A caller's earlier context deadline takes precedence. Cancellation
+stops the client without deleting the image or cancelling accepted preparation.
+`PreparationError.Image` preserves the image ID on preparation failure or interrupted
+polling, and `errors.Is` recognizes context cancellation and deadline expiry.
+
+Use the same `IdempotencyKey` when retrying unchanged input. The SDK's API retry
+policy is retained. Archives must be regular, nonempty files of at most 5 GiB.
+Storage uploads use a separate HTTP client without API credentials and reject
+redirects. The image API must be deployed and enabled for your organization;
+these helpers do not bypass access controls.
+
+Custom image imports currently require an Ubuntu 24.04 `linux/amd64` Docker-save
+archive. On Apple silicon, build or pull with `--platform linux/amd64` before
+saving the archive. The image provides the filesystem; container entrypoint,
+CMD, environment, working directory, and user settings are not applied. Start
+processes using Machine exec or SSH after the Machine reaches running.
 
 ## Usage
 
