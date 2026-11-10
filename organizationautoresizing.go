@@ -86,9 +86,9 @@ type OrganizationAutoresizingUpdateParams struct {
 	CPUMaxVCPU   param.Opt[float64] `json:"cpu_max_vcpu,omitzero"`
 	MemoryMaxMiB param.Opt[int64]   `json:"memory_max_mib,omitzero"`
 	// Any of "on", "off".
-	CPU OrganizationAutoresizingUpdateParamsCPU `json:"cpu,omitzero"`
+	CPU AutoresizingSwitch `json:"cpu,omitzero"`
 	// Any of "on", "off".
-	Memory OrganizationAutoresizingUpdateParamsMemory `json:"memory,omitzero"`
+	Memory AutoresizingSwitch `json:"memory,omitzero"`
 	paramObj
 }
 
@@ -99,17 +99,3 @@ func (r OrganizationAutoresizingUpdateParams) MarshalJSON() (data []byte, err er
 func (r *OrganizationAutoresizingUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type OrganizationAutoresizingUpdateParamsCPU string
-
-const (
-	OrganizationAutoresizingUpdateParamsCPUOn  OrganizationAutoresizingUpdateParamsCPU = "on"
-	OrganizationAutoresizingUpdateParamsCPUOff OrganizationAutoresizingUpdateParamsCPU = "off"
-)
-
-type OrganizationAutoresizingUpdateParamsMemory string
-
-const (
-	OrganizationAutoresizingUpdateParamsMemoryOn  OrganizationAutoresizingUpdateParamsMemory = "on"
-	OrganizationAutoresizingUpdateParamsMemoryOff OrganizationAutoresizingUpdateParamsMemory = "off"
-)

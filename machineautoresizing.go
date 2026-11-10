@@ -103,7 +103,7 @@ type Policy struct {
 	// Permit automatic CPU growth independently of RAM.
 	//
 	// Any of "on", "off".
-	CPU PolicyCPU `json:"cpu" api:"required"`
+	CPU AutoresizingSwitch `json:"cpu" api:"required"`
 	// Any of "plan", "configured", "platform".
 	CPULimitSource PolicyCPULimitSource `json:"cpu_limit_source" api:"required"`
 	// Configured CPU growth limit in 0.25-vCPU steps. Null uses the plan limit.
@@ -117,7 +117,7 @@ type Policy struct {
 	// Permit automatic RAM growth. Automatic shrink remains internal.
 	//
 	// Any of "on", "off".
-	Memory PolicyMemory `json:"memory" api:"required"`
+	Memory AutoresizingSwitch `json:"memory" api:"required"`
 	// Any of "plan", "configured", "platform".
 	MemoryLimitSource PolicyMemoryLimitSource `json:"memory_limit_source" api:"required"`
 	// Configured RAM growth limit in MiB. Null uses the plan limit.
@@ -144,26 +144,12 @@ func (r *Policy) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type PolicyCPU string
-
-const (
-	PolicyCPUOn  PolicyCPU = "on"
-	PolicyCPUOff PolicyCPU = "off"
-)
-
 type PolicyCPULimitSource string
 
 const (
 	PolicyCPULimitSourcePlan       PolicyCPULimitSource = "plan"
 	PolicyCPULimitSourceConfigured PolicyCPULimitSource = "configured"
 	PolicyCPULimitSourcePlatform   PolicyCPULimitSource = "platform"
-)
-
-type PolicyMemory string
-
-const (
-	PolicyMemoryOn  PolicyMemory = "on"
-	PolicyMemoryOff PolicyMemory = "off"
 )
 
 type PolicyMemoryLimitSource string
@@ -188,9 +174,9 @@ type MachineAutoresizingUpdateParams struct {
 	CPUMaxVCPU   param.Opt[float64] `json:"cpu_max_vcpu,omitzero"`
 	MemoryMaxMiB param.Opt[int64]   `json:"memory_max_mib,omitzero"`
 	// Any of "on", "off".
-	CPU MachineAutoresizingUpdateParamsCPU `json:"cpu,omitzero"`
+	CPU AutoresizingSwitch `json:"cpu,omitzero"`
 	// Any of "on", "off".
-	Memory MachineAutoresizingUpdateParamsMemory `json:"memory,omitzero"`
+	Memory AutoresizingSwitch `json:"memory,omitzero"`
 	paramObj
 }
 
@@ -201,17 +187,3 @@ func (r MachineAutoresizingUpdateParams) MarshalJSON() (data []byte, err error) 
 func (r *MachineAutoresizingUpdateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
-
-type MachineAutoresizingUpdateParamsCPU string
-
-const (
-	MachineAutoresizingUpdateParamsCPUOn  MachineAutoresizingUpdateParamsCPU = "on"
-	MachineAutoresizingUpdateParamsCPUOff MachineAutoresizingUpdateParamsCPU = "off"
-)
-
-type MachineAutoresizingUpdateParamsMemory string
-
-const (
-	MachineAutoresizingUpdateParamsMemoryOn  MachineAutoresizingUpdateParamsMemory = "on"
-	MachineAutoresizingUpdateParamsMemoryOff MachineAutoresizingUpdateParamsMemory = "off"
-)
