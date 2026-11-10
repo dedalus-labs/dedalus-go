@@ -86,10 +86,10 @@ fmt.Println(page)
 ```go
 machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 	CreateParams: sdk.CreateParams{
-		Autosleep:  sdk.F[string]("300s"),
-		MemoryMib:  sdk.F[int64](4096),
-		StorageGib: sdk.F[int64](10),
-		Vcpu:       sdk.F[float64](1),
+		Autosleep:  sdk.String("300s"),
+		MemoryMiB:  sdk.Int(4096),
+		StorageGiB: sdk.Int(10),
+		VCPU:       sdk.Float(1),
 	},
 })
 if err != nil {
@@ -263,7 +263,7 @@ fmt.Println(page)
 ssh, err := client.Machines.SSH.New(context.Background(), sdk.MachineSSHNewParams{
 	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	SSHSessionCreateParams: sdk.SSHSessionCreateParams{
-		PublicKey: sdk.F[string](""),
+		PublicKey: "",
 	},
 })
 if err != nil {
@@ -342,7 +342,7 @@ fmt.Println(page)
 execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
 	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 	ExecutionCreateParams: sdk.ExecutionCreateParams{
-		Command: sdk.F[[]string]([]string{""}),
+		Command: []string{""},
 	},
 })
 if err != nil {
@@ -361,8 +361,8 @@ fmt.Println(execution.ExecutionID)
 
 ```go
 execution, err := client.Machines.Executions.Get(context.Background(), sdk.MachineExecutionGetParams{
-	ExecutionID: "executionID",
 	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	ExecutionID: "executionID",
 })
 if err != nil {
 	panic(err)
@@ -380,8 +380,8 @@ fmt.Println(execution.ExecutionID)
 
 ```go
 execution, err := client.Machines.Executions.Delete(context.Background(), sdk.MachineExecutionDeleteParams{
-	ExecutionID: "executionID",
 	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	ExecutionID: "executionID",
 })
 if err != nil {
 	panic(err)
@@ -399,8 +399,8 @@ fmt.Println(execution.ExecutionID)
 
 ```go
 execution, err := client.Machines.Executions.Output(context.Background(), sdk.MachineExecutionOutputParams{
-	ExecutionID: "executionID",
 	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	ExecutionID: "executionID",
 })
 if err != nil {
 	panic(err)
@@ -418,8 +418,8 @@ fmt.Println(execution.ExecutionID)
 
 ```go
 page, err := client.Machines.Executions.Events(context.Background(), sdk.MachineExecutionEventsParams{
-	ExecutionID: "executionID",
 	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	ExecutionID: "executionID",
 })
 if err != nil {
 	panic(err)
@@ -439,8 +439,8 @@ fmt.Println(page)
 
 ```go
 log, err := client.Machines.Executions.Logs.Get(context.Background(), sdk.MachineExecutionLogGetParams{
-	ExecutionID: "executionID",
 	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	ExecutionID: "executionID",
 })
 if err != nil {
 	panic(err)
@@ -458,8 +458,8 @@ fmt.Println(log)
 
 ```go
 log, err := client.Machines.Executions.Logs.NewToken(context.Background(), sdk.MachineExecutionLogNewTokenParams{
-	ExecutionID: "executionID",
 	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	ExecutionID: "executionID",
 })
 if err != nil {
 	panic(err)
@@ -558,7 +558,7 @@ Pages through the organization's images in ID order. A deleted image is left out
 
 ```go
 image, err := client.Images.List(context.Background(), sdk.ImageListParams{
-	Limit: sdk.F[int64](100),
+	Limit: sdk.Int(100),
 })
 if err != nil {
 	panic(err)
@@ -578,10 +578,10 @@ Requires an entitled organization and linux/amd64 on the current fleet. Acceptan
 
 ```go
 image, err := client.Images.New(context.Background(), sdk.ImageNewParams{
-	Platform: sdk.F[sdk.ImageNewParamsPlatform](sdk.ImageNewParamsPlatform("linux/amd64")),
-	Source: sdk.F[sdk.SourceParam](sdk.SourceParam{
-		Kind: sdk.F[string](""),
-	}),
+	Platform: "linux/amd64",
+	Source: sdk.SourceParam{
+		Kind: "",
+	},
 })
 if err != nil {
 	panic(err)
@@ -622,7 +622,7 @@ Changes only the name. The image's source, platform and state are immutable.
 ```go
 image, err := client.Images.Update(context.Background(), sdk.ImageUpdateParams{
 	ImageID: "imageID",
-	Name:    sdk.F[string](""),
+	Name:    sdk.String(""),
 })
 if err != nil {
 	panic(err)
@@ -662,9 +662,9 @@ fmt.Println(image)
 
 ```go
 upload, err := client.Images.Uploads.New(context.Background(), sdk.ImageUploadNewParams{
-	Platform:  sdk.F[string](""),
-	Sha256:    sdk.F[string](""),
-	SizeBytes: sdk.F[int64](0),
+	Platform:  "",
+	Sha256:    "",
+	SizeBytes: 0,
 })
 if err != nil {
 	panic(err)

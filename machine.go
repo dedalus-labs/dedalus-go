@@ -13,10 +13,12 @@ import (
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
 	"github.com/dedalus-labs/dedalus-go/internal/apiquery"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
+	shimjson "github.com/dedalus-labs/dedalus-go/internal/encoding/json"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
 	"github.com/dedalus-labs/dedalus-go/packages/pagination"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // MachineService contains methods and other services that help with interacting
@@ -24,16 +26,16 @@ import (
 // the [NewMachineService] method instead.
 type MachineService struct {
 	Options      []option.RequestOption
-	SSH          *MachineSSHService
-	Executions   *MachineExecutionService
-	Autoresizing *MachineAutoresizingService
+	SSH          MachineSSHService
+	Executions   MachineExecutionService
+	Autoresizing MachineAutoresizingService
 }
 
 // NewMachineService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewMachineService(opts ...option.RequestOption) (r *MachineService) {
-	r = &MachineService{}
+func NewMachineService(opts ...option.RequestOption) (r MachineService) {
+	r = MachineService{}
 	r.Options = opts
 	r.SSH = NewMachineSSHService(opts...)
 	r.Executions = NewMachineExecutionService(opts...)
@@ -103,10 +105,10 @@ func (r *MachineService) ListAutoPaging(ctx context.Context, query MachineListPa
 //
 //	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 //		CreateParams: sdk.CreateParams{
-//			Autosleep:  sdk.F[string]("300s"),
-//			MemoryMib:  sdk.F[int64](4096),
-//			StorageGib: sdk.F[int64](10),
-//			Vcpu:       sdk.F[float64](1),
+//			Autosleep:  sdk.String("300s"),
+//			MemoryMiB:  sdk.Int(4096),
+//			StorageGiB: sdk.Int(10),
+//			VCPU:       sdk.Float(1),
 //		},
 //	})
 //	if err != nil {
@@ -355,37 +357,36 @@ func (r *MachineService) Resize(ctx context.Context, body MachineResizeParams, o
 
 type Machine struct {
 	// Seconds of inactivity before autosleep. 0 disables autosleep.
-	AutosleepSeconds int64               `json:"autosleep_seconds" api:"required"`
-	DesiredState     MachineDesiredState `json:"desired_state" api:"required"`
-	MachineID        string              `json:"machine_id" api:"required" format:"uuid"`
+	AutosleepSeconds int64 `json:"autosleep_seconds" api:"required"`
+	// Any of "running", "sleeping", "destroyed".
+	DesiredState MachineDesiredState `json:"desired_state" api:"required"`
+	MachineID    string              `json:"machine_id" api:"required" format:"uuid"`
 	// Memory in MiB.
-	MemoryMib  int64        `json:"memory_mib" api:"required"`
+	MemoryMiB int64 `json:"memory_mib" api:"required"`
+	// Any of "accepted", "placement_pending", "starting", "running", "stopping",
+	// "sleeping", "destroying", "destroyed", "failed".
 	Phase      MachinePhase `json:"phase" api:"required"`
-	StorageGib int64        `json:"storage_gib" api:"required"`
+	StorageGiB int64        `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
-	Vcpu float64     `json:"vcpu" api:"required"`
-	JSON machineJSON `json:"-"`
+	VCPU float64 `json:"vcpu" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AutosleepSeconds respjson.Field
+		DesiredState     respjson.Field
+		MachineID        respjson.Field
+		MemoryMiB        respjson.Field
+		Phase            respjson.Field
+		StorageGiB       respjson.Field
+		VCPU             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
 }
 
-// machineJSON contains the JSON metadata for the struct [Machine]
-type machineJSON struct {
-	AutosleepSeconds apijson.Field
-	DesiredState     apijson.Field
-	MachineID        apijson.Field
-	MemoryMib        apijson.Field
-	Phase            apijson.Field
-	StorageGib       apijson.Field
-	Vcpu             apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
-}
-
-func (r *Machine) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Machine) RawJSON() string { return r.JSON.raw }
+func (r *Machine) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r machineJSON) RawJSON() string {
-	return r.raw
 }
 
 type MachineDesiredState string
@@ -395,14 +396,6 @@ const (
 	MachineDesiredStateSleeping  MachineDesiredState = "sleeping"
 	MachineDesiredStateDestroyed MachineDesiredState = "destroyed"
 )
-
-func (r MachineDesiredState) IsKnown() bool {
-	switch r {
-	case MachineDesiredStateRunning, MachineDesiredStateSleeping, MachineDesiredStateDestroyed:
-		return true
-	}
-	return false
-}
 
 type MachinePhase string
 
@@ -418,71 +411,58 @@ const (
 	MachinePhaseFailed           MachinePhase = "failed"
 )
 
-func (r MachinePhase) IsKnown() bool {
-	switch r {
-	case MachinePhaseAccepted, MachinePhasePlacementPending, MachinePhaseStarting, MachinePhaseRunning, MachinePhaseStopping, MachinePhaseSleeping, MachinePhaseDestroying, MachinePhaseDestroyed, MachinePhaseFailed:
-		return true
-	}
-	return false
-}
-
 type MachineList struct {
-	Items      []MachineListItem `json:"items" api:"required,nullable"`
+	Items      []MachineListItem `json:"items" api:"required"`
 	NextCursor string            `json:"next_cursor"`
-	JSON       machineListJSON   `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Items       respjson.Field
+		NextCursor  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// machineListJSON contains the JSON metadata for the struct [MachineList]
-type machineListJSON struct {
-	Items       apijson.Field
-	NextCursor  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *MachineList) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r MachineList) RawJSON() string { return r.JSON.raw }
+func (r *MachineList) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r machineListJSON) RawJSON() string {
-	return r.raw
 }
 
 type MachineListItem struct {
 	// Seconds of inactivity before autosleep. 0 disables autosleep.
-	AutosleepSeconds int64                       `json:"autosleep_seconds" api:"required"`
-	CreatedAt        time.Time                   `json:"created_at" api:"required" format:"date-time"`
-	DesiredState     MachineListItemDesiredState `json:"desired_state" api:"required"`
-	MachineID        string                      `json:"machine_id" api:"required" format:"uuid"`
+	AutosleepSeconds int64     `json:"autosleep_seconds" api:"required"`
+	CreatedAt        time.Time `json:"created_at" api:"required" format:"date-time"`
+	// Any of "running", "sleeping", "destroyed".
+	DesiredState MachineListItemDesiredState `json:"desired_state" api:"required"`
+	MachineID    string                      `json:"machine_id" api:"required" format:"uuid"`
 	// Memory in MiB.
-	MemoryMib  int64                `json:"memory_mib" api:"required"`
+	MemoryMiB int64 `json:"memory_mib" api:"required"`
+	// Any of "accepted", "placement_pending", "starting", "running", "stopping",
+	// "sleeping", "destroying", "destroyed", "failed".
 	Phase      MachineListItemPhase `json:"phase" api:"required"`
-	StorageGib int64                `json:"storage_gib" api:"required"`
+	StorageGiB int64                `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
-	Vcpu float64             `json:"vcpu" api:"required"`
-	JSON machineListItemJSON `json:"-"`
+	VCPU float64 `json:"vcpu" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AutosleepSeconds respjson.Field
+		CreatedAt        respjson.Field
+		DesiredState     respjson.Field
+		MachineID        respjson.Field
+		MemoryMiB        respjson.Field
+		Phase            respjson.Field
+		StorageGiB       respjson.Field
+		VCPU             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
 }
 
-// machineListItemJSON contains the JSON metadata for the struct [MachineListItem]
-type machineListItemJSON struct {
-	AutosleepSeconds apijson.Field
-	CreatedAt        apijson.Field
-	DesiredState     apijson.Field
-	MachineID        apijson.Field
-	MemoryMib        apijson.Field
-	Phase            apijson.Field
-	StorageGib       apijson.Field
-	Vcpu             apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
-}
-
-func (r *MachineListItem) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r MachineListItem) RawJSON() string { return r.JSON.raw }
+func (r *MachineListItem) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r machineListItemJSON) RawJSON() string {
-	return r.raw
 }
 
 type MachineListItemDesiredState string
@@ -492,14 +472,6 @@ const (
 	MachineListItemDesiredStateSleeping  MachineListItemDesiredState = "sleeping"
 	MachineListItemDesiredStateDestroyed MachineListItemDesiredState = "destroyed"
 )
-
-func (r MachineListItemDesiredState) IsKnown() bool {
-	switch r {
-	case MachineListItemDesiredStateRunning, MachineListItemDesiredStateSleeping, MachineListItemDesiredStateDestroyed:
-		return true
-	}
-	return false
-}
 
 type MachineListItemPhase string
 
@@ -515,74 +487,74 @@ const (
 	MachineListItemPhaseFailed           MachineListItemPhase = "failed"
 )
 
-func (r MachineListItemPhase) IsKnown() bool {
-	switch r {
-	case MachineListItemPhaseAccepted, MachineListItemPhasePlacementPending, MachineListItemPhaseStarting, MachineListItemPhaseRunning, MachineListItemPhaseStopping, MachineListItemPhaseSleeping, MachineListItemPhaseDestroying, MachineListItemPhaseDestroyed, MachineListItemPhaseFailed:
-		return true
-	}
-	return false
-}
-
 type CreateParams struct {
 	// Idle window before autosleep. Accepts fixed duration units like 30s, 30m, 2h,
 	// 7d3h4s, or 1w3d, raw seconds ("1800"), or never to disable.
-	Autosleep param.Field[string] `json:"autosleep"`
+	Autosleep param.Opt[string] `json:"autosleep,omitzero"`
 	// Organization-owned ready custom image ID. Requires Pro. Omit for the platform
 	// default.
-	ImageID param.Field[string] `json:"image_id"`
+	ImageID param.Opt[string] `json:"image_id,omitzero"`
 	// Memory in MiB.
-	MemoryMib param.Field[int64] `json:"memory_mib"`
+	MemoryMiB param.Opt[int64] `json:"memory_mib,omitzero"`
 	// Storage in GiB.
-	StorageGib param.Field[int64] `json:"storage_gib"`
+	StorageGiB param.Opt[int64] `json:"storage_gib,omitzero"`
 	// CPU in vCPUs.
-	Vcpu param.Field[float64] `json:"vcpu"`
+	VCPU param.Opt[float64] `json:"vcpu,omitzero"`
+	paramObj
 }
 
 func (r CreateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow CreateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *CreateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type UpdateParams struct {
-	Autosleep  param.Field[string] `json:"autosleep"`
-	StorageGib param.Field[int64]  `json:"storage_gib"`
+	Autosleep  param.Opt[string] `json:"autosleep,omitzero"`
+	StorageGiB param.Opt[int64]  `json:"storage_gib,omitzero"`
+	paramObj
 }
 
 func (r UpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow UpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *UpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type LifecycleStatus struct {
 	Autoresize       LifecycleStatusAutoresize `json:"autoresize" api:"required"`
 	LastProgressAt   time.Time                 `json:"last_progress_at" api:"required" format:"date-time"`
 	LastTransitionAt time.Time                 `json:"last_transition_at" api:"required" format:"date-time"`
-	Phase            LifecycleStatusPhase      `json:"phase" api:"required"`
-	Reason           string                    `json:"reason" api:"required"`
-	Retryable        bool                      `json:"retryable" api:"required"`
-	Revision         string                    `json:"revision" api:"required"`
-	LastError        string                    `json:"last_error"`
-	JSON             lifecycleStatusJSON       `json:"-"`
+	// Any of "accepted", "placement_pending", "starting", "running", "stopping",
+	// "sleeping", "destroying", "destroyed", "failed".
+	Phase     LifecycleStatusPhase `json:"phase" api:"required"`
+	Reason    string               `json:"reason" api:"required"`
+	Retryable bool                 `json:"retryable" api:"required"`
+	Revision  string               `json:"revision" api:"required"`
+	LastError string               `json:"last_error"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Autoresize       respjson.Field
+		LastProgressAt   respjson.Field
+		LastTransitionAt respjson.Field
+		Phase            respjson.Field
+		Reason           respjson.Field
+		Retryable        respjson.Field
+		Revision         respjson.Field
+		LastError        respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
 }
 
-// lifecycleStatusJSON contains the JSON metadata for the struct [LifecycleStatus]
-type lifecycleStatusJSON struct {
-	Autoresize       apijson.Field
-	LastProgressAt   apijson.Field
-	LastTransitionAt apijson.Field
-	Phase            apijson.Field
-	Reason           apijson.Field
-	Retryable        apijson.Field
-	Revision         apijson.Field
-	LastError        apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
-}
-
-func (r *LifecycleStatus) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r LifecycleStatus) RawJSON() string { return r.JSON.raw }
+func (r *LifecycleStatus) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r lifecycleStatusJSON) RawJSON() string {
-	return r.raw
 }
 
 type LifecycleStatusPhase string
@@ -599,47 +571,36 @@ const (
 	LifecycleStatusPhaseFailed           LifecycleStatusPhase = "failed"
 )
 
-func (r LifecycleStatusPhase) IsKnown() bool {
-	switch r {
-	case LifecycleStatusPhaseAccepted, LifecycleStatusPhasePlacementPending, LifecycleStatusPhaseStarting, LifecycleStatusPhaseRunning, LifecycleStatusPhaseStopping, LifecycleStatusPhaseSleeping, LifecycleStatusPhaseDestroying, LifecycleStatusPhaseDestroyed, LifecycleStatusPhaseFailed:
-		return true
-	}
-	return false
-}
-
 type MachineGetResponse struct {
 	// Seconds of inactivity before autosleep. 0 disables autosleep.
-	AutosleepSeconds int64                          `json:"autosleep_seconds" api:"required"`
-	DesiredState     MachineGetResponseDesiredState `json:"desired_state" api:"required"`
-	MachineID        string                         `json:"machine_id" api:"required" format:"uuid"`
+	AutosleepSeconds int64 `json:"autosleep_seconds" api:"required"`
+	// Any of "running", "sleeping", "destroyed".
+	DesiredState MachineGetResponseDesiredState `json:"desired_state" api:"required"`
+	MachineID    string                         `json:"machine_id" api:"required" format:"uuid"`
 	// Memory in MiB.
-	MemoryMib  int64           `json:"memory_mib" api:"required"`
+	MemoryMiB  int64           `json:"memory_mib" api:"required"`
 	Status     LifecycleStatus `json:"status" api:"required"`
-	StorageGib int64           `json:"storage_gib" api:"required"`
+	StorageGiB int64           `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
-	Vcpu float64                `json:"vcpu" api:"required"`
-	JSON machineGetResponseJSON `json:"-"`
+	VCPU float64 `json:"vcpu" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AutosleepSeconds respjson.Field
+		DesiredState     respjson.Field
+		MachineID        respjson.Field
+		MemoryMiB        respjson.Field
+		Status           respjson.Field
+		StorageGiB       respjson.Field
+		VCPU             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
 }
 
-// machineGetResponseJSON contains the JSON metadata for the struct [MachineGetResponse]
-type machineGetResponseJSON struct {
-	AutosleepSeconds apijson.Field
-	DesiredState     apijson.Field
-	MachineID        apijson.Field
-	MemoryMib        apijson.Field
-	Status           apijson.Field
-	StorageGib       apijson.Field
-	Vcpu             apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
-}
-
-func (r *MachineGetResponse) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r MachineGetResponse) RawJSON() string { return r.JSON.raw }
+func (r *MachineGetResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r machineGetResponseJSON) RawJSON() string {
-	return r.raw
 }
 
 type MachineGetResponseDesiredState string
@@ -650,47 +611,36 @@ const (
 	MachineGetResponseDesiredStateDestroyed MachineGetResponseDesiredState = "destroyed"
 )
 
-func (r MachineGetResponseDesiredState) IsKnown() bool {
-	switch r {
-	case MachineGetResponseDesiredStateRunning, MachineGetResponseDesiredStateSleeping, MachineGetResponseDesiredStateDestroyed:
-		return true
-	}
-	return false
-}
-
 type MachineResizeResponse struct {
 	// Seconds of inactivity before autosleep. 0 disables autosleep.
-	AutosleepSeconds int64                             `json:"autosleep_seconds" api:"required"`
-	DesiredState     MachineResizeResponseDesiredState `json:"desired_state" api:"required"`
-	MachineID        string                            `json:"machine_id" api:"required" format:"uuid"`
+	AutosleepSeconds int64 `json:"autosleep_seconds" api:"required"`
+	// Any of "running", "sleeping", "destroyed".
+	DesiredState MachineResizeResponseDesiredState `json:"desired_state" api:"required"`
+	MachineID    string                            `json:"machine_id" api:"required" format:"uuid"`
 	// Memory in MiB.
-	MemoryMib  int64           `json:"memory_mib" api:"required"`
+	MemoryMiB  int64           `json:"memory_mib" api:"required"`
 	Status     LifecycleStatus `json:"status" api:"required"`
-	StorageGib int64           `json:"storage_gib" api:"required"`
+	StorageGiB int64           `json:"storage_gib" api:"required"`
 	// CPU in vCPUs.
-	Vcpu float64                   `json:"vcpu" api:"required"`
-	JSON machineResizeResponseJSON `json:"-"`
+	VCPU float64 `json:"vcpu" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AutosleepSeconds respjson.Field
+		DesiredState     respjson.Field
+		MachineID        respjson.Field
+		MemoryMiB        respjson.Field
+		Status           respjson.Field
+		StorageGiB       respjson.Field
+		VCPU             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
 }
 
-// machineResizeResponseJSON contains the JSON metadata for the struct [MachineResizeResponse]
-type machineResizeResponseJSON struct {
-	AutosleepSeconds apijson.Field
-	DesiredState     apijson.Field
-	MachineID        apijson.Field
-	MemoryMib        apijson.Field
-	Status           apijson.Field
-	StorageGib       apijson.Field
-	Vcpu             apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
-}
-
-func (r *MachineResizeResponse) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r MachineResizeResponse) RawJSON() string { return r.JSON.raw }
+func (r *MachineResizeResponse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r machineResizeResponseJSON) RawJSON() string {
-	return r.raw
 }
 
 type MachineResizeResponseDesiredState string
@@ -701,21 +651,14 @@ const (
 	MachineResizeResponseDesiredStateDestroyed MachineResizeResponseDesiredState = "destroyed"
 )
 
-func (r MachineResizeResponseDesiredState) IsKnown() bool {
-	switch r {
-	case MachineResizeResponseDesiredStateRunning, MachineResizeResponseDesiredStateSleeping, MachineResizeResponseDesiredStateDestroyed:
-		return true
-	}
-	return false
-}
-
 type MachineListParams struct {
-	Cursor param.Field[string] `query:"cursor"`
-	Limit  param.Field[int64]  `query:"limit"`
+	Limit  param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [MachineListParams]'s query parameters as `url.Values`.
-func (r MachineListParams) URLQuery() (v url.Values) {
+func (r MachineListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -724,16 +667,21 @@ func (r MachineListParams) URLQuery() (v url.Values) {
 
 type MachineNewParams struct {
 	CreateParams CreateParams `json:"create_params" api:"required"`
+	paramObj
 }
 
 func (r MachineNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r.CreateParams)
+	return shimjson.Marshal(r.CreateParams)
+}
+func (r *MachineNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MachineGetParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineUpdateParams struct {
@@ -741,10 +689,14 @@ type MachineUpdateParams struct {
 	// unchanged.
 	MachineID    string       `path:"machine_id" api:"required" json:"-"`
 	UpdateParams UpdateParams `json:"update_params" api:"required"`
+	paramObj
 }
 
 func (r MachineUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r.UpdateParams)
+	return shimjson.Marshal(r.UpdateParams)
+}
+func (r *MachineUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MachineDeleteParams struct {
@@ -755,11 +707,12 @@ type MachineDeleteParams struct {
 	// Machine's remaining writes, whether the Machine is running or failed.
 	// Unpublished file writes are lost. The default publishes them first, and waits
 	// while it cannot.
-	Force param.Field[bool] `query:"force"`
+	Force param.Opt[bool] `query:"force,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [MachineDeleteParams]'s query parameters as `url.Values`.
-func (r MachineDeleteParams) URLQuery() (v url.Values) {
+func (r MachineDeleteParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -770,12 +723,14 @@ type MachineSleepParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineWakeParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineRebootParams struct {
@@ -785,11 +740,12 @@ type MachineRebootParams struct {
 	// Recover from the last committed filesystem checkpoint without guest cooperation.
 	// Unpublished file writes are lost. The default checkpoints files before
 	// rebooting.
-	Force param.Field[bool] `query:"force"`
+	Force param.Opt[bool] `query:"force,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [MachineRebootParams]'s query parameters as `url.Values`.
-func (r MachineRebootParams) URLQuery() (v url.Values) {
+func (r MachineRebootParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -801,35 +757,36 @@ type MachineResizeParams struct {
 	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
 	// RAM in MiB.
-	MemoryMib param.Field[int64] `json:"memory_mib"`
+	MemoryMiB param.Opt[int64] `json:"memory_mib,omitzero"`
 	// CPU in 0.25-vCPU steps.
-	Vcpu param.Field[float64] `json:"vcpu"`
+	VCPU param.Opt[float64] `json:"vcpu,omitzero"`
+	paramObj
 }
 
 func (r MachineResizeParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow MachineResizeParams
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-
-type LifecycleStatusAutoresize struct {
-	CPU    LifecycleStatusAutoresizeCPU    `json:"cpu" api:"required,nullable"`
-	Memory LifecycleStatusAutoresizeMemory `json:"memory" api:"required,nullable"`
-	JSON   lifecycleStatusAutoresizeJSON   `json:"-"`
-}
-
-// lifecycleStatusAutoresizeJSON contains the JSON metadata for the struct [LifecycleStatusAutoresize]
-type lifecycleStatusAutoresizeJSON struct {
-	CPU         apijson.Field
-	Memory      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *LifecycleStatusAutoresize) UnmarshalJSON(data []byte) (err error) {
+func (r *MachineResizeParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r lifecycleStatusAutoresizeJSON) RawJSON() string {
-	return r.raw
+type LifecycleStatusAutoresize struct {
+	CPU    LifecycleStatusAutoresizeCPU    `json:"cpu" api:"required"`
+	Memory LifecycleStatusAutoresizeMemory `json:"memory" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CPU         respjson.Field
+		Memory      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r LifecycleStatusAutoresize) RawJSON() string { return r.JSON.raw }
+func (r *LifecycleStatusAutoresize) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type LifecycleStatusAutoresizeCPU struct {
@@ -837,24 +794,25 @@ type LifecycleStatusAutoresizeCPU struct {
 	BlockedAt time.Time `json:"blocked_at" format:"date-time"`
 	// Why the latest automatic increase could not proceed, as the error code an
 	// explicit resize would return. Absent once an automatic increase is accepted.
-	BlockedReason LifecycleStatusAutoresizeCPUBlockedReason `json:"blocked_reason"`
-	JSON          lifecycleStatusAutoresizeCPUJSON          `json:"-"`
+	//
+	// Any of "MACHINE_GROWTH_LIMIT_REACHED", "MACHINE_TIER_SHAPE_EXCEEDED",
+	// "MACHINE_QUOTA_EXCEEDED", "MACHINE_MEMORY_ABOVE_LIMIT",
+	// "ASSIGNED_HOST_CAPACITY_CONFLICT", "MACHINE_PLACEMENT_EXHAUSTED",
+	// "MACHINE_RESIZE_UNAVAILABLE", "MACHINE_SHAPE_UNSUPPORTED".
+	BlockedReason string `json:"blocked_reason"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BlockedAt     respjson.Field
+		BlockedReason respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
 }
 
-// lifecycleStatusAutoresizeCPUJSON contains the JSON metadata for the struct [LifecycleStatusAutoresizeCPU]
-type lifecycleStatusAutoresizeCPUJSON struct {
-	BlockedAt     apijson.Field
-	BlockedReason apijson.Field
-	raw           string
-	ExtraFields   map[string]apijson.Field
-}
-
-func (r *LifecycleStatusAutoresizeCPU) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r LifecycleStatusAutoresizeCPU) RawJSON() string { return r.JSON.raw }
+func (r *LifecycleStatusAutoresizeCPU) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r lifecycleStatusAutoresizeCPUJSON) RawJSON() string {
-	return r.raw
 }
 
 type LifecycleStatusAutoresizeMemory struct {
@@ -862,64 +820,23 @@ type LifecycleStatusAutoresizeMemory struct {
 	BlockedAt time.Time `json:"blocked_at" format:"date-time"`
 	// Why the latest automatic increase could not proceed, as the error code an
 	// explicit resize would return. Absent once an automatic increase is accepted.
-	BlockedReason LifecycleStatusAutoresizeMemoryBlockedReason `json:"blocked_reason"`
-	JSON          lifecycleStatusAutoresizeMemoryJSON          `json:"-"`
+	//
+	// Any of "MACHINE_GROWTH_LIMIT_REACHED", "MACHINE_TIER_SHAPE_EXCEEDED",
+	// "MACHINE_QUOTA_EXCEEDED", "MACHINE_MEMORY_ABOVE_LIMIT",
+	// "ASSIGNED_HOST_CAPACITY_CONFLICT", "MACHINE_PLACEMENT_EXHAUSTED",
+	// "MACHINE_RESIZE_UNAVAILABLE", "MACHINE_SHAPE_UNSUPPORTED".
+	BlockedReason string `json:"blocked_reason"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		BlockedAt     respjson.Field
+		BlockedReason respjson.Field
+		ExtraFields   map[string]respjson.Field
+		raw           string
+	} `json:"-"`
 }
 
-// lifecycleStatusAutoresizeMemoryJSON contains the JSON metadata for the struct [LifecycleStatusAutoresizeMemory]
-type lifecycleStatusAutoresizeMemoryJSON struct {
-	BlockedAt     apijson.Field
-	BlockedReason apijson.Field
-	raw           string
-	ExtraFields   map[string]apijson.Field
-}
-
-func (r *LifecycleStatusAutoresizeMemory) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r LifecycleStatusAutoresizeMemory) RawJSON() string { return r.JSON.raw }
+func (r *LifecycleStatusAutoresizeMemory) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r lifecycleStatusAutoresizeMemoryJSON) RawJSON() string {
-	return r.raw
-}
-
-type LifecycleStatusAutoresizeCPUBlockedReason string
-
-const (
-	LifecycleStatusAutoresizeCPUBlockedReasonMachineGrowthLimitReached    LifecycleStatusAutoresizeCPUBlockedReason = "MACHINE_GROWTH_LIMIT_REACHED"
-	LifecycleStatusAutoresizeCPUBlockedReasonMachineTierShapeExceeded     LifecycleStatusAutoresizeCPUBlockedReason = "MACHINE_TIER_SHAPE_EXCEEDED"
-	LifecycleStatusAutoresizeCPUBlockedReasonMachineQuotaExceeded         LifecycleStatusAutoresizeCPUBlockedReason = "MACHINE_QUOTA_EXCEEDED"
-	LifecycleStatusAutoresizeCPUBlockedReasonMachineMemoryAboveLimit      LifecycleStatusAutoresizeCPUBlockedReason = "MACHINE_MEMORY_ABOVE_LIMIT"
-	LifecycleStatusAutoresizeCPUBlockedReasonAssignedHostCapacityConflict LifecycleStatusAutoresizeCPUBlockedReason = "ASSIGNED_HOST_CAPACITY_CONFLICT"
-	LifecycleStatusAutoresizeCPUBlockedReasonMachinePlacementExhausted    LifecycleStatusAutoresizeCPUBlockedReason = "MACHINE_PLACEMENT_EXHAUSTED"
-	LifecycleStatusAutoresizeCPUBlockedReasonMachineResizeUnavailable     LifecycleStatusAutoresizeCPUBlockedReason = "MACHINE_RESIZE_UNAVAILABLE"
-	LifecycleStatusAutoresizeCPUBlockedReasonMachineShapeUnsupported      LifecycleStatusAutoresizeCPUBlockedReason = "MACHINE_SHAPE_UNSUPPORTED"
-)
-
-func (r LifecycleStatusAutoresizeCPUBlockedReason) IsKnown() bool {
-	switch r {
-	case LifecycleStatusAutoresizeCPUBlockedReasonMachineGrowthLimitReached, LifecycleStatusAutoresizeCPUBlockedReasonMachineTierShapeExceeded, LifecycleStatusAutoresizeCPUBlockedReasonMachineQuotaExceeded, LifecycleStatusAutoresizeCPUBlockedReasonMachineMemoryAboveLimit, LifecycleStatusAutoresizeCPUBlockedReasonAssignedHostCapacityConflict, LifecycleStatusAutoresizeCPUBlockedReasonMachinePlacementExhausted, LifecycleStatusAutoresizeCPUBlockedReasonMachineResizeUnavailable, LifecycleStatusAutoresizeCPUBlockedReasonMachineShapeUnsupported:
-		return true
-	}
-	return false
-}
-
-type LifecycleStatusAutoresizeMemoryBlockedReason string
-
-const (
-	LifecycleStatusAutoresizeMemoryBlockedReasonMachineGrowthLimitReached    LifecycleStatusAutoresizeMemoryBlockedReason = "MACHINE_GROWTH_LIMIT_REACHED"
-	LifecycleStatusAutoresizeMemoryBlockedReasonMachineTierShapeExceeded     LifecycleStatusAutoresizeMemoryBlockedReason = "MACHINE_TIER_SHAPE_EXCEEDED"
-	LifecycleStatusAutoresizeMemoryBlockedReasonMachineQuotaExceeded         LifecycleStatusAutoresizeMemoryBlockedReason = "MACHINE_QUOTA_EXCEEDED"
-	LifecycleStatusAutoresizeMemoryBlockedReasonMachineMemoryAboveLimit      LifecycleStatusAutoresizeMemoryBlockedReason = "MACHINE_MEMORY_ABOVE_LIMIT"
-	LifecycleStatusAutoresizeMemoryBlockedReasonAssignedHostCapacityConflict LifecycleStatusAutoresizeMemoryBlockedReason = "ASSIGNED_HOST_CAPACITY_CONFLICT"
-	LifecycleStatusAutoresizeMemoryBlockedReasonMachinePlacementExhausted    LifecycleStatusAutoresizeMemoryBlockedReason = "MACHINE_PLACEMENT_EXHAUSTED"
-	LifecycleStatusAutoresizeMemoryBlockedReasonMachineResizeUnavailable     LifecycleStatusAutoresizeMemoryBlockedReason = "MACHINE_RESIZE_UNAVAILABLE"
-	LifecycleStatusAutoresizeMemoryBlockedReasonMachineShapeUnsupported      LifecycleStatusAutoresizeMemoryBlockedReason = "MACHINE_SHAPE_UNSUPPORTED"
-)
-
-func (r LifecycleStatusAutoresizeMemoryBlockedReason) IsKnown() bool {
-	switch r {
-	case LifecycleStatusAutoresizeMemoryBlockedReasonMachineGrowthLimitReached, LifecycleStatusAutoresizeMemoryBlockedReasonMachineTierShapeExceeded, LifecycleStatusAutoresizeMemoryBlockedReasonMachineQuotaExceeded, LifecycleStatusAutoresizeMemoryBlockedReasonMachineMemoryAboveLimit, LifecycleStatusAutoresizeMemoryBlockedReasonAssignedHostCapacityConflict, LifecycleStatusAutoresizeMemoryBlockedReasonMachinePlacementExhausted, LifecycleStatusAutoresizeMemoryBlockedReasonMachineResizeUnavailable, LifecycleStatusAutoresizeMemoryBlockedReasonMachineShapeUnsupported:
-		return true
-	}
-	return false
 }

@@ -13,10 +13,12 @@ import (
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
 	"github.com/dedalus-labs/dedalus-go/internal/apiquery"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
+	shimjson "github.com/dedalus-labs/dedalus-go/internal/encoding/json"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
 	"github.com/dedalus-labs/dedalus-go/packages/pagination"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // MachineExecutionService contains methods and other services that help with interacting
@@ -24,14 +26,14 @@ import (
 // the [NewMachineExecutionService] method instead.
 type MachineExecutionService struct {
 	Options []option.RequestOption
-	Logs    *MachineExecutionLogService
+	Logs    MachineExecutionLogService
 }
 
 // NewMachineExecutionService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewMachineExecutionService(opts ...option.RequestOption) (r *MachineExecutionService) {
-	r = &MachineExecutionService{}
+func NewMachineExecutionService(opts ...option.RequestOption) (r MachineExecutionService) {
+	r = MachineExecutionService{}
 	r.Options = opts
 	r.Logs = NewMachineExecutionLogService(opts...)
 	return
@@ -106,7 +108,7 @@ func (r *MachineExecutionService) ListAutoPaging(ctx context.Context, query Mach
 //	execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
 //		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //		ExecutionCreateParams: sdk.ExecutionCreateParams{
-//			Command: sdk.F[[]string]([]string{""}),
+//			Command: []string{""},
 //		},
 //	})
 //	if err != nil {
@@ -140,8 +142,8 @@ func (r *MachineExecutionService) New(ctx context.Context, body MachineExecution
 // Example:
 //
 //	execution, err := client.Machines.Executions.Get(context.Background(), sdk.MachineExecutionGetParams{
-//		ExecutionID: "executionID",
 //		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+//		ExecutionID: "executionID",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -178,8 +180,8 @@ func (r *MachineExecutionService) Get(ctx context.Context, params MachineExecuti
 // Example:
 //
 //	execution, err := client.Machines.Executions.Delete(context.Background(), sdk.MachineExecutionDeleteParams{
-//		ExecutionID: "executionID",
 //		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+//		ExecutionID: "executionID",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -216,8 +218,8 @@ func (r *MachineExecutionService) Delete(ctx context.Context, params MachineExec
 // Example:
 //
 //	execution, err := client.Machines.Executions.Output(context.Background(), sdk.MachineExecutionOutputParams{
-//		ExecutionID: "executionID",
 //		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+//		ExecutionID: "executionID",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -254,8 +256,8 @@ func (r *MachineExecutionService) Output(ctx context.Context, params MachineExec
 // Example:
 //
 //	page, err := client.Machines.Executions.Events(context.Background(), sdk.MachineExecutionEventsParams{
-//		ExecutionID: "executionID",
 //		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+//		ExecutionID: "executionID",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -297,79 +299,82 @@ func (r *MachineExecutionService) EventsAutoPaging(ctx context.Context, query Ma
 }
 
 type ExecutionCreateParams struct {
-	Command   param.Field[[]string]          `json:"command" api:"required"`
-	Cwd       param.Field[string]            `json:"cwd"`
-	Env       param.Field[map[string]string] `json:"env"`
-	Stdin     param.Field[string]            `json:"stdin"`
-	TimeoutMs param.Field[int64]             `json:"timeout_ms"`
+	Command   []string          `json:"command,omitzero" api:"required"`
+	Cwd       param.Opt[string] `json:"cwd,omitzero"`
+	Stdin     param.Opt[string] `json:"stdin,omitzero"`
+	TimeoutMs param.Opt[int64]  `json:"timeout_ms,omitzero"`
+	Env       map[string]string `json:"env,omitzero"`
+	paramObj
 }
 
 func (r ExecutionCreateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ExecutionCreateParams
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-
-type Execution struct {
-	Command           []string            `json:"command" api:"required,nullable"`
-	CreatedAt         time.Time           `json:"created_at" api:"required" format:"date-time"`
-	ExecutionID       string              `json:"execution_id" api:"required"`
-	LogCapture        ExecutionLogCapture `json:"log_capture" api:"required"`
-	MachineID         string              `json:"machine_id" api:"required" format:"uuid"`
-	Status            ExecutionStatus     `json:"status" api:"required"`
-	Artifacts         []ArtifactRef       `json:"artifacts" api:"nullable"`
-	CompletedAt       time.Time           `json:"completed_at" format:"date-time"`
-	CreationRequestID string              `json:"creation_request_id"`
-	CreationTraceID   string              `json:"creation_trace_id"`
-	Cwd               string              `json:"cwd"`
-	EnvKeys           []string            `json:"env_keys" api:"nullable"`
-	ErrorCode         string              `json:"error_code"`
-	ErrorMessage      string              `json:"error_message"`
-	ExitCode          int64               `json:"exit_code"`
-	ExpiresAt         time.Time           `json:"expires_at" format:"date-time"`
-	RetryAfterMs      int64               `json:"retry_after_ms"`
-	Signal            int64               `json:"signal"`
-	StartedAt         time.Time           `json:"started_at" format:"date-time"`
-	StderrBytes       int64               `json:"stderr_bytes"`
-	StderrTruncated   bool                `json:"stderr_truncated"`
-	StdoutBytes       int64               `json:"stdout_bytes"`
-	StdoutTruncated   bool                `json:"stdout_truncated"`
-	JSON              executionJSON       `json:"-"`
-}
-
-// executionJSON contains the JSON metadata for the struct [Execution]
-type executionJSON struct {
-	Command           apijson.Field
-	CreatedAt         apijson.Field
-	ExecutionID       apijson.Field
-	LogCapture        apijson.Field
-	MachineID         apijson.Field
-	Status            apijson.Field
-	Artifacts         apijson.Field
-	CompletedAt       apijson.Field
-	CreationRequestID apijson.Field
-	CreationTraceID   apijson.Field
-	Cwd               apijson.Field
-	EnvKeys           apijson.Field
-	ErrorCode         apijson.Field
-	ErrorMessage      apijson.Field
-	ExitCode          apijson.Field
-	ExpiresAt         apijson.Field
-	RetryAfterMs      apijson.Field
-	Signal            apijson.Field
-	StartedAt         apijson.Field
-	StderrBytes       apijson.Field
-	StderrTruncated   apijson.Field
-	StdoutBytes       apijson.Field
-	StdoutTruncated   apijson.Field
-	raw               string
-	ExtraFields       map[string]apijson.Field
-}
-
-func (r *Execution) UnmarshalJSON(data []byte) (err error) {
+func (r *ExecutionCreateParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r executionJSON) RawJSON() string {
-	return r.raw
+type Execution struct {
+	Command     []string            `json:"command" api:"required"`
+	CreatedAt   time.Time           `json:"created_at" api:"required" format:"date-time"`
+	ExecutionID string              `json:"execution_id" api:"required"`
+	LogCapture  ExecutionLogCapture `json:"log_capture" api:"required"`
+	MachineID   string              `json:"machine_id" api:"required" format:"uuid"`
+	// Any of "wake_in_progress", "queued", "running", "succeeded", "failed",
+	// "cancelled", "expired".
+	Status            ExecutionStatus `json:"status" api:"required"`
+	Artifacts         []ArtifactRef   `json:"artifacts" api:"nullable"`
+	CompletedAt       time.Time       `json:"completed_at" format:"date-time"`
+	CreationRequestID string          `json:"creation_request_id"`
+	CreationTraceID   string          `json:"creation_trace_id"`
+	Cwd               string          `json:"cwd"`
+	EnvKeys           []string        `json:"env_keys" api:"nullable"`
+	ErrorCode         string          `json:"error_code"`
+	ErrorMessage      string          `json:"error_message"`
+	ExitCode          int64           `json:"exit_code"`
+	ExpiresAt         time.Time       `json:"expires_at" format:"date-time"`
+	RetryAfterMs      int64           `json:"retry_after_ms"`
+	Signal            int64           `json:"signal"`
+	StartedAt         time.Time       `json:"started_at" format:"date-time"`
+	StderrBytes       int64           `json:"stderr_bytes"`
+	StderrTruncated   bool            `json:"stderr_truncated"`
+	StdoutBytes       int64           `json:"stdout_bytes"`
+	StdoutTruncated   bool            `json:"stdout_truncated"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Command           respjson.Field
+		CreatedAt         respjson.Field
+		ExecutionID       respjson.Field
+		LogCapture        respjson.Field
+		MachineID         respjson.Field
+		Status            respjson.Field
+		Artifacts         respjson.Field
+		CompletedAt       respjson.Field
+		CreationRequestID respjson.Field
+		CreationTraceID   respjson.Field
+		Cwd               respjson.Field
+		EnvKeys           respjson.Field
+		ErrorCode         respjson.Field
+		ErrorMessage      respjson.Field
+		ExitCode          respjson.Field
+		ExpiresAt         respjson.Field
+		RetryAfterMs      respjson.Field
+		Signal            respjson.Field
+		StartedAt         respjson.Field
+		StderrBytes       respjson.Field
+		StderrTruncated   respjson.Field
+		StdoutBytes       respjson.Field
+		StdoutTruncated   respjson.Field
+		ExtraFields       map[string]respjson.Field
+		raw               string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r Execution) RawJSON() string { return r.JSON.raw }
+func (r *Execution) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ExecutionStatus string
@@ -384,102 +389,85 @@ const (
 	ExecutionStatusExpired        ExecutionStatus = "expired"
 )
 
-func (r ExecutionStatus) IsKnown() bool {
-	switch r {
-	case ExecutionStatusWakeInProgress, ExecutionStatusQueued, ExecutionStatusRunning, ExecutionStatusSucceeded, ExecutionStatusFailed, ExecutionStatusCancelled, ExecutionStatusExpired:
-		return true
-	}
-	return false
-}
-
 type ExecutionList struct {
-	Items      []Execution       `json:"items" api:"required,nullable"`
-	NextCursor string            `json:"next_cursor"`
-	JSON       executionListJSON `json:"-"`
+	Items      []Execution `json:"items" api:"required"`
+	NextCursor string      `json:"next_cursor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Items       respjson.Field
+		NextCursor  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// executionListJSON contains the JSON metadata for the struct [ExecutionList]
-type executionListJSON struct {
-	Items       apijson.Field
-	NextCursor  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ExecutionList) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ExecutionList) RawJSON() string { return r.JSON.raw }
+func (r *ExecutionList) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r executionListJSON) RawJSON() string {
-	return r.raw
 }
 
 type ExecutionOutput struct {
-	ExecutionID     string              `json:"execution_id" api:"required"`
-	Stderr          string              `json:"stderr"`
-	StderrBytes     int64               `json:"stderr_bytes"`
-	StderrTruncated bool                `json:"stderr_truncated"`
-	Stdout          string              `json:"stdout"`
-	StdoutBytes     int64               `json:"stdout_bytes"`
-	StdoutTruncated bool                `json:"stdout_truncated"`
-	JSON            executionOutputJSON `json:"-"`
+	ExecutionID     string `json:"execution_id" api:"required"`
+	Stderr          string `json:"stderr"`
+	StderrBytes     int64  `json:"stderr_bytes"`
+	StderrTruncated bool   `json:"stderr_truncated"`
+	Stdout          string `json:"stdout"`
+	StdoutBytes     int64  `json:"stdout_bytes"`
+	StdoutTruncated bool   `json:"stdout_truncated"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExecutionID     respjson.Field
+		Stderr          respjson.Field
+		StderrBytes     respjson.Field
+		StderrTruncated respjson.Field
+		Stdout          respjson.Field
+		StdoutBytes     respjson.Field
+		StdoutTruncated respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
 }
 
-// executionOutputJSON contains the JSON metadata for the struct [ExecutionOutput]
-type executionOutputJSON struct {
-	ExecutionID     apijson.Field
-	Stderr          apijson.Field
-	StderrBytes     apijson.Field
-	StderrTruncated apijson.Field
-	Stdout          apijson.Field
-	StdoutBytes     apijson.Field
-	StdoutTruncated apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *ExecutionOutput) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ExecutionOutput) RawJSON() string { return r.JSON.raw }
+func (r *ExecutionOutput) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r executionOutputJSON) RawJSON() string {
-	return r.raw
 }
 
 type ExecutionEvent struct {
-	At           time.Time            `json:"at" api:"required" format:"date-time"`
-	Sequence     int64                `json:"sequence" api:"required"`
-	Type         ExecutionEventType   `json:"type" api:"required"`
-	Chunk        string               `json:"chunk"`
-	ErrorCode    string               `json:"error_code"`
-	ErrorMessage string               `json:"error_message"`
-	ExitCode     int64                `json:"exit_code"`
-	Signal       int64                `json:"signal"`
-	Status       ExecutionEventStatus `json:"status"`
-	JSON         executionEventJSON   `json:"-"`
+	At       time.Time `json:"at" api:"required" format:"date-time"`
+	Sequence int64     `json:"sequence" api:"required"`
+	// Any of "lifecycle", "stdout", "stderr".
+	Type         ExecutionEventType `json:"type" api:"required"`
+	Chunk        string             `json:"chunk"`
+	ErrorCode    string             `json:"error_code"`
+	ErrorMessage string             `json:"error_message"`
+	ExitCode     int64              `json:"exit_code"`
+	Signal       int64              `json:"signal"`
+	// Any of "wake_in_progress", "queued", "running", "succeeded", "failed",
+	// "cancelled", "expired".
+	Status ExecutionEventStatus `json:"status"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		At           respjson.Field
+		Sequence     respjson.Field
+		Type         respjson.Field
+		Chunk        respjson.Field
+		ErrorCode    respjson.Field
+		ErrorMessage respjson.Field
+		ExitCode     respjson.Field
+		Signal       respjson.Field
+		Status       respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
 }
 
-// executionEventJSON contains the JSON metadata for the struct [ExecutionEvent]
-type executionEventJSON struct {
-	At           apijson.Field
-	Sequence     apijson.Field
-	Type         apijson.Field
-	Chunk        apijson.Field
-	ErrorCode    apijson.Field
-	ErrorMessage apijson.Field
-	ExitCode     apijson.Field
-	Signal       apijson.Field
-	Status       apijson.Field
-	raw          string
-	ExtraFields  map[string]apijson.Field
-}
-
-func (r *ExecutionEvent) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ExecutionEvent) RawJSON() string { return r.JSON.raw }
+func (r *ExecutionEvent) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r executionEventJSON) RawJSON() string {
-	return r.raw
 }
 
 type ExecutionEventStatus string
@@ -494,14 +482,6 @@ const (
 	ExecutionEventStatusExpired        ExecutionEventStatus = "expired"
 )
 
-func (r ExecutionEventStatus) IsKnown() bool {
-	switch r {
-	case ExecutionEventStatusWakeInProgress, ExecutionEventStatusQueued, ExecutionEventStatusRunning, ExecutionEventStatusSucceeded, ExecutionEventStatusFailed, ExecutionEventStatusCancelled, ExecutionEventStatusExpired:
-		return true
-	}
-	return false
-}
-
 type ExecutionEventType string
 
 const (
@@ -510,68 +490,53 @@ const (
 	ExecutionEventTypeStderr    ExecutionEventType = "stderr"
 )
 
-func (r ExecutionEventType) IsKnown() bool {
-	switch r {
-	case ExecutionEventTypeLifecycle, ExecutionEventTypeStdout, ExecutionEventTypeStderr:
-		return true
-	}
-	return false
-}
-
 type ExecutionEvents struct {
-	Items      []ExecutionEvent    `json:"items" api:"required,nullable"`
-	NextCursor string              `json:"next_cursor"`
-	JSON       executionEventsJSON `json:"-"`
+	Items      []ExecutionEvent `json:"items" api:"required"`
+	NextCursor string           `json:"next_cursor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Items       respjson.Field
+		NextCursor  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// executionEventsJSON contains the JSON metadata for the struct [ExecutionEvents]
-type executionEventsJSON struct {
-	Items       apijson.Field
-	NextCursor  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ExecutionEvents) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ExecutionEvents) RawJSON() string { return r.JSON.raw }
+func (r *ExecutionEvents) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r executionEventsJSON) RawJSON() string {
-	return r.raw
 }
 
 type ArtifactRef struct {
-	ArtifactID string          `json:"artifact_id" api:"required"`
-	Name       string          `json:"name" api:"required"`
-	JSON       artifactRefJSON `json:"-"`
+	ArtifactID string `json:"artifact_id" api:"required"`
+	Name       string `json:"name" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ArtifactID  respjson.Field
+		Name        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// artifactRefJSON contains the JSON metadata for the struct [ArtifactRef]
-type artifactRefJSON struct {
-	ArtifactID  apijson.Field
-	Name        apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ArtifactRef) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ArtifactRef) RawJSON() string { return r.JSON.raw }
+func (r *ArtifactRef) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r artifactRefJSON) RawJSON() string {
-	return r.raw
 }
 
 type MachineExecutionListParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string              `path:"machine_id" api:"required" json:"-"`
-	Cursor    param.Field[string] `query:"cursor"`
-	Limit     param.Field[int64]  `query:"limit"`
+	MachineID string            `path:"machine_id" api:"required" json:"-"`
+	Limit     param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Cursor    param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [MachineExecutionListParams]'s query parameters as `url.Values`.
-func (r MachineExecutionListParams) URLQuery() (v url.Values) {
+func (r MachineExecutionListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -583,44 +548,52 @@ type MachineExecutionNewParams struct {
 	// unchanged.
 	MachineID             string                `path:"machine_id" api:"required" json:"-"`
 	ExecutionCreateParams ExecutionCreateParams `json:"execution_create_params" api:"required"`
+	paramObj
 }
 
 func (r MachineExecutionNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r.ExecutionCreateParams)
+	return shimjson.Marshal(r.ExecutionCreateParams)
+}
+func (r *MachineExecutionNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MachineExecutionGetParams struct {
-	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string `path:"machine_id" api:"required" json:"-"`
+	MachineID   string `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineExecutionDeleteParams struct {
-	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string `path:"machine_id" api:"required" json:"-"`
+	MachineID   string `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineExecutionOutputParams struct {
-	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string `path:"machine_id" api:"required" json:"-"`
+	MachineID   string `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineExecutionEventsParams struct {
-	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string              `path:"machine_id" api:"required" json:"-"`
-	Cursor    param.Field[string] `query:"cursor"`
-	Limit     param.Field[int64]  `query:"limit"`
+	MachineID   string            `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string            `path:"execution_id" api:"required" json:"-"`
+	Limit       param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Cursor      param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [MachineExecutionEventsParams]'s query parameters as `url.Values`.
-func (r MachineExecutionEventsParams) URLQuery() (v url.Values) {
+func (r MachineExecutionEventsParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -628,43 +601,24 @@ func (r MachineExecutionEventsParams) URLQuery() (v url.Values) {
 }
 
 type ExecutionLogCapture struct {
-	Code             string                   `json:"code"`
-	LostBytes        string                   `json:"lost_bytes"`
-	State            ExecutionLogCaptureState `json:"state"`
-	UnconfirmedBytes string                   `json:"unconfirmed_bytes"`
-	JSON             executionLogCaptureJSON  `json:"-"`
+	Code      string `json:"code"`
+	LostBytes string `json:"lost_bytes"`
+	// Any of "pending", "incomplete", "unavailable".
+	State            string `json:"state"`
+	UnconfirmedBytes string `json:"unconfirmed_bytes"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Code             respjson.Field
+		LostBytes        respjson.Field
+		State            respjson.Field
+		UnconfirmedBytes respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
 }
 
-// executionLogCaptureJSON contains the JSON metadata for the struct [ExecutionLogCapture]
-type executionLogCaptureJSON struct {
-	Code             apijson.Field
-	LostBytes        apijson.Field
-	State            apijson.Field
-	UnconfirmedBytes apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
-}
-
-func (r *ExecutionLogCapture) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ExecutionLogCapture) RawJSON() string { return r.JSON.raw }
+func (r *ExecutionLogCapture) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r executionLogCaptureJSON) RawJSON() string {
-	return r.raw
-}
-
-type ExecutionLogCaptureState string
-
-const (
-	ExecutionLogCaptureStatePending     ExecutionLogCaptureState = "pending"
-	ExecutionLogCaptureStateIncomplete  ExecutionLogCaptureState = "incomplete"
-	ExecutionLogCaptureStateUnavailable ExecutionLogCaptureState = "unavailable"
-)
-
-func (r ExecutionLogCaptureState) IsKnown() bool {
-	switch r {
-	case ExecutionLogCaptureStatePending, ExecutionLogCaptureStateIncomplete, ExecutionLogCaptureStateUnavailable:
-		return true
-	}
-	return false
 }

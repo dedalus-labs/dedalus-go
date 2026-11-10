@@ -14,6 +14,7 @@ import (
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // MachineExecutionLogService contains methods and other services that help with interacting
@@ -26,8 +27,8 @@ type MachineExecutionLogService struct {
 // NewMachineExecutionLogService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewMachineExecutionLogService(opts ...option.RequestOption) (r *MachineExecutionLogService) {
-	r = &MachineExecutionLogService{}
+func NewMachineExecutionLogService(opts ...option.RequestOption) (r MachineExecutionLogService) {
+	r = MachineExecutionLogService{}
 	r.Options = opts
 	return
 }
@@ -47,8 +48,8 @@ func NewMachineExecutionLogService(opts ...option.RequestOption) (r *MachineExec
 // Example:
 //
 //	log, err := client.Machines.Executions.Logs.Get(context.Background(), sdk.MachineExecutionLogGetParams{
-//		ExecutionID: "executionID",
 //		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+//		ExecutionID: "executionID",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -85,8 +86,8 @@ func (r *MachineExecutionLogService) Get(ctx context.Context, params MachineExec
 // Example:
 //
 //	log, err := client.Machines.Executions.Logs.NewToken(context.Background(), sdk.MachineExecutionLogNewTokenParams{
-//		ExecutionID: "executionID",
 //		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+//		ExecutionID: "executionID",
 //	})
 //	if err != nil {
 //		panic(err)
@@ -112,108 +113,83 @@ type Status struct {
 	Capture     StatusCapture `json:"capture" api:"required"`
 	ExecutionID string        `json:"execution_id" api:"required"`
 	StreamID    string        `json:"stream_id"`
-	JSON        statusJSON    `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Capture     respjson.Field
+		ExecutionID respjson.Field
+		StreamID    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// statusJSON contains the JSON metadata for the struct [Status]
-type statusJSON struct {
-	Capture     apijson.Field
-	ExecutionID apijson.Field
-	StreamID    apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Status) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Status) RawJSON() string { return r.JSON.raw }
+func (r *Status) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r statusJSON) RawJSON() string {
-	return r.raw
 }
 
 type ReadToken struct {
-	AccessToken string        `json:"access_token" api:"required"`
-	BaseURL     string        `json:"base_url" api:"required"`
-	ExecutionID string        `json:"execution_id" api:"required"`
-	ExpiresAt   time.Time     `json:"expires_at" api:"required" format:"date-time"`
-	StreamID    string        `json:"stream_id" api:"required"`
-	TokenType   string        `json:"token_type" api:"required"`
-	JSON        readTokenJSON `json:"-"`
+	AccessToken string    `json:"access_token" api:"required"`
+	BaseURL     string    `json:"base_url" api:"required"`
+	ExecutionID string    `json:"execution_id" api:"required"`
+	ExpiresAt   time.Time `json:"expires_at" api:"required" format:"date-time"`
+	StreamID    string    `json:"stream_id" api:"required"`
+	TokenType   string    `json:"token_type" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		AccessToken respjson.Field
+		BaseURL     respjson.Field
+		ExecutionID respjson.Field
+		ExpiresAt   respjson.Field
+		StreamID    respjson.Field
+		TokenType   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// readTokenJSON contains the JSON metadata for the struct [ReadToken]
-type readTokenJSON struct {
-	AccessToken apijson.Field
-	BaseURL     apijson.Field
-	ExecutionID apijson.Field
-	ExpiresAt   apijson.Field
-	StreamID    apijson.Field
-	TokenType   apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ReadToken) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ReadToken) RawJSON() string { return r.JSON.raw }
+func (r *ReadToken) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r readTokenJSON) RawJSON() string {
-	return r.raw
 }
 
 type MachineExecutionLogGetParams struct {
-	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string `path:"machine_id" api:"required" json:"-"`
+	MachineID   string `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineExecutionLogNewTokenParams struct {
-	ExecutionID string `path:"execution_id" api:"required" json:"-"`
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string `path:"machine_id" api:"required" json:"-"`
+	MachineID   string `path:"machine_id" api:"required" json:"-"`
+	ExecutionID string `path:"execution_id" api:"required" json:"-"`
+	paramObj
 }
 
 type StatusCapture struct {
-	Code             string             `json:"code"`
-	LostBytes        string             `json:"lost_bytes"`
-	State            StatusCaptureState `json:"state"`
-	UnconfirmedBytes string             `json:"unconfirmed_bytes"`
-	JSON             statusCaptureJSON  `json:"-"`
+	Code      string `json:"code"`
+	LostBytes string `json:"lost_bytes"`
+	// Any of "pending", "incomplete", "unavailable".
+	State            string `json:"state"`
+	UnconfirmedBytes string `json:"unconfirmed_bytes"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Code             respjson.Field
+		LostBytes        respjson.Field
+		State            respjson.Field
+		UnconfirmedBytes respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
 }
 
-// statusCaptureJSON contains the JSON metadata for the struct [StatusCapture]
-type statusCaptureJSON struct {
-	Code             apijson.Field
-	LostBytes        apijson.Field
-	State            apijson.Field
-	UnconfirmedBytes apijson.Field
-	raw              string
-	ExtraFields      map[string]apijson.Field
-}
-
-func (r *StatusCapture) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r StatusCapture) RawJSON() string { return r.JSON.raw }
+func (r *StatusCapture) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r statusCaptureJSON) RawJSON() string {
-	return r.raw
-}
-
-type StatusCaptureState string
-
-const (
-	StatusCaptureStatePending     StatusCaptureState = "pending"
-	StatusCaptureStateIncomplete  StatusCaptureState = "incomplete"
-	StatusCaptureStateUnavailable StatusCaptureState = "unavailable"
-)
-
-func (r StatusCaptureState) IsKnown() bool {
-	switch r {
-	case StatusCaptureStatePending, StatusCaptureStateIncomplete, StatusCaptureStateUnavailable:
-		return true
-	}
-	return false
 }

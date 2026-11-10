@@ -53,10 +53,10 @@ func _smokeCase0() {
 func _smokeCase1() {
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 		CreateParams: sdk.CreateParams{
-			Autosleep:  sdk.F[string]("300s"),
-			MemoryMib:  sdk.F[int64](4096),
-			StorageGib: sdk.F[int64](10),
-			Vcpu:       sdk.F[float64](1),
+			Autosleep:  sdk.String("300s"),
+			MemoryMiB:  sdk.Int(4096),
+			StorageGiB: sdk.Int(10),
+			VCPU:       sdk.Float(1),
 		},
 	})
 	if err != nil {
@@ -69,11 +69,11 @@ func _smokeCase1() {
 func _smokeCase2() {
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 		CreateParams: sdk.CreateParams{
-			Autosleep:  sdk.F[string]("300s"),
-			ImageID:    sdk.F[string]("x"),
-			MemoryMib:  sdk.F[int64](4096),
-			StorageGib: sdk.F[int64](10),
-			Vcpu:       sdk.F[float64](1),
+			Autosleep:  sdk.String("300s"),
+			ImageID:    sdk.String("x"),
+			MemoryMiB:  sdk.Int(4096),
+			StorageGiB: sdk.Int(10),
+			VCPU:       sdk.Float(1),
 		},
 	})
 	if err != nil {
@@ -110,8 +110,8 @@ func _smokeCase5() {
 	machine, err := client.Machines.Update(context.Background(), sdk.MachineUpdateParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		UpdateParams: sdk.UpdateParams{
-			Autosleep:  sdk.F[string](""),
-			StorageGib: sdk.F[int64](0),
+			Autosleep:  sdk.String(""),
+			StorageGiB: sdk.Int(0),
 		},
 	})
 	if err != nil {
@@ -135,7 +135,7 @@ func _smokeCase6() {
 func _smokeCase7() {
 	machine, err := client.Machines.Delete(context.Background(), sdk.MachineDeleteParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-		Force:     sdk.F[bool](true),
+		Force:     sdk.Bool(true),
 	})
 	if err != nil {
 		panic(err)
@@ -180,7 +180,7 @@ func _smokeCase10() {
 func _smokeCase11() {
 	machine, err := client.Machines.Reboot(context.Background(), sdk.MachineRebootParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-		Force:     sdk.F[bool](true),
+		Force:     sdk.Bool(true),
 	})
 	if err != nil {
 		panic(err)
@@ -203,8 +203,8 @@ func _smokeCase12() {
 func _smokeCase13() {
 	machine, err := client.Machines.Resize(context.Background(), sdk.MachineResizeParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-		MemoryMib: sdk.F[int64](0),
-		Vcpu:      sdk.F[float64](0),
+		MemoryMiB: sdk.Int(0),
+		VCPU:      sdk.Float(0),
 	})
 	if err != nil {
 		panic(err)
@@ -228,7 +228,7 @@ func _smokeCase15() {
 	ssh, err := client.Machines.SSH.New(context.Background(), sdk.MachineSSHNewParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		SSHSessionCreateParams: sdk.SSHSessionCreateParams{
-			PublicKey: sdk.F[string](""),
+			PublicKey: "",
 		},
 	})
 	if err != nil {
@@ -277,7 +277,7 @@ func _smokeCase19() {
 	execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		ExecutionCreateParams: sdk.ExecutionCreateParams{
-			Command: sdk.F[[]string]([]string{""}),
+			Command: []string{""},
 		},
 	})
 	if err != nil {
@@ -291,11 +291,11 @@ func _smokeCase20() {
 	execution, err := client.Machines.Executions.New(context.Background(), sdk.MachineExecutionNewParams{
 		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 		ExecutionCreateParams: sdk.ExecutionCreateParams{
-			Command:   sdk.F[[]string]([]string{""}),
-			Cwd:       sdk.F[string](""),
-			Env:       sdk.F[map[string]string](map[string]string{}),
-			Stdin:     sdk.F[string](""),
-			TimeoutMs: sdk.F[int64](0),
+			Command:   []string{""},
+			Cwd:       sdk.String(""),
+			Env:       map[string]string{},
+			Stdin:     sdk.String(""),
+			TimeoutMs: sdk.Int(0),
 		},
 	})
 	if err != nil {
@@ -307,8 +307,8 @@ func _smokeCase20() {
 
 func _smokeCase21() {
 	execution, err := client.Machines.Executions.Get(context.Background(), sdk.MachineExecutionGetParams{
-		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		ExecutionID: "executionID",
 	})
 	if err != nil {
 		panic(err)
@@ -319,8 +319,8 @@ func _smokeCase21() {
 
 func _smokeCase22() {
 	execution, err := client.Machines.Executions.Delete(context.Background(), sdk.MachineExecutionDeleteParams{
-		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		ExecutionID: "executionID",
 	})
 	if err != nil {
 		panic(err)
@@ -331,8 +331,8 @@ func _smokeCase22() {
 
 func _smokeCase23() {
 	execution, err := client.Machines.Executions.Output(context.Background(), sdk.MachineExecutionOutputParams{
-		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		ExecutionID: "executionID",
 	})
 	if err != nil {
 		panic(err)
@@ -343,8 +343,8 @@ func _smokeCase23() {
 
 func _smokeCase24() {
 	page, err := client.Machines.Executions.Events(context.Background(), sdk.MachineExecutionEventsParams{
-		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		ExecutionID: "executionID",
 	})
 	if err != nil {
 		panic(err)
@@ -355,8 +355,8 @@ func _smokeCase24() {
 
 func _smokeCase25() {
 	log, err := client.Machines.Executions.Logs.Get(context.Background(), sdk.MachineExecutionLogGetParams{
-		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		ExecutionID: "executionID",
 	})
 	if err != nil {
 		panic(err)
@@ -367,8 +367,8 @@ func _smokeCase25() {
 
 func _smokeCase26() {
 	log, err := client.Machines.Executions.Logs.NewToken(context.Background(), sdk.MachineExecutionLogNewTokenParams{
-		ExecutionID: "executionID",
 		MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+		ExecutionID: "executionID",
 	})
 	if err != nil {
 		panic(err)
@@ -402,10 +402,10 @@ func _smokeCase28() {
 func _smokeCase29() {
 	autoresizing, err := client.Machines.Autoresizing.Update(context.Background(), sdk.MachineAutoresizingUpdateParams{
 		MachineID:    "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
-		CPU:          sdk.F[sdk.MachineAutoresizingUpdateParamsCPU](sdk.MachineAutoresizingUpdateParamsCPU("on")),
-		CPUMaxVcpu:   sdk.F[float64](0.25),
-		Memory:       sdk.F[sdk.MachineAutoresizingUpdateParamsMemory](sdk.MachineAutoresizingUpdateParamsMemory("on")),
-		MemoryMaxMib: sdk.F[int64](256),
+		CPUMaxVCPU:   sdk.Float(0.25),
+		MemoryMaxMiB: sdk.Int(256),
+		CPU:          "on",
+		Memory:       "on",
 	})
 	if err != nil {
 		panic(err)
@@ -434,10 +434,10 @@ func _smokeCase31() {
 
 func _smokeCase32() {
 	autoresizing, err := client.Organization.Autoresizing.Update(context.Background(), sdk.OrganizationAutoresizingUpdateParams{
-		CPU:          sdk.F[sdk.OrganizationAutoresizingUpdateParamsCPU](sdk.OrganizationAutoresizingUpdateParamsCPU("on")),
-		CPUMaxVcpu:   sdk.F[float64](0.25),
-		Memory:       sdk.F[sdk.OrganizationAutoresizingUpdateParamsMemory](sdk.OrganizationAutoresizingUpdateParamsMemory("on")),
-		MemoryMaxMib: sdk.F[int64](256),
+		CPUMaxVCPU:   sdk.Float(0.25),
+		MemoryMaxMiB: sdk.Int(256),
+		CPU:          "on",
+		Memory:       "on",
 	})
 	if err != nil {
 		panic(err)
@@ -448,7 +448,7 @@ func _smokeCase32() {
 
 func _smokeCase33() {
 	image, err := client.Images.List(context.Background(), sdk.ImageListParams{
-		Limit: sdk.F[int64](100),
+		Limit: sdk.Int(100),
 	})
 	if err != nil {
 		panic(err)
@@ -459,8 +459,8 @@ func _smokeCase33() {
 
 func _smokeCase34() {
 	image, err := client.Images.List(context.Background(), sdk.ImageListParams{
-		Cursor: sdk.F[string]("cursor"),
-		Limit:  sdk.F[int64](100),
+		Limit:  sdk.Int(100),
+		Cursor: sdk.String("cursor"),
 	})
 	if err != nil {
 		panic(err)
@@ -471,10 +471,10 @@ func _smokeCase34() {
 
 func _smokeCase35() {
 	image, err := client.Images.New(context.Background(), sdk.ImageNewParams{
-		Platform: sdk.F[sdk.ImageNewParamsPlatform](sdk.ImageNewParamsPlatform("linux/amd64")),
-		Source: sdk.F[sdk.SourceParam](sdk.SourceParam{
-			Kind: sdk.F[string](""),
-		}),
+		Platform: "linux/amd64",
+		Source: sdk.SourceParam{
+			Kind: "",
+		},
 	})
 	if err != nil {
 		panic(err)
@@ -485,12 +485,12 @@ func _smokeCase35() {
 
 func _smokeCase36() {
 	image, err := client.Images.New(context.Background(), sdk.ImageNewParams{
-		Platform: sdk.F[sdk.ImageNewParamsPlatform](sdk.ImageNewParamsPlatform("linux/amd64")),
-		Source: sdk.F[sdk.SourceParam](sdk.SourceParam{
-			Kind: sdk.F[string](""),
-		}),
-		CredentialRef: sdk.F[string](""),
-		Name:          sdk.F[string](""),
+		Platform: "linux/amd64",
+		Source: sdk.SourceParam{
+			Kind: "",
+		},
+		CredentialRef: sdk.String(""),
+		Name:          sdk.String(""),
 	})
 	if err != nil {
 		panic(err)
@@ -513,7 +513,7 @@ func _smokeCase37() {
 func _smokeCase38() {
 	image, err := client.Images.Update(context.Background(), sdk.ImageUpdateParams{
 		ImageID: "imageID",
-		Name:    sdk.F[string](""),
+		Name:    sdk.String(""),
 	})
 	if err != nil {
 		panic(err)
@@ -535,9 +535,9 @@ func _smokeCase39() {
 
 func _smokeCase40() {
 	upload, err := client.Images.Uploads.New(context.Background(), sdk.ImageUploadNewParams{
-		Platform:  sdk.F[string](""),
-		Sha256:    sdk.F[string](""),
-		SizeBytes: sdk.F[int64](0),
+		Platform:  "",
+		Sha256:    "",
+		SizeBytes: 0,
 	})
 	if err != nil {
 		panic(err)

@@ -52,10 +52,10 @@ func main() {
 
 	machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 		CreateParams: sdk.CreateParams{
-			Autosleep:  sdk.F[string]("300s"),
-			MemoryMib:  sdk.F[int64](4096),
-			StorageGib: sdk.F[int64](10),
-			Vcpu:       sdk.F[float64](1),
+			Autosleep:  sdk.String("300s"),
+			MemoryMiB:  sdk.Int(4096),
+			StorageGiB: sdk.Int(10),
+			VCPU:       sdk.Float(1),
 		},
 	})
 	if err != nil {
@@ -99,16 +99,16 @@ Non-success responses return generated API errors. Error objects expose status, 
 ```go
 machine, err := client.Machines.New(context.Background(), sdk.MachineNewParams{
 	CreateParams: sdk.CreateParams{
-		Autosleep:  sdk.F[string]("300s"),
-		MemoryMib:  sdk.F[int64](4096),
-		StorageGib: sdk.F[int64](10),
-		Vcpu:       sdk.F[float64](1),
+		Autosleep:  sdk.String("300s"),
+		MemoryMiB:  sdk.Int(4096),
+		StorageGiB: sdk.Int(10),
+		VCPU:       sdk.Float(1),
 	},
 })
 if err != nil {
 	var apiErr *sdk.Error
 	if errors.As(err, &apiErr) {
-		fmt.Println(apiErr.StatusCode, apiErr.JSON.RawJSON())
+		fmt.Println(apiErr.StatusCode, apiErr.RawJSON())
 	}
 	panic(err)
 }
@@ -201,7 +201,7 @@ if err != nil {
 ## Helpers
 
 - Pass `option.WithResponseInto(&raw)` to capture the underlying `*http.Response` for a request.
-- Use the generated `F`, `Null`, `Raw`, `Int`, `String`, `Float`, `Bool`, and `FileParam` helpers when setting optional params.
+- Use the generated `String`, `Int`, `Bool`, `Float`, `Time`, `Opt`, `Ptr`, `IntPtr`, `BoolPtr`, `FloatPtr`, `StringPtr`, `TimePtr`, and `File` helpers when setting optional params.
 
 <br />
 
