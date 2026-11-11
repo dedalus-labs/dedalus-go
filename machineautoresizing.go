@@ -11,9 +11,10 @@ import (
 	"slices"
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // MachineAutoresizingService contains methods and other services that help with interacting
@@ -26,8 +27,8 @@ type MachineAutoresizingService struct {
 // NewMachineAutoresizingService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewMachineAutoresizingService(opts ...option.RequestOption) (r *MachineAutoresizingService) {
-	r = &MachineAutoresizingService{}
+func NewMachineAutoresizingService(opts ...option.RequestOption) (r MachineAutoresizingService) {
+	r = MachineAutoresizingService{}
 	r.Options = opts
 	return
 }
@@ -100,60 +101,47 @@ func (r *MachineAutoresizingService) Update(ctx context.Context, body MachineAut
 
 type Policy struct {
 	// Permit automatic CPU growth independently of RAM.
-	CPU            PolicyCPU            `json:"cpu" api:"required"`
+	//
+	// Any of "on", "off".
+	CPU AutoresizingSwitch `json:"cpu" api:"required"`
+	// Any of "plan", "configured", "platform".
 	CPULimitSource PolicyCPULimitSource `json:"cpu_limit_source" api:"required"`
 	// Configured CPU growth limit in 0.25-vCPU steps. Null uses the plan limit.
-	CPUMaxVcpu float64 `json:"cpu_max_vcpu" api:"required,nullable"`
+	CPUMaxVCPU float64 `json:"cpu_max_vcpu" api:"required"`
 	// Largest automatic CPU size allowed by this policy, plan and platform.
-	EffectiveCPUMaxVcpu float64 `json:"effective_cpu_max_vcpu" api:"required"`
+	EffectiveCPUMaxVCPU float64 `json:"effective_cpu_max_vcpu" api:"required"`
 	// Largest automatic RAM size allowed by this policy and plan, in MiB.
-	EffectiveMemoryMaxMib int64 `json:"effective_memory_max_mib" api:"required"`
+	EffectiveMemoryMaxMiB int64 `json:"effective_memory_max_mib" api:"required"`
 	// Deprecated RAM permission alias. Use memory.
 	Enabled bool `json:"enabled" api:"required"`
 	// Permit automatic RAM growth. Automatic shrink remains internal.
-	Memory            PolicyMemory            `json:"memory" api:"required"`
+	//
+	// Any of "on", "off".
+	Memory AutoresizingSwitch `json:"memory" api:"required"`
+	// Any of "plan", "configured", "platform".
 	MemoryLimitSource PolicyMemoryLimitSource `json:"memory_limit_source" api:"required"`
 	// Configured RAM growth limit in MiB. Null uses the plan limit.
-	MemoryMaxMib int64      `json:"memory_max_mib" api:"required,nullable"`
-	JSON         policyJSON `json:"-"`
+	MemoryMaxMiB int64 `json:"memory_max_mib" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CPU                   respjson.Field
+		CPULimitSource        respjson.Field
+		CPUMaxVCPU            respjson.Field
+		EffectiveCPUMaxVCPU   respjson.Field
+		EffectiveMemoryMaxMiB respjson.Field
+		Enabled               respjson.Field
+		Memory                respjson.Field
+		MemoryLimitSource     respjson.Field
+		MemoryMaxMiB          respjson.Field
+		ExtraFields           map[string]respjson.Field
+		raw                   string
+	} `json:"-"`
 }
 
-// policyJSON contains the JSON metadata for the struct [Policy]
-type policyJSON struct {
-	CPU                   apijson.Field
-	CPULimitSource        apijson.Field
-	CPUMaxVcpu            apijson.Field
-	EffectiveCPUMaxVcpu   apijson.Field
-	EffectiveMemoryMaxMib apijson.Field
-	Enabled               apijson.Field
-	Memory                apijson.Field
-	MemoryLimitSource     apijson.Field
-	MemoryMaxMib          apijson.Field
-	raw                   string
-	ExtraFields           map[string]apijson.Field
-}
-
-func (r *Policy) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Policy) RawJSON() string { return r.JSON.raw }
+func (r *Policy) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r policyJSON) RawJSON() string {
-	return r.raw
-}
-
-type PolicyCPU string
-
-const (
-	PolicyCPUOn  PolicyCPU = "on"
-	PolicyCPUOff PolicyCPU = "off"
-)
-
-func (r PolicyCPU) IsKnown() bool {
-	switch r {
-	case PolicyCPUOn, PolicyCPUOff:
-		return true
-	}
-	return false
 }
 
 type PolicyCPULimitSource string
@@ -164,29 +152,6 @@ const (
 	PolicyCPULimitSourcePlatform   PolicyCPULimitSource = "platform"
 )
 
-func (r PolicyCPULimitSource) IsKnown() bool {
-	switch r {
-	case PolicyCPULimitSourcePlan, PolicyCPULimitSourceConfigured, PolicyCPULimitSourcePlatform:
-		return true
-	}
-	return false
-}
-
-type PolicyMemory string
-
-const (
-	PolicyMemoryOn  PolicyMemory = "on"
-	PolicyMemoryOff PolicyMemory = "off"
-)
-
-func (r PolicyMemory) IsKnown() bool {
-	switch r {
-	case PolicyMemoryOn, PolicyMemoryOff:
-		return true
-	}
-	return false
-}
-
 type PolicyMemoryLimitSource string
 
 const (
@@ -195,60 +160,30 @@ const (
 	PolicyMemoryLimitSourcePlatform   PolicyMemoryLimitSource = "platform"
 )
 
-func (r PolicyMemoryLimitSource) IsKnown() bool {
-	switch r {
-	case PolicyMemoryLimitSourcePlan, PolicyMemoryLimitSourceConfigured, PolicyMemoryLimitSourcePlatform:
-		return true
-	}
-	return false
-}
-
 type MachineAutoresizingGetParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineAutoresizingUpdateParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID    string                                             `path:"machine_id" api:"required" json:"-"`
-	CPU          param.Field[MachineAutoresizingUpdateParamsCPU]    `json:"cpu"`
-	CPUMaxVcpu   param.Field[float64]                               `json:"cpu_max_vcpu"`
-	Memory       param.Field[MachineAutoresizingUpdateParamsMemory] `json:"memory"`
-	MemoryMaxMib param.Field[int64]                                 `json:"memory_max_mib"`
+	MachineID    string             `path:"machine_id" api:"required" json:"-"`
+	CPUMaxVCPU   param.Opt[float64] `json:"cpu_max_vcpu,omitzero"`
+	MemoryMaxMiB param.Opt[int64]   `json:"memory_max_mib,omitzero"`
+	// Any of "on", "off".
+	CPU AutoresizingSwitch `json:"cpu,omitzero"`
+	// Any of "on", "off".
+	Memory AutoresizingSwitch `json:"memory,omitzero"`
+	paramObj
 }
 
 func (r MachineAutoresizingUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow MachineAutoresizingUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-
-type MachineAutoresizingUpdateParamsCPU string
-
-const (
-	MachineAutoresizingUpdateParamsCPUOn  MachineAutoresizingUpdateParamsCPU = "on"
-	MachineAutoresizingUpdateParamsCPUOff MachineAutoresizingUpdateParamsCPU = "off"
-)
-
-func (r MachineAutoresizingUpdateParamsCPU) IsKnown() bool {
-	switch r {
-	case MachineAutoresizingUpdateParamsCPUOn, MachineAutoresizingUpdateParamsCPUOff:
-		return true
-	}
-	return false
-}
-
-type MachineAutoresizingUpdateParamsMemory string
-
-const (
-	MachineAutoresizingUpdateParamsMemoryOn  MachineAutoresizingUpdateParamsMemory = "on"
-	MachineAutoresizingUpdateParamsMemoryOff MachineAutoresizingUpdateParamsMemory = "off"
-)
-
-func (r MachineAutoresizingUpdateParamsMemory) IsKnown() bool {
-	switch r {
-	case MachineAutoresizingUpdateParamsMemoryOn, MachineAutoresizingUpdateParamsMemoryOff:
-		return true
-	}
-	return false
+func (r *MachineAutoresizingUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }

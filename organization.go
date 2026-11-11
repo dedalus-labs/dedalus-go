@@ -11,14 +11,14 @@ import (
 // the [NewOrganizationService] method instead.
 type OrganizationService struct {
 	Options      []option.RequestOption
-	Autoresizing *OrganizationAutoresizingService
+	Autoresizing OrganizationAutoresizingService
 }
 
 // NewOrganizationService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewOrganizationService(opts ...option.RequestOption) (r *OrganizationService) {
-	r = &OrganizationService{}
+func NewOrganizationService(opts ...option.RequestOption) (r OrganizationService) {
+	r = OrganizationService{}
 	r.Options = opts
 	r.Autoresizing = NewOrganizationAutoresizingService(opts...)
 	return

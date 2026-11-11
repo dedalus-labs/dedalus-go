@@ -1,6 +1,6 @@
 {
-  "source_sha": "9f8d54f123e81b8bc7252f855c52ecbf7cc8ae42",
-  "spec_sha256": "c0b2db893e3017c5c83c14375e6085581584641f617ee7ea1305ab80e9b50421",
+  "source_sha": "f5b640b324aafb001a8da6facd807f13197630bb",
+  "spec_sha256": "a717ed108ea8bbb6b9c0b70255a07da7e9a01224c6941546089084e02097a632",
   "operations": [
     {
       "method": "GET",

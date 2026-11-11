@@ -8,9 +8,9 @@ import (
 	"slices"
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
 )
 
 // OrganizationAutoresizingService contains methods and other services that help with interacting
@@ -23,8 +23,8 @@ type OrganizationAutoresizingService struct {
 // NewOrganizationAutoresizingService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewOrganizationAutoresizingService(opts ...option.RequestOption) (r *OrganizationAutoresizingService) {
-	r = &OrganizationAutoresizingService{}
+func NewOrganizationAutoresizingService(opts ...option.RequestOption) (r OrganizationAutoresizingService) {
+	r = OrganizationAutoresizingService{}
 	r.Options = opts
 	return
 }
@@ -83,42 +83,19 @@ func (r *OrganizationAutoresizingService) Update(ctx context.Context, body Organ
 }
 
 type OrganizationAutoresizingUpdateParams struct {
-	CPU          param.Field[OrganizationAutoresizingUpdateParamsCPU]    `json:"cpu"`
-	CPUMaxVcpu   param.Field[float64]                                    `json:"cpu_max_vcpu"`
-	Memory       param.Field[OrganizationAutoresizingUpdateParamsMemory] `json:"memory"`
-	MemoryMaxMib param.Field[int64]                                      `json:"memory_max_mib"`
+	CPUMaxVCPU   param.Opt[float64] `json:"cpu_max_vcpu,omitzero"`
+	MemoryMaxMiB param.Opt[int64]   `json:"memory_max_mib,omitzero"`
+	// Any of "on", "off".
+	CPU AutoresizingSwitch `json:"cpu,omitzero"`
+	// Any of "on", "off".
+	Memory AutoresizingSwitch `json:"memory,omitzero"`
+	paramObj
 }
 
 func (r OrganizationAutoresizingUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow OrganizationAutoresizingUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-
-type OrganizationAutoresizingUpdateParamsCPU string
-
-const (
-	OrganizationAutoresizingUpdateParamsCPUOn  OrganizationAutoresizingUpdateParamsCPU = "on"
-	OrganizationAutoresizingUpdateParamsCPUOff OrganizationAutoresizingUpdateParamsCPU = "off"
-)
-
-func (r OrganizationAutoresizingUpdateParamsCPU) IsKnown() bool {
-	switch r {
-	case OrganizationAutoresizingUpdateParamsCPUOn, OrganizationAutoresizingUpdateParamsCPUOff:
-		return true
-	}
-	return false
-}
-
-type OrganizationAutoresizingUpdateParamsMemory string
-
-const (
-	OrganizationAutoresizingUpdateParamsMemoryOn  OrganizationAutoresizingUpdateParamsMemory = "on"
-	OrganizationAutoresizingUpdateParamsMemoryOff OrganizationAutoresizingUpdateParamsMemory = "off"
-)
-
-func (r OrganizationAutoresizingUpdateParamsMemory) IsKnown() bool {
-	switch r {
-	case OrganizationAutoresizingUpdateParamsMemoryOn, OrganizationAutoresizingUpdateParamsMemoryOff:
-		return true
-	}
-	return false
+func (r *OrganizationAutoresizingUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
