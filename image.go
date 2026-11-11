@@ -4,6 +4,7 @@ package dedalus
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,9 +14,10 @@ import (
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
 	"github.com/dedalus-labs/dedalus-go/internal/apiquery"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // ImageService contains methods and other services that help with interacting
@@ -23,14 +25,14 @@ import (
 // the [NewImageService] method instead.
 type ImageService struct {
 	Options []option.RequestOption
-	Uploads *ImageUploadService
+	Uploads ImageUploadService
 }
 
 // NewImageService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewImageService(opts ...option.RequestOption) (r *ImageService) {
-	r = &ImageService{}
+func NewImageService(opts ...option.RequestOption) (r ImageService) {
+	r = ImageService{}
 	r.Options = opts
 	r.Uploads = NewImageUploadService(opts...)
 	return
@@ -51,7 +53,7 @@ func NewImageService(opts ...option.RequestOption) (r *ImageService) {
 // Example:
 //
 //	image, err := client.Images.List(context.Background(), sdk.ImageListParams{
-//		Limit: sdk.F[int64](100),
+//		Limit: sdk.Int(100),
 //	})
 //	if err != nil {
 //		panic(err)
@@ -80,10 +82,10 @@ func (r *ImageService) List(ctx context.Context, query ImageListParams, opts ...
 // Example:
 //
 //	image, err := client.Images.New(context.Background(), sdk.ImageNewParams{
-//		Platform: sdk.F[sdk.ImageNewParamsPlatform](sdk.ImageNewParamsPlatform("linux/amd64")),
-//		Source: sdk.F[sdk.SourceParam](sdk.SourceParam{
-//			Kind: sdk.F[string](""),
-//		}),
+//		Platform: "linux/amd64",
+//		Source: sdk.SourceParam{
+//			Kind: "",
+//		},
 //	})
 //	if err != nil {
 //		panic(err)
@@ -146,7 +148,7 @@ func (r *ImageService) Get(ctx context.Context, params ImageGetParams, opts ...o
 //
 //	image, err := client.Images.Update(context.Background(), sdk.ImageUpdateParams{
 //		ImageID: "imageID",
-//		Name:    sdk.F[string](""),
+//		Name:    sdk.String(""),
 //	})
 //	if err != nil {
 //		panic(err)
@@ -200,96 +202,98 @@ func (r *ImageService) Delete(ctx context.Context, params ImageDeleteParams, opt
 type Image struct {
 	CreatedAt time.Time    `json:"created_at" api:"required" format:"date-time"`
 	ImageID   string       `json:"image_id" api:"required"`
-	Name      string       `json:"name" api:"required,nullable"`
+	Name      string       `json:"name" api:"required"`
 	Platform  string       `json:"platform" api:"required"`
 	Source    Source       `json:"source" api:"required"`
 	State     string       `json:"state" api:"required"`
 	Context   ImageContext `json:"context"`
 	Error     ErrorModel   `json:"error"`
 	Reason    string       `json:"reason"`
-	JSON      imageJSON    `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CreatedAt   respjson.Field
+		ImageID     respjson.Field
+		Name        respjson.Field
+		Platform    respjson.Field
+		Source      respjson.Field
+		State       respjson.Field
+		Context     respjson.Field
+		Error       respjson.Field
+		Reason      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// imageJSON contains the JSON metadata for the struct [Image]
-type imageJSON struct {
-	CreatedAt   apijson.Field
-	ImageID     apijson.Field
-	Name        apijson.Field
-	Platform    apijson.Field
-	Source      apijson.Field
-	State       apijson.Field
-	Context     apijson.Field
-	Error       apijson.Field
-	Reason      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Image) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Image) RawJSON() string { return r.JSON.raw }
+func (r *Image) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r imageJSON) RawJSON() string {
-	return r.raw
 }
 
 type ImageList struct {
-	ImageIDs   []string      `json:"image_ids" api:"required,nullable"`
-	NextCursor string        `json:"next_cursor"`
-	JSON       imageListJSON `json:"-"`
+	ImageIDs   []string `json:"image_ids" api:"required"`
+	NextCursor string   `json:"next_cursor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ImageIDs    respjson.Field
+		NextCursor  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// imageListJSON contains the JSON metadata for the struct [ImageList]
-type imageListJSON struct {
-	ImageIDs    apijson.Field
-	NextCursor  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ImageList) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ImageList) RawJSON() string { return r.JSON.raw }
+func (r *ImageList) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r imageListJSON) RawJSON() string {
-	return r.raw
 }
 
 type Source struct {
-	Kind      string     `json:"kind" api:"required"`
-	Reference string     `json:"reference"`
-	Sha256    string     `json:"sha256"`
-	UploadID  string     `json:"upload_id"`
-	JSON      sourceJSON `json:"-"`
+	Kind      string `json:"kind" api:"required"`
+	Reference string `json:"reference"`
+	Sha256    string `json:"sha256"`
+	UploadID  string `json:"upload_id"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Kind        respjson.Field
+		Reference   respjson.Field
+		Sha256      respjson.Field
+		UploadID    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// sourceJSON contains the JSON metadata for the struct [Source]
-type sourceJSON struct {
-	Kind        apijson.Field
-	Reference   apijson.Field
-	Sha256      apijson.Field
-	UploadID    apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Source) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Source) RawJSON() string { return r.JSON.raw }
+func (r *Source) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r sourceJSON) RawJSON() string {
-	return r.raw
+// ToParam converts this Source to a SourceParam.
+//
+// Warning: the fields of the param type will not be present. ToParam should only
+// be used at the last possible moment before sending a request. Test for this with
+// SourceParam.Overrides()
+func (r Source) ToParam() SourceParam {
+	return param.Override[SourceParam](json.RawMessage(r.RawJSON()))
 }
 
 type SourceParam struct {
-	Kind      param.Field[string] `json:"kind" api:"required"`
-	Reference param.Field[string] `json:"reference"`
-	Sha256    param.Field[string] `json:"sha256"`
-	UploadID  param.Field[string] `json:"upload_id"`
+	Kind      string            `json:"kind" api:"required"`
+	Reference param.Opt[string] `json:"reference,omitzero"`
+	Sha256    param.Opt[string] `json:"sha256,omitzero"`
+	UploadID  param.Opt[string] `json:"upload_id,omitzero"`
+	paramObj
 }
 
 func (r SourceParam) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow SourceParam
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SourceParam) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ErrorModel struct {
@@ -298,35 +302,32 @@ type ErrorModel struct {
 	Retryable    bool              `json:"retryable" api:"required"`
 	Details      map[string]string `json:"details"`
 	RetryAfterMs int64             `json:"retry_after_ms"`
-	JSON         errorModelJSON    `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ErrorCode    respjson.Field
+		Message      respjson.Field
+		Retryable    respjson.Field
+		Details      respjson.Field
+		RetryAfterMs respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
 }
 
-// errorModelJSON contains the JSON metadata for the struct [ErrorModel]
-type errorModelJSON struct {
-	ErrorCode    apijson.Field
-	Message      apijson.Field
-	Retryable    apijson.Field
-	Details      apijson.Field
-	RetryAfterMs apijson.Field
-	raw          string
-	ExtraFields  map[string]apijson.Field
-}
-
-func (r *ErrorModel) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ErrorModel) RawJSON() string { return r.JSON.raw }
+func (r *ErrorModel) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r errorModelJSON) RawJSON() string {
-	return r.raw
-}
-
 type ImageListParams struct {
-	Cursor param.Field[string] `query:"cursor"`
-	Limit  param.Field[int64]  `query:"limit"`
+	Limit  param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Cursor param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [ImageListParams]'s query parameters as `url.Values`.
-func (r ImageListParams) URLQuery() (v url.Values) {
+func (r ImageListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -334,15 +335,21 @@ func (r ImageListParams) URLQuery() (v url.Values) {
 }
 
 type ImageNewParams struct {
-	Platform      param.Field[ImageNewParamsPlatform] `json:"platform" api:"required"`
-	Source        param.Field[SourceParam]            `json:"source" api:"required"`
-	CredentialRef param.Field[string]                 `json:"credential_ref"`
+	// Any of "linux/amd64", "linux/arm64".
+	Platform      ImageNewParamsPlatform `json:"platform,omitzero" api:"required"`
+	Source        SourceParam            `json:"source,omitzero" api:"required"`
+	CredentialRef param.Opt[string]      `json:"credential_ref,omitzero"`
 	// A label people use to tell images apart. Programs use the image ID.
-	Name param.Field[string] `json:"name"`
+	Name param.Opt[string] `json:"name,omitzero"`
+	paramObj
 }
 
 func (r ImageNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ImageNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ImageNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ImageNewParamsPlatform string
@@ -352,76 +359,67 @@ const (
 	ImageNewParamsPlatformLinuxArm64 ImageNewParamsPlatform = "linux/arm64"
 )
 
-func (r ImageNewParamsPlatform) IsKnown() bool {
-	switch r {
-	case ImageNewParamsPlatformLinuxAmd64, ImageNewParamsPlatformLinuxArm64:
-		return true
-	}
-	return false
-}
-
 type ImageGetParams struct {
 	ImageID string `path:"image_id" api:"required" json:"-"`
+	paramObj
 }
 
 type ImageUpdateParams struct {
 	ImageID string `path:"image_id" api:"required" json:"-"`
 	// The new label, or null to clear it. No other field can change.
-	Name param.Field[string] `json:"name" api:"required"`
+	Name param.Opt[string] `json:"name,omitzero" api:"required"`
+	paramObj
 }
 
 func (r ImageUpdateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ImageUpdateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *ImageUpdateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type ImageDeleteParams struct {
 	ImageID string `path:"image_id" api:"required" json:"-"`
+	paramObj
 }
 
 type ImageContext struct {
 	Percent  int64                `json:"percent" api:"required"`
 	Stage    string               `json:"stage" api:"required"`
 	Progress ImageContextProgress `json:"progress"`
-	JSON     imageContextJSON     `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Percent     respjson.Field
+		Stage       respjson.Field
+		Progress    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// imageContextJSON contains the JSON metadata for the struct [ImageContext]
-type imageContextJSON struct {
-	Percent     apijson.Field
-	Stage       apijson.Field
-	Progress    apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ImageContext) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ImageContext) RawJSON() string { return r.JSON.raw }
+func (r *ImageContext) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r imageContextJSON) RawJSON() string {
-	return r.raw
 }
 
 type ImageContextProgress struct {
-	Completed int64                    `json:"completed" api:"required"`
-	Step      string                   `json:"step" api:"required"`
-	Total     int64                    `json:"total" api:"required"`
-	JSON      imageContextProgressJSON `json:"-"`
+	Completed int64  `json:"completed" api:"required"`
+	Step      string `json:"step" api:"required"`
+	Total     int64  `json:"total" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Completed   respjson.Field
+		Step        respjson.Field
+		Total       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// imageContextProgressJSON contains the JSON metadata for the struct [ImageContextProgress]
-type imageContextProgressJSON struct {
-	Completed   apijson.Field
-	Step        apijson.Field
-	Total       apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ImageContextProgress) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r ImageContextProgress) RawJSON() string { return r.JSON.raw }
+func (r *ImageContextProgress) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r imageContextProgressJSON) RawJSON() string {
-	return r.raw
 }

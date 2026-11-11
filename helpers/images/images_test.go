@@ -57,7 +57,7 @@ func setup(t *testing.T, states ...string) *fixture {
 		"upload": map[string]interface{}{"url": "https://storage.example/image?signature=fixture", "method": "PUT", "expires_at": "2099-01-01T00:00:00Z",
 			"headers": map[string][]string{"content-length": {strconv.Itoa(len(archiveBytes))}, "if-none-match": {"*"}, "x-amz-checksum-sha256": {base64.StdEncoding.EncodeToString(digest[:])}}},
 	}
-	f.client = dedalus.NewClient(option.WithAPIKey("fixture-secret"), option.WithBaseURL("https://api.example"), option.WithMaxRetries(1), option.WithHTTPClient(&http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
+	client := dedalus.NewClient(option.WithAPIKey("fixture-secret"), option.WithBaseURL("https://api.example"), option.WithMaxRetries(1), option.WithHTTPClient(&http.Client{Transport: transport(func(r *http.Request) (*http.Response, error) {
 		f.requests = append(f.requests, r.Method+" "+r.URL.Path)
 		if r.Header.Get("Authorization") != "Bearer fixture-secret" {
 			t.Error("API credential missing")
@@ -92,6 +92,7 @@ func setup(t *testing.T, states ...string) *fixture {
 		}
 		return response(r, 200, map[string]interface{}{"image_id": id, "state": state, "error": map[string]string{"error_code": "PREPARE_FAILED", "message": "archive rejected"}}), nil
 	})}))
+	f.client = &client
 	f.storage = transport(func(r *http.Request) (*http.Response, error) {
 		f.uploads++
 		if r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" {
@@ -214,7 +215,7 @@ func TestInFlightCancellationAndUploadErrors(t *testing.T) {
 		<-r.Context().Done()
 		return nil, r.Context().Err()
 	})}))
-	if _, err := images.Poll(ctx, client, imageID, images.PollOptions{}); !errors.Is(err, context.Canceled) {
+	if _, err := images.Poll(ctx, &client, imageID, images.PollOptions{}); !errors.Is(err, context.Canceled) {
 		t.Fatalf("in-flight cancellation: %v", err)
 	}
 	for _, status := range []int{302, 500, 412} {
@@ -259,7 +260,7 @@ func TestReadyImageToGeneratedMachine(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	machine, err := f.client.Machines.New(context.Background(), dedalus.MachineNewParams{CreateParams: dedalus.CreateParams{ImageID: dedalus.F(ready.ImageID)}})
+	machine, err := f.client.Machines.New(context.Background(), dedalus.MachineNewParams{CreateParams: dedalus.CreateParams{ImageID: dedalus.String(ready.ImageID)}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -301,7 +302,7 @@ func TestGeneratedPatchResizeAndFlatErrors(t *testing.T) {
 		t.Fatalf("missing flat error: %v", err)
 	}
 	var decoded map[string]interface{}
-	if err := json.Unmarshal([]byte(apiErr.JSON.RawJSON()), &decoded); err != nil {
+	if err := json.Unmarshal([]byte(apiErr.RawJSON()), &decoded); err != nil {
 		t.Fatal(err)
 	}
 	if decoded["error_code"] != envelope["error_code"] || decoded["retryable"] != false || decoded["retry_after_ms"] != float64(500) {
