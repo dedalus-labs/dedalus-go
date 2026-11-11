@@ -571,6 +571,13 @@ const (
 	LifecycleStatusPhaseFailed           LifecycleStatusPhase = "failed"
 )
 
+type AutoresizingSwitch string
+
+const (
+	AutoresizingSwitchOn  AutoresizingSwitch = "on"
+	AutoresizingSwitchOff AutoresizingSwitch = "off"
+)
+
 type MachineGetResponse struct {
 	// Seconds of inactivity before autosleep. 0 disables autosleep.
 	AutosleepSeconds int64 `json:"autosleep_seconds" api:"required"`

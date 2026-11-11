@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	sdk "github.com/dedalus-labs/dedalus-go"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
 )
 
 func TestV2ParametersKeepWireShape(t *testing.T) {
@@ -15,11 +16,17 @@ func TestV2ParametersKeepWireShape(t *testing.T) {
 		want  string
 	}{
 		{"machine policy", sdk.MachineAutoresizingUpdateParams{
-			MachineID: "fixture", CPU: "off", Memory: "on", MemoryMaxMiB: sdk.Int(16384),
+			MachineID: "fixture", CPU: sdk.AutoresizingSwitchOff, Memory: sdk.AutoresizingSwitchOn, MemoryMaxMiB: sdk.Int(16384),
 		}, `{"cpu":"off","memory":"on","memory_max_mib":16384}`},
 		{"organization policy", sdk.OrganizationAutoresizingUpdateParams{
-			CPU: "off", Memory: "on", MemoryMaxMiB: sdk.Int(16384),
+			CPU: sdk.AutoresizingSwitchOff, Memory: sdk.AutoresizingSwitchOn, MemoryMaxMiB: sdk.Int(16384),
 		}, `{"cpu":"off","memory":"on","memory_max_mib":16384}`},
+		{"machine policy omitted limits", sdk.MachineAutoresizingUpdateParams{
+			MachineID: "fixture", CPU: sdk.AutoresizingSwitchOff,
+		}, `{"cpu":"off"}`},
+		{"organization policy cleared limits", sdk.OrganizationAutoresizingUpdateParams{
+			CPUMaxVCPU: param.Null[float64](), MemoryMaxMiB: param.Null[int64](),
+		}, `{"cpu_max_vcpu":null,"memory_max_mib":null}`},
 		{"required SSH key", sdk.SSHSessionCreateParams{
 			PublicKey: "ssh-ed25519 fixture",
 		}, `{"public_key":"ssh-ed25519 fixture"}`},
