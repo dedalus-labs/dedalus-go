@@ -16,13 +16,13 @@ func TestV2ParametersKeepWireShape(t *testing.T) {
 		want  string
 	}{
 		{"machine policy", sdk.MachineAutoresizingUpdateParams{
-			MachineID: "fixture", CPU: sdk.AutoresizingSwitchOff, Memory: sdk.AutoresizingSwitchOn, MemoryMaxMiB: sdk.Int(16384),
+			MachineID: "fixture", CPU: sdk.MachineAutoresizingUpdateParamsCPUOff, Memory: sdk.MachineAutoresizingUpdateParamsMemoryOn, MemoryMaxMiB: sdk.Int(16384),
 		}, `{"cpu":"off","memory":"on","memory_max_mib":16384}`},
 		{"organization policy", sdk.OrganizationAutoresizingUpdateParams{
-			CPU: sdk.AutoresizingSwitchOff, Memory: sdk.AutoresizingSwitchOn, MemoryMaxMiB: sdk.Int(16384),
+			CPU: sdk.OrganizationAutoresizingUpdateParamsCPUOff, Memory: sdk.OrganizationAutoresizingUpdateParamsMemoryOn, MemoryMaxMiB: sdk.Int(16384),
 		}, `{"cpu":"off","memory":"on","memory_max_mib":16384}`},
 		{"machine policy omitted limits", sdk.MachineAutoresizingUpdateParams{
-			MachineID: "fixture", CPU: sdk.AutoresizingSwitchOff,
+			MachineID: "fixture", CPU: sdk.MachineAutoresizingUpdateParamsCPUOff,
 		}, `{"cpu":"off"}`},
 		{"organization policy cleared limits", sdk.OrganizationAutoresizingUpdateParams{
 			CPUMaxVCPU: param.Null[float64](), MemoryMaxMiB: param.Null[int64](),
