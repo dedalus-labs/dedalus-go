@@ -32,12 +32,23 @@ Complete reference of every operation, grouped by resource. See [the README](./R
   - [`Machines Autoresizing`](#machines-autoresizing)
     - [Read this machine's autoresizing settings](#read-this-machines-autoresizing-settings)
     - [Set this machine's autoresizing settings](#set-this-machines-autoresizing-settings)
+  - [`Machines Ports`](#machines-ports)
+    - [List ports](#list-ports)
+    - [Create port](#create-port)
+    - [Get port](#get-port)
+    - [Update port](#update-port)
+    - [Delete port](#delete-port)
+    - [`Machines Ports AccessKeys`](#machines-ports-accesskeys)
+      - [List port access keys](#list-port-access-keys)
+      - [Mint port access key](#mint-port-access-key)
+      - [Revoke port access key](#revoke-port-access-key)
+      - [Rotate port access key](#rotate-port-access-key)
 - [`Organization`](#organization)
   - [`Organization Autoresizing`](#organization-autoresizing)
     - [Read organization autoresizing policy](#read-organization-autoresizing-policy)
     - [Set organization autoresizing policy](#set-organization-autoresizing-policy)
 - [`Images`](#images)
-  - [List image IDs owned by the authenticated organization](#list-image-ids-owned-by-the-authenticated-organization)
+  - [List images owned by the authenticated organization](#list-images-owned-by-the-authenticated-organization)
   - [Register an immutable OCI image for preparation](#register-an-immutable-oci-image-for-preparation)
   - [Read preparation status for an organization-owned image](#read-preparation-status-for-an-organization-owned-image)
   - [Rename an organization-owned image](#rename-an-organization-owned-image)
@@ -508,6 +519,191 @@ if err != nil {
 fmt.Println(autoresizing)
 ```
 
+### `Machines Ports`
+
+#### List ports
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortListParams`](./machineport.go) |
+| Response | [`Port`](./machineport.go) |
+
+```go
+page, err := client.Machines.Ports.List(context.Background(), sdk.MachinePortListParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(page)
+```
+
+#### Create port
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortNewParams`](./machineport.go) |
+| Response | [`Port`](./machineport.go) |
+
+```go
+port, err := client.Machines.Ports.New(context.Background(), sdk.MachinePortNewParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	PortCreateParams: sdk.PortCreateParams{
+		Port:       0,
+		Protocol:   sdk.PortCreateParamsProtocol("http"),
+		Visibility: sdk.PortCreateParamsVisibility("private"),
+	},
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(port.PortID)
+```
+
+#### Get port
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortGetParams`](./machineport.go) |
+| Response | [`Port`](./machineport.go) |
+
+```go
+port, err := client.Machines.Ports.Get(context.Background(), sdk.MachinePortGetParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	PortID:    "portID",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(port.PortID)
+```
+
+#### Update port
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortUpdateParams`](./machineport.go) |
+| Response | [`Port`](./machineport.go) |
+
+```go
+port, err := client.Machines.Ports.Update(context.Background(), sdk.MachinePortUpdateParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	PortID:    "portID",
+	PortUpdateParams: sdk.PortUpdateParams{
+		Visibility: sdk.PortUpdateParamsVisibility("public"),
+	},
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(port.PortID)
+```
+
+#### Delete port
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortDeleteParams`](./machineport.go) |
+| Response | [`Port`](./machineport.go) |
+
+```go
+port, err := client.Machines.Ports.Delete(context.Background(), sdk.MachinePortDeleteParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	PortID:    "portID",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(port.PortID)
+```
+
+#### `Machines Ports AccessKeys`
+
+##### List port access keys
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortAccessKeyListParams`](./machineportaccesskey.go) |
+| Response | [`MachinePortAccessKeyListResponse`](./machineportaccesskey.go) |
+
+```go
+accessKey, err := client.Machines.Ports.AccessKeys.List(context.Background(), sdk.MachinePortAccessKeyListParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	PortID:    "portID",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(accessKey)
+```
+
+##### Mint port access key
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortAccessKeyMintParams`](./machineportaccesskey.go) |
+| Response | [`MachinePortAccessKeyMintResponse`](./machineportaccesskey.go) |
+
+```go
+accessKey, err := client.Machines.Ports.AccessKeys.Mint(context.Background(), sdk.MachinePortAccessKeyMintParams{
+	MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	PortID:    "portID",
+	ExpiresIn: 1,
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(accessKey)
+```
+
+##### Revoke port access key
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortAccessKeyRevokeParams`](./machineportaccesskey.go) |
+| Response | [`MachinePortAccessKeyRevokeResponse`](./machineportaccesskey.go) |
+
+```go
+accessKey, err := client.Machines.Ports.AccessKeys.Revoke(context.Background(), sdk.MachinePortAccessKeyRevokeParams{
+	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	PortID:      "portID",
+	AccessKeyID: "accessKeyID",
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(accessKey)
+```
+
+##### Rotate port access key
+
+| Direction | Type |
+| --- | --- |
+| Request | [`MachinePortAccessKeyRotateParams`](./machineportaccesskey.go) |
+| Response | [`MachinePortAccessKeyRotateResponse`](./machineportaccesskey.go) |
+
+```go
+accessKey, err := client.Machines.Ports.AccessKeys.Rotate(context.Background(), sdk.MachinePortAccessKeyRotateParams{
+	MachineID:   "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
+	PortID:      "portID",
+	AccessKeyID: "accessKeyID",
+	ExpiresIn:   1,
+})
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(accessKey)
+```
+
 ## `Organization`
 
 ### `Organization Autoresizing`
@@ -547,9 +743,9 @@ fmt.Println(autoresizing)
 
 ## `Images`
 
-### List image IDs owned by the authenticated organization
+### List images owned by the authenticated organization
 
-Pages through the organization's images in ID order. A deleted image is left out; it still reads by ID.
+Pages through the organization's images in ID order. Each item has the same shape as a single image read. A deleted image is left out; it still reads by ID.
 
 | Direction | Type |
 | --- | --- |
@@ -557,14 +753,14 @@ Pages through the organization's images in ID order. A deleted image is left out
 | Response | [`ImageList`](./image.go) |
 
 ```go
-image, err := client.Images.List(context.Background(), sdk.ImageListParams{
+images, err := client.Images.List(context.Background(), sdk.ImageListParams{
 	Limit: sdk.Int(100),
 })
 if err != nil {
 	panic(err)
 }
 
-fmt.Println(image)
+fmt.Println(images)
 ```
 
 ### Register an immutable OCI image for preparation

@@ -29,6 +29,7 @@ type MachineService struct {
 	SSH          MachineSSHService
 	Executions   MachineExecutionService
 	Autoresizing MachineAutoresizingService
+	Ports        MachinePortService
 }
 
 // NewMachineService generates a new service that applies the given options to each request.
@@ -40,6 +41,7 @@ func NewMachineService(opts ...option.RequestOption) (r MachineService) {
 	r.SSH = NewMachineSSHService(opts...)
 	r.Executions = NewMachineExecutionService(opts...)
 	r.Autoresizing = NewMachineAutoresizingService(opts...)
+	r.Ports = NewMachinePortService(opts...)
 	return
 }
 
@@ -569,13 +571,6 @@ const (
 	LifecycleStatusPhaseDestroying       LifecycleStatusPhase = "destroying"
 	LifecycleStatusPhaseDestroyed        LifecycleStatusPhase = "destroyed"
 	LifecycleStatusPhaseFailed           LifecycleStatusPhase = "failed"
-)
-
-type AutoresizingSwitch string
-
-const (
-	AutoresizingSwitchOn  AutoresizingSwitch = "on"
-	AutoresizingSwitchOff AutoresizingSwitch = "off"
 )
 
 type MachineGetResponse struct {

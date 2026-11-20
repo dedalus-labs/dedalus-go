@@ -38,7 +38,7 @@ func NewImageService(opts ...option.RequestOption) (r ImageService) {
 	return
 }
 
-// Pages through the organization's images in ID order. A deleted image is left out; it still reads by ID.
+// Pages through the organization's images in ID order. Each item has the same shape as a single image read. A deleted image is left out; it still reads by ID.
 //
 // Parameters:
 //
@@ -52,14 +52,14 @@ func NewImageService(opts ...option.RequestOption) (r ImageService) {
 //
 // Example:
 //
-//	image, err := client.Images.List(context.Background(), sdk.ImageListParams{
+//	images, err := client.Images.List(context.Background(), sdk.ImageListParams{
 //		Limit: sdk.Int(100),
 //	})
 //	if err != nil {
 //		panic(err)
 //	}
 //
-//	fmt.Println(image)
+//	fmt.Println(images)
 func (r *ImageService) List(ctx context.Context, query ImageListParams, opts ...option.RequestOption) (res *ImageList, err error) {
 	opts = slices.Concat(r.Options, opts)
 	path := "v1/images"
@@ -232,11 +232,11 @@ func (r *Image) UnmarshalJSON(data []byte) error {
 }
 
 type ImageList struct {
-	ImageIDs   []string `json:"image_ids" api:"required"`
-	NextCursor string   `json:"next_cursor"`
+	Items      []Image `json:"items" api:"required"`
+	NextCursor string  `json:"next_cursor"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		ImageIDs    respjson.Field
+		Items       respjson.Field
 		NextCursor  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
