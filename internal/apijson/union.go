@@ -118,13 +118,7 @@ func (d *decoderBuilder) newStructUnionDecoder(t reflect.Type) decoderFunc {
 			return errors.New("apijson: was not able to coerce type as union")
 		}
 
-		// A union whose best variant only needed a lenient spelling passes that
-		// rank up through [markLenient], so an enclosing union still ranks the
-		// variant holding it above one that ranks loose. Any other inexact pick
-		// ranks the enclosing value loose.
-		if bestExactness == lenient {
-			markLenient(state)
-		} else if guardStrict(state, bestExactness != exact) {
+		if !passUnionRank(state, bestExactness) {
 			return errors.New("apijson: was not able to coerce type as union strictly")
 		}
 
@@ -205,13 +199,7 @@ func (d *decoderBuilder) newUnionDecoder(t reflect.Type) decoderFunc {
 			return errors.New("apijson: was not able to coerce type as union")
 		}
 
-		// A union whose best variant only needed a lenient spelling passes that
-		// rank up through [markLenient], so an enclosing union still ranks the
-		// variant holding it above one that ranks loose. Any other inexact pick
-		// ranks the enclosing value loose.
-		if bestExactness == lenient {
-			markLenient(state)
-		} else if guardStrict(state, bestExactness != exact) {
+		if !passUnionRank(state, bestExactness) {
 			return errors.New("apijson: was not able to coerce type as union strictly")
 		}
 

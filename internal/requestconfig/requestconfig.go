@@ -28,8 +28,13 @@ import (
 	"github.com/dedalus-labs/dedalus-go/internal/redact"
 )
 
+// getDefaultHeaders are the headers NewRequestConfig writes with the SDK's own values before any
+// option applies, other than the `X-Scalar-*` ones: the JSON `Accept` and the SDK's `User-Agent`.
+// Code that must tell the SDK's own values from a client's reads them here, never a copy, so the
+// two cannot drift.
 func getDefaultHeaders() map[string]string {
 	return map[string]string{
+		"Accept":     "application/json",
 		"User-Agent": fmt.Sprintf("Dedalus/Go %s", internal.PackageVersion),
 	}
 }
@@ -194,7 +199,6 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 		req.Header.Set("Content-Type", contentType)
 	}
 
-	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Scalar-Retry-Count", "0")
 	req.Header.Set("X-Scalar-Timeout", "0")
 	for k, v := range getDefaultHeaders() {
@@ -415,6 +419,13 @@ func (b *bodyWithTimeout) Close() error {
 // far ahead) would otherwise park the call for that long.
 const maxRetryAfter = time.Minute
 
+// initialRetryDelay and maxRetryDelay are the exponential backoff, in seconds: the wait before the
+// first retry, doubled on each retry after it and never more than maxRetryDelay.
+const (
+	initialRetryDelay = 0.5
+	maxRetryDelay     = 8.0
+)
+
 func retryDelay(res *http.Response, retryCount int) time.Duration {
 	// If the backend tells us to wait a sane amount of time (positive, at most a minute), use that
 	// value; anything else falls back to the exponential backoff below.
@@ -422,14 +433,16 @@ func retryDelay(res *http.Response, retryCount int) time.Duration {
 		return retryAfterDelay
 	}
 
-	maxDelay := 8 * time.Second
-	delay := time.Duration(0.5 * float64(time.Second) * math.Pow(2, float64(retryCount)))
-	if delay > maxDelay {
-		delay = maxDelay
-	}
+	// Capped in seconds before converting: past enough retries the doubled delay no longer fits a
+	// time.Duration, and converting a float that overflows int64 gives an arbitrary, often negative,
+	// duration.
+	delay := time.Duration(math.Min(initialRetryDelay*math.Pow(2, float64(retryCount)), maxRetryDelay) * float64(time.Second))
 
-	jitter := rand.Int63n(int64(delay / 4))
-	delay -= time.Duration(jitter)
+	// Up to a quarter of the delay comes off, so clients that failed together do not retry together.
+	// A zero cap waits not at all, and rand.Int63n panics on a bound that is not positive.
+	if quarter := int64(delay / 4); quarter > 0 {
+		delay -= time.Duration(rand.Int63n(quarter))
+	}
 	return delay
 }
 

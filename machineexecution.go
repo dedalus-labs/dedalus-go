@@ -299,6 +299,9 @@ func (r *MachineExecutionService) EventsAutoPaging(ctx context.Context, query Ma
 }
 
 type ExecutionCreateParams struct {
+	// Program and its arguments as an array of strings, such as ["ls", "-la"]. A
+	// single string is not split into arguments. To run a shell command line, pass
+	// ["sh", "-c", "<command line>"].
 	Command   []string          `json:"command,omitzero" api:"required"`
 	Cwd       param.Opt[string] `json:"cwd,omitzero"`
 	Stdin     param.Opt[string] `json:"stdin,omitzero"`
