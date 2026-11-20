@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.8.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.7.0...v0.8.0) (2026-11-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* **api:** 8 breaking changes to the SDK surface.
+    - response-shape GET v1/images→.image_ids — field only in before (breaking: removed; items appeared in its place, likely a rename)
+    - enum-values GET v1/machines/{p}/autoresizing→.cpu — enum const names differ (wire values match) (breaking: changed in a way existing callers can observe)
+    - enum-values GET v1/machines/{p}/autoresizing→.memory — enum const names differ (wire values match) (breaking: changed in a way existing callers can observe)
+    - enum-values MachineAutoresizingUpdateParams.cpu — enum const names differ (wire values match) (breaking: changed in a way existing callers can observe)
+    - enum-values MachineAutoresizingUpdateParams.memory — enum const names differ (wire values match) (breaking: changed in a way existing callers can observe)
+    - enum-values OrganizationAutoresizingUpdateParams.cpu — enum const names differ (wire values match) (breaking: changed in a way existing callers can observe)
+    - enum-values OrganizationAutoresizingUpdateParams.memory — enum const names differ (wire values match) (breaking: changed in a way existing callers can observe)
+    - types-classes machine.go:AutoresizingSwitch — defined type only in before (breaking: the new snapshot no longer has it)
+* **api:** 4 breaking changes to the SDK surface.
+    - Property `policy.cpu` type changed from `enum(on | off)` to `autoresizing_switch`.
+    - Property `policy.memory` type changed from `enum(on | off)` to `autoresizing_switch`.
+    - Property `autoresizing_update.cpu` type changed from `enum(on | off)` to `autoresizing_switch`.
+    - Property `autoresizing_update.memory` type changed from `enum(on | off)` to `autoresizing_switch`.
+
+### Features
+
+* **api:** update property policy.cpu (+4 more changes) ([6fa1911](https://github.com/dedalus-labs/dedalus-go/commit/6fa191186db32a7bcb828b6956266ed477f6c628))
+* **api:** update SDK surface (29 changes) ([a7710f1](https://github.com/dedalus-labs/dedalus-go/commit/a7710f11bbaef5fb096883a020dcfaff87911ebc))
+
+
+### Bug Fixes
+
+* **contract:** pin machine ports with renamed autoresizing enums ([a9894f2](https://github.com/dedalus-labs/dedalus-go/commit/a9894f23c85c874e2a3c00891ee6a8c883d2d927))
+* **contract:** pin machine ports with renamed autoresizing enums ([#21](https://github.com/dedalus-labs/dedalus-go/issues/21)) ([ac1c52d](https://github.com/dedalus-labs/dedalus-go/commit/ac1c52d67df28469339777c5c2032beb53216919))
+* **go:** resolve scalar v2 regeneration ([c8ac92d](https://github.com/dedalus-labs/dedalus-go/commit/c8ac92d4cbdb9a52a8f80793c37196ba2a81784f))
+* **go:** share autoresizing enum ([4b43c78](https://github.com/dedalus-labs/dedalus-go/commit/4b43c787175190478b5cb40b0fa5fde6a989f72c))
+
+
+### Chores
+
+* **api:** update generated SDK content ([b40fa41](https://github.com/dedalus-labs/dedalus-go/commit/b40fa41b9014cf669bb99178e5e7cd118cf4e2bb))
+* **api:** update generated SDK content ([986ebba](https://github.com/dedalus-labs/dedalus-go/commit/986ebba9956ed33bfa747d128e8fae7b71690649))
+
 ## [0.7.0](https://github.com/dedalus-labs/dedalus-go/compare/v0.6.0...v0.7.0) (2026-11-06)
 
 
