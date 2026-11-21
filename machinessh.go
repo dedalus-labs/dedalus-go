@@ -13,10 +13,12 @@ import (
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
 	"github.com/dedalus-labs/dedalus-go/internal/apiquery"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
+	shimjson "github.com/dedalus-labs/dedalus-go/internal/encoding/json"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
 	"github.com/dedalus-labs/dedalus-go/packages/pagination"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // MachineSSHService contains methods and other services that help with interacting
@@ -29,8 +31,8 @@ type MachineSSHService struct {
 // NewMachineSSHService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewMachineSSHService(opts ...option.RequestOption) (r *MachineSSHService) {
-	r = &MachineSSHService{}
+func NewMachineSSHService(opts ...option.RequestOption) (r MachineSSHService) {
+	r = MachineSSHService{}
 	r.Options = opts
 	return
 }
@@ -104,7 +106,7 @@ func (r *MachineSSHService) ListAutoPaging(ctx context.Context, query MachineSSH
 //	ssh, err := client.Machines.SSH.New(context.Background(), sdk.MachineSSHNewParams{
 //		MachineID: "017f22e2-79b0-7cc3-98c4-dc0c0c07398f",
 //		SSHSessionCreateParams: sdk.SSHSessionCreateParams{
-//			PublicKey: sdk.F[string](""),
+//			PublicKey: "",
 //		},
 //	})
 //	if err != nil {
@@ -200,17 +202,24 @@ func (r *MachineSSHService) Delete(ctx context.Context, params MachineSSHDeleteP
 }
 
 type SSHSessionCreateParams struct {
-	PublicKey param.Field[string] `json:"public_key" api:"required"`
+	PublicKey string `json:"public_key" api:"required"`
+	paramObj
 }
 
 func (r SSHSessionCreateParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow SSHSessionCreateParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *SSHSessionCreateParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type SSHSession struct {
-	CreatedAt    time.Time        `json:"created_at" api:"required" format:"date-time"`
-	MachineID    string           `json:"machine_id" api:"required" format:"uuid"`
-	SessionID    string           `json:"session_id" api:"required"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
+	MachineID string    `json:"machine_id" api:"required" format:"uuid"`
+	SessionID string    `json:"session_id" api:"required"`
+	// Any of "wake_in_progress", "ssh_in_progress", "ready", "closed", "expired",
+	// "failed".
 	Status       SSHSessionStatus `json:"status" api:"required"`
 	Connection   SSHConnection    `json:"connection"`
 	ErrorCode    string           `json:"error_code"`
@@ -218,31 +227,27 @@ type SSHSession struct {
 	ExpiresAt    time.Time        `json:"expires_at" format:"date-time"`
 	ReadyAt      time.Time        `json:"ready_at" format:"date-time"`
 	RetryAfterMs int64            `json:"retry_after_ms"`
-	JSON         sshSessionJSON   `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CreatedAt    respjson.Field
+		MachineID    respjson.Field
+		SessionID    respjson.Field
+		Status       respjson.Field
+		Connection   respjson.Field
+		ErrorCode    respjson.Field
+		ErrorMessage respjson.Field
+		ExpiresAt    respjson.Field
+		ReadyAt      respjson.Field
+		RetryAfterMs respjson.Field
+		ExtraFields  map[string]respjson.Field
+		raw          string
+	} `json:"-"`
 }
 
-// sshSessionJSON contains the JSON metadata for the struct [SSHSession]
-type sshSessionJSON struct {
-	CreatedAt    apijson.Field
-	MachineID    apijson.Field
-	SessionID    apijson.Field
-	Status       apijson.Field
-	Connection   apijson.Field
-	ErrorCode    apijson.Field
-	ErrorMessage apijson.Field
-	ExpiresAt    apijson.Field
-	ReadyAt      apijson.Field
-	RetryAfterMs apijson.Field
-	raw          string
-	ExtraFields  map[string]apijson.Field
-}
-
-func (r *SSHSession) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r SSHSession) RawJSON() string { return r.JSON.raw }
+func (r *SSHSession) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r sshSessionJSON) RawJSON() string {
-	return r.raw
 }
 
 type SSHSessionStatus string
@@ -256,86 +261,67 @@ const (
 	SSHSessionStatusFailed         SSHSessionStatus = "failed"
 )
 
-func (r SSHSessionStatus) IsKnown() bool {
-	switch r {
-	case SSHSessionStatusWakeInProgress, SSHSessionStatusSSHInProgress, SSHSessionStatusReady, SSHSessionStatusClosed, SSHSessionStatusExpired, SSHSessionStatusFailed:
-		return true
-	}
-	return false
-}
-
 type SSHSessionList struct {
-	Items      []SSHSession       `json:"items" api:"required,nullable"`
-	NextCursor string             `json:"next_cursor"`
-	JSON       sshSessionListJSON `json:"-"`
+	Items      []SSHSession `json:"items" api:"required"`
+	NextCursor string       `json:"next_cursor"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Items       respjson.Field
+		NextCursor  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// sshSessionListJSON contains the JSON metadata for the struct [SSHSessionList]
-type sshSessionListJSON struct {
-	Items       apijson.Field
-	NextCursor  apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *SSHSessionList) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r SSHSessionList) RawJSON() string { return r.JSON.raw }
+func (r *SSHSessionList) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r sshSessionListJSON) RawJSON() string {
-	return r.raw
 }
 
 type SSHConnection struct {
-	Endpoint        string            `json:"endpoint" api:"required"`
-	Port            int64             `json:"port" api:"required"`
-	SSHUsername     string            `json:"ssh_username" api:"required"`
-	HostTrust       SSHHostTrust      `json:"host_trust"`
-	UserCertificate string            `json:"user_certificate"`
-	JSON            sshConnectionJSON `json:"-"`
+	Endpoint        string       `json:"endpoint" api:"required"`
+	Port            int64        `json:"port" api:"required"`
+	SSHUsername     string       `json:"ssh_username" api:"required"`
+	HostTrust       SSHHostTrust `json:"host_trust"`
+	UserCertificate string       `json:"user_certificate"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Endpoint        respjson.Field
+		Port            respjson.Field
+		SSHUsername     respjson.Field
+		HostTrust       respjson.Field
+		UserCertificate respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
 }
 
-// sshConnectionJSON contains the JSON metadata for the struct [SSHConnection]
-type sshConnectionJSON struct {
-	Endpoint        apijson.Field
-	Port            apijson.Field
-	SSHUsername     apijson.Field
-	HostTrust       apijson.Field
-	UserCertificate apijson.Field
-	raw             string
-	ExtraFields     map[string]apijson.Field
-}
-
-func (r *SSHConnection) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r SSHConnection) RawJSON() string { return r.JSON.raw }
+func (r *SSHConnection) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r sshConnectionJSON) RawJSON() string {
-	return r.raw
 }
 
 type SSHHostTrust struct {
-	HostPattern string           `json:"host_pattern" api:"required"`
-	Kind        SSHHostTrustKind `json:"kind" api:"required"`
-	PublicKey   string           `json:"public_key" api:"required"`
-	JSON        sshHostTrustJSON `json:"-"`
+	HostPattern string `json:"host_pattern" api:"required"`
+	// Any of "cert_authority".
+	Kind      SSHHostTrustKind `json:"kind" api:"required"`
+	PublicKey string           `json:"public_key" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		HostPattern respjson.Field
+		Kind        respjson.Field
+		PublicKey   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// sshHostTrustJSON contains the JSON metadata for the struct [SSHHostTrust]
-type sshHostTrustJSON struct {
-	HostPattern apijson.Field
-	Kind        apijson.Field
-	PublicKey   apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *SSHHostTrust) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r SSHHostTrust) RawJSON() string { return r.JSON.raw }
+func (r *SSHHostTrust) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r sshHostTrustJSON) RawJSON() string {
-	return r.raw
 }
 
 type SSHHostTrustKind string
@@ -344,24 +330,17 @@ const (
 	SSHHostTrustKindCertAuthority SSHHostTrustKind = "cert_authority"
 )
 
-func (r SSHHostTrustKind) IsKnown() bool {
-	switch r {
-	case SSHHostTrustKindCertAuthority:
-		return true
-	}
-	return false
-}
-
 type MachineSSHListParams struct {
 	// Bare, lowercase, hyphenated Machine UUID. Pass the returned machine_id
 	// unchanged.
-	MachineID string              `path:"machine_id" api:"required" json:"-"`
-	Cursor    param.Field[string] `query:"cursor"`
-	Limit     param.Field[int64]  `query:"limit"`
+	MachineID string            `path:"machine_id" api:"required" json:"-"`
+	Limit     param.Opt[int64]  `query:"limit,omitzero" json:"-"`
+	Cursor    param.Opt[string] `query:"cursor,omitzero" json:"-"`
+	paramObj
 }
 
 // URLQuery serializes [MachineSSHListParams]'s query parameters as `url.Values`.
-func (r MachineSSHListParams) URLQuery() (v url.Values) {
+func (r MachineSSHListParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
@@ -373,10 +352,14 @@ type MachineSSHNewParams struct {
 	// unchanged.
 	MachineID              string                 `path:"machine_id" api:"required" json:"-"`
 	SSHSessionCreateParams SSHSessionCreateParams `json:"ssh_session_create_params" api:"required"`
+	paramObj
 }
 
 func (r MachineSSHNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r.SSHSessionCreateParams)
+	return shimjson.Marshal(r.SSHSessionCreateParams)
+}
+func (r *MachineSSHNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }
 
 type MachineSSHGetParams struct {
@@ -384,6 +367,7 @@ type MachineSSHGetParams struct {
 	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
 	SessionID string `path:"session_id" api:"required" json:"-"`
+	paramObj
 }
 
 type MachineSSHDeleteParams struct {
@@ -391,4 +375,5 @@ type MachineSSHDeleteParams struct {
 	// unchanged.
 	MachineID string `path:"machine_id" api:"required" json:"-"`
 	SessionID string `path:"session_id" api:"required" json:"-"`
+	paramObj
 }

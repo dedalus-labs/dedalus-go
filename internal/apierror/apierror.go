@@ -10,37 +10,34 @@ import (
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
 	"github.com/dedalus-labs/dedalus-go/internal/redact"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // Error represents an error that originates from the API, i.e. when a request is
 // made and the API returns a response with a HTTP status code. Other errors are
 // not wrapped by this SDK.
 type Error struct {
-	JSON       errorJSON `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 	StatusCode int
 	Request    *http.Request
 	Response   *http.Response
 }
 
-// errorJSON contains the JSON metadata for the struct [Error]
-type errorJSON struct {
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Error) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Error) RawJSON() string { return r.JSON.raw }
+func (r *Error) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r errorJSON) RawJSON() string {
-	return r.raw
 }
 
 func (r *Error) Error() string {
 	// The URL can carry a query credential or userinfo, and the body is whatever the server sent:
 	// both are masked, and the body is cut and its control characters escaped, so printing the
-	// error cannot leak a credential or forge log lines. JSON.RawJSON() keeps the body as received.
-	return fmt.Sprintf("%s \"%s\": %d %s %s", r.Request.Method, redact.URL(r.Request.URL), r.Response.StatusCode, http.StatusText(r.Response.StatusCode), redact.MessageBody(r.JSON.RawJSON()))
+	// error cannot leak a credential or forge log lines. RawJSON() keeps the body as received.
+	return fmt.Sprintf("%s %q: %d %s %s", r.Request.Method, redact.URL(r.Request.URL), r.Response.StatusCode, http.StatusText(r.Response.StatusCode), redact.MessageBody(r.JSON.raw))
 }
 
 // DumpRequest returns the request that failed as it went out, with its credential headers

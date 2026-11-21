@@ -8,19 +8,29 @@ import (
 
 type UnionVariant struct {
 	TypeFilter         gjson.Type
-	DiscriminatorValue interface{}
+	DiscriminatorValue any
 	Type               reflect.Type
 }
 
 var unionRegistry = map[reflect.Type]unionEntry{}
-var unionVariants = map[reflect.Type]interface{}{}
+var unionVariants = map[reflect.Type]any{}
 
 type unionEntry struct {
 	discriminatorKey string
 	variants         []UnionVariant
 }
 
-func RegisterUnion(typ reflect.Type, discriminator string, variants ...UnionVariant) {
+func Discriminator[T any](value any) UnionVariant {
+	var zero T
+	return UnionVariant{
+		TypeFilter:         gjson.JSON,
+		DiscriminatorValue: value,
+		Type:               reflect.TypeOf(zero),
+	}
+}
+
+func RegisterUnion[T any](discriminator string, variants ...UnionVariant) {
+	typ := reflect.TypeOf((*T)(nil)).Elem()
 	unionRegistry[typ] = unionEntry{
 		discriminatorKey: discriminator,
 		variants:         variants,
@@ -28,13 +38,6 @@ func RegisterUnion(typ reflect.Type, discriminator string, variants ...UnionVari
 	for _, variant := range variants {
 		unionVariants[variant.Type] = typ
 	}
-}
-
-// IsUnion reports whether typ is a union registered with RegisterUnion, which only this package
-// can decode into.
-func IsUnion(typ reflect.Type) bool {
-	_, ok := unionRegistry[typ]
-	return ok
 }
 
 // Useful to wrap a union type to force it to use [apijson.UnmarshalJSON] since you cannot define an

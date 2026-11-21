@@ -18,9 +18,9 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	Options      []option.RequestOption
-	Machines     *MachineService
-	Organization *OrganizationService
-	Images       *ImageService
+	Machines     MachineService
+	Organization OrganizationService
+	Images       ImageService
 }
 
 // DefaultClientOptions read from the environment. This should be used to initialize
@@ -62,10 +62,10 @@ func DefaultClientOptions() []option.RequestOption {
 // environment. The option passed in as arguments are applied after these default
 // arguments, and all option will be passed down to the services and requests that
 // this client makes.
-func NewClient(opts ...option.RequestOption) (r *Client) {
+func NewClient(opts ...option.RequestOption) (r Client) {
 	opts = append(DefaultClientOptions(), opts...)
 
-	r = &Client{Options: opts}
+	r = Client{Options: opts}
 
 	r.Machines = NewMachineService(opts...)
 	r.Organization = NewOrganizationService(opts...)

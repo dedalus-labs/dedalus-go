@@ -9,9 +9,10 @@ import (
 	"time"
 
 	"github.com/dedalus-labs/dedalus-go/internal/apijson"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
 	"github.com/dedalus-labs/dedalus-go/internal/requestconfig"
 	"github.com/dedalus-labs/dedalus-go/option"
+	"github.com/dedalus-labs/dedalus-go/packages/param"
+	"github.com/dedalus-labs/dedalus-go/packages/respjson"
 )
 
 // ImageUploadService contains methods and other services that help with interacting
@@ -24,8 +25,8 @@ type ImageUploadService struct {
 // NewImageUploadService generates a new service that applies the given options to each request.
 // These options are applied after the parent client's options (if there is one), and
 // before any request-specific options.
-func NewImageUploadService(opts ...option.RequestOption) (r *ImageUploadService) {
-	r = &ImageUploadService{}
+func NewImageUploadService(opts ...option.RequestOption) (r ImageUploadService) {
+	r = ImageUploadService{}
 	r.Options = opts
 	return
 }
@@ -45,9 +46,9 @@ func NewImageUploadService(opts ...option.RequestOption) (r *ImageUploadService)
 // Example:
 //
 //	upload, err := client.Images.Uploads.New(context.Background(), sdk.ImageUploadNewParams{
-//		Platform:  sdk.F[string](""),
-//		Sha256:    sdk.F[string](""),
-//		SizeBytes: sdk.F[int64](0),
+//		Platform:  "",
+//		Sha256:    "",
+//		SizeBytes: 0,
 //	})
 //	if err != nil {
 //		panic(err)
@@ -64,57 +65,54 @@ func (r *ImageUploadService) New(ctx context.Context, body ImageUploadNewParams,
 type Reservation struct {
 	Source Source            `json:"source" api:"required"`
 	Upload ReservationUpload `json:"upload" api:"required"`
-	JSON   reservationJSON   `json:"-"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Source      respjson.Field
+		Upload      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
 }
 
-// reservationJSON contains the JSON metadata for the struct [Reservation]
-type reservationJSON struct {
-	Source      apijson.Field
-	Upload      apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *Reservation) UnmarshalJSON(data []byte) (err error) {
+// Returns the unmodified JSON received from the API
+func (r Reservation) RawJSON() string { return r.JSON.raw }
+func (r *Reservation) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
-}
-
-func (r reservationJSON) RawJSON() string {
-	return r.raw
 }
 
 type ImageUploadNewParams struct {
-	Platform  param.Field[string] `json:"platform" api:"required"`
-	Sha256    param.Field[string] `json:"sha256" api:"required"`
-	SizeBytes param.Field[int64]  `json:"size_bytes" api:"required"`
+	Platform  string `json:"platform" api:"required"`
+	Sha256    string `json:"sha256" api:"required"`
+	SizeBytes int64  `json:"size_bytes" api:"required"`
+	paramObj
 }
 
 func (r ImageUploadNewParams) MarshalJSON() (data []byte, err error) {
-	return apijson.MarshalRoot(r)
+	type shadow ImageUploadNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
 }
-
-type ReservationUpload struct {
-	ExpiresAt time.Time             `json:"expires_at" api:"required" format:"date-time"`
-	Headers   map[string][]string   `json:"headers" api:"required"`
-	Method    string                `json:"method" api:"required"`
-	URL       string                `json:"url" api:"required"`
-	JSON      reservationUploadJSON `json:"-"`
-}
-
-// reservationUploadJSON contains the JSON metadata for the struct [ReservationUpload]
-type reservationUploadJSON struct {
-	ExpiresAt   apijson.Field
-	Headers     apijson.Field
-	Method      apijson.Field
-	URL         apijson.Field
-	raw         string
-	ExtraFields map[string]apijson.Field
-}
-
-func (r *ReservationUpload) UnmarshalJSON(data []byte) (err error) {
+func (r *ImageUploadNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-func (r reservationUploadJSON) RawJSON() string {
-	return r.raw
+type ReservationUpload struct {
+	ExpiresAt time.Time           `json:"expires_at" api:"required" format:"date-time"`
+	Headers   map[string][]string `json:"headers" api:"required"`
+	Method    string              `json:"method" api:"required"`
+	URL       string              `json:"url" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ExpiresAt   respjson.Field
+		Headers     respjson.Field
+		Method      respjson.Field
+		URL         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r ReservationUpload) RawJSON() string { return r.JSON.raw }
+func (r *ReservationUpload) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
 }

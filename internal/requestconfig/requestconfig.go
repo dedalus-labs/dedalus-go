@@ -15,26 +15,26 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
-	"reflect"
 	"runtime"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/dedalus-labs/dedalus-go/internal"
 	"github.com/dedalus-labs/dedalus-go/internal/apierror"
 	"github.com/dedalus-labs/dedalus-go/internal/apiform"
-	"github.com/dedalus-labs/dedalus-go/internal/apijson"
 	"github.com/dedalus-labs/dedalus-go/internal/apiquery"
-	"github.com/dedalus-labs/dedalus-go/internal/param"
 	"github.com/dedalus-labs/dedalus-go/internal/redact"
 )
 
+// getDefaultHeaders are the headers NewRequestConfig writes with the SDK's own values before any
+// option applies, other than the `X-Scalar-*` ones: the JSON `Accept` and the SDK's `User-Agent`.
+// Code that must tell the SDK's own values from a client's reads them here, never a copy, so the
+// two cannot drift.
 func getDefaultHeaders() map[string]string {
 	return map[string]string{
+		"Accept":     "application/json",
 		"User-Agent": fmt.Sprintf("Dedalus/Go %s", internal.PackageVersion),
 	}
 }
@@ -152,7 +152,11 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	}
 	if body, ok := body.(apiquery.Queryer); ok {
 		hasSerializationFunc = true
-		params := body.URLQuery().Encode()
+		q, err := body.URLQuery()
+		if err != nil {
+			return nil, err
+		}
+		params := q.Encode()
 		if params != "" {
 			parsed, err := url.Parse(u)
 			if err != nil {
@@ -195,7 +199,6 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 		req.Header.Set("Content-Type", contentType)
 	}
 
-	req.Header.Set("Accept", "application/json")
 	req.Header.Set("X-Scalar-Retry-Count", "0")
 	req.Header.Set("X-Scalar-Timeout", "0")
 	for k, v := range getDefaultHeaders() {
@@ -207,8 +210,7 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	}
 	if method != http.MethodGet {
 		// Note this can be overridden with `option.WithHeader("Idempotency-Key", myIdempotencyKey)`
-		// @custom: The API requires compact UUIDv7 retry keys.
-		req.Header.Set("Idempotency-Key", strings.ReplaceAll(uuid.Must(uuid.NewV7()).String(), "-", ""))
+		req.Header.Set("Idempotency-Key", newUUIDv7())
 	}
 
 	cfg := RequestConfig{
@@ -236,24 +238,6 @@ func NewRequestConfig(ctx context.Context, method string, u string, body interfa
 	}
 
 	return &cfg, nil
-}
-
-func UseDefaultParam[T any](dst *param.Field[T], src *T) {
-	if !dst.Present && src != nil {
-		dst.Value = *src
-		dst.Present = true
-	}
-}
-
-// isUnionDestination reports whether dst points, through any number of pointers, at a union
-// registered with apijson, which only apijson can decode into. Any other interface keeps
-// encoding/json, which fills a non-nil one and returns an error, not a panic, for the rest.
-func isUnionDestination(dst interface{}) bool {
-	t := reflect.TypeOf(dst)
-	for t != nil && t.Kind() == reflect.Pointer {
-		t = t.Elem()
-	}
-	return t != nil && t.Kind() == reflect.Interface && apijson.IsUnion(t)
 }
 
 // This interface is primarily used to describe an [*http.Client], but also
@@ -435,6 +419,13 @@ func (b *bodyWithTimeout) Close() error {
 // far ahead) would otherwise park the call for that long.
 const maxRetryAfter = time.Minute
 
+// initialRetryDelay and maxRetryDelay are the exponential backoff, in seconds: the wait before the
+// first retry, doubled on each retry after it and never more than maxRetryDelay.
+const (
+	initialRetryDelay = 0.5
+	maxRetryDelay     = 8.0
+)
+
 func retryDelay(res *http.Response, retryCount int) time.Duration {
 	// If the backend tells us to wait a sane amount of time (positive, at most a minute), use that
 	// value; anything else falls back to the exponential backoff below.
@@ -442,14 +433,16 @@ func retryDelay(res *http.Response, retryCount int) time.Duration {
 		return retryAfterDelay
 	}
 
-	maxDelay := 8 * time.Second
-	delay := time.Duration(0.5 * float64(time.Second) * math.Pow(2, float64(retryCount)))
-	if delay > maxDelay {
-		delay = maxDelay
-	}
+	// Capped in seconds before converting: past enough retries the doubled delay no longer fits a
+	// time.Duration, and converting a float that overflows int64 gives an arbitrary, often negative,
+	// duration.
+	delay := time.Duration(math.Min(initialRetryDelay*math.Pow(2, float64(retryCount)), maxRetryDelay) * float64(time.Second))
 
-	jitter := rand.Int63n(int64(delay / 4))
-	delay -= time.Duration(jitter)
+	// Up to a quarter of the delay comes off, so clients that failed together do not retry together.
+	// A zero cap waits not at all, and rand.Int63n panics on a bound that is not positive.
+	if quarter := int64(delay / 4); quarter > 0 {
+		delay -= time.Duration(rand.Int63n(quarter))
+	}
 	return delay
 }
 
@@ -917,12 +910,6 @@ func (cfg *RequestConfig) Execute() (err error) {
 		tmp := contents
 		*dst = &tmp
 	default:
-		if isUnionDestination(cfg.ResponseBodyInto) && json.Valid(contents) && !bytes.Equal(bytes.TrimSpace(contents), []byte("null")) {
-			if err = apijson.Unmarshal(contents, cfg.ResponseBodyInto); err != nil {
-				return fmt.Errorf("error parsing response json: %w", err)
-			}
-			return nil
-		}
 		err = json.NewDecoder(bytes.NewReader(contents)).Decode(cfg.ResponseBodyInto)
 		if err != nil {
 			return fmt.Errorf("error parsing response json: %w", err)
@@ -1042,15 +1029,15 @@ func (cfg *RequestConfig) Clone(ctx context.Context) *RequestConfig {
 	// replay (e.g. body-cursor pagination over POST). GET requests never carry a
 	// key (see NewRequestConfig), so there is nothing to refresh.
 	if req.Method != http.MethodGet {
-		new.Request.Header.Set("Idempotency-Key", strings.ReplaceAll(uuid.Must(uuid.NewV7()).String(), "-", ""))
+		new.Request.Header.Set("Idempotency-Key", newUUIDv7())
 	}
 
 	return new
 }
 
-// newUUIDv4 returns a random (version 4) UUID in its canonical lowercase
-// 8-4-4-4-12 hex form, the value each idempotency key carries.
-func newUUIDv4() string {
+// newUUIDv7 returns a time-ordered (version 7) UUID in its lowercase
+// 32-digit hex form without hyphens, the value each idempotency key carries.
+func newUUIDv7() string {
 	var b [16]byte
 	// crypto/rand, not math/rand: a predictable key could collide with, or be
 	// guessed from, another request and be deduplicated as its replay.
@@ -1059,11 +1046,17 @@ func newUUIDv4() string {
 		// send a guessable key.
 		panic(err)
 	}
-	// RFC 9562: the high nibble of byte 6 is the version (4) and the top two bits
+	// RFC 9562: the first 48 bits are the Unix time in milliseconds, big-endian. A clock
+	// set before 1970 writes a zero timestamp rather than wrapping to the far future.
+	ms := uint64(max(0, time.Now().UnixMilli()))
+	for i := 0; i < 6; i++ {
+		b[i] = byte(ms >> (40 - 8*i))
+	}
+	// RFC 9562: the high nibble of byte 6 is the version (7) and the top two bits
 	// of byte 8 are the variant (10).
-	b[6] = (b[6] & 0x0f) | 0x40
+	b[6] = (b[6] & 0x0f) | 0x70
 	b[8] = (b[8] & 0x3f) | 0x80
-	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
+	return fmt.Sprintf("%x", b[:])
 }
 
 func (cfg *RequestConfig) Apply(opts ...RequestOption) error {
